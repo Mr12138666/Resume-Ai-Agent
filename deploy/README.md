@@ -13,14 +13,14 @@ The intended local stack is:
 
 ## Remote Infrastructure
 
-The user has a remote PGvector and MinIO environment exposed through FRP:
+You can point the backend at a remote PGvector, Redis, and MinIO environment exposed through a tunnel:
 
 | Service | Local Container Port | Tunnel Endpoint |
 |---|---:|---|
-| PGvector/PostgreSQL | 5432 | `120.53.242.78:15432` |
-| Redis/ReBloom | 6379 | `120.53.242.78:16379` |
-| MinIO API | 9000 | `120.53.242.78:19000` |
-| MinIO Console | 9090 | `120.53.242.78:19090` |
+| PGvector/PostgreSQL | 5432 | `<remote-host>:<postgres-port>` |
+| Redis/ReBloom | 6379 | `<remote-host>:<redis-port>` |
+| MinIO API | 9000 | `<remote-host>:<minio-api-port>` |
+| MinIO Console | 9090 | `<remote-host>:<minio-console-port>` |
 
 Use [env.remote.example](env.remote.example) as the backend environment template.
 
@@ -40,13 +40,13 @@ FLYWAY_BASELINE_VERSION=0
 PowerShell example:
 
 ```powershell
-$env:POSTGRES_URL="jdbc:postgresql://120.53.242.78:15432/resume_ai"
+$env:POSTGRES_URL="jdbc:postgresql://<remote-host>:<postgres-port>/resume_ai"
 $env:POSTGRES_USER="postgres"
 $env:POSTGRES_PASSWORD="<server-password>"
-$env:REDIS_HOST="120.53.242.78"
-$env:REDIS_PORT="16379"
+$env:REDIS_HOST="<remote-host>"
+$env:REDIS_PORT="<redis-port>"
 $env:REDIS_PASSWORD="<redis-password>"
-$env:MINIO_ENDPOINT="http://120.53.242.78:19000"
+$env:MINIO_ENDPOINT="http://<remote-host>:<minio-api-port>"
 $env:MINIO_ACCESS_KEY="<minio-access-key>"
 $env:MINIO_SECRET_KEY="<minio-secret-key>"
 $env:MINIO_BUCKET="resume-ai"
@@ -56,21 +56,21 @@ mvn -f ..\backend\pom.xml spring-boot:run
 For the current server, the database name is `robot`, so use:
 
 ```powershell
-$env:POSTGRES_URL="jdbc:postgresql://120.53.242.78:15432/robot"
+$env:POSTGRES_URL="jdbc:postgresql://<remote-host>:<postgres-port>/robot"
 ```
 
-## Verified Remote Startup
+## Verified Remote Startup Checklist
 
 Verified on 2026-06-22:
 
-- PostgreSQL/PGvector endpoint `120.53.242.78:15432`
+- PostgreSQL/PGvector endpoint configured
 - Database `robot`
 - Flyway baseline at version `0`
 - Flyway migration `V1__init_core_schema.sql`
 - JPA schema validation
 - Spring AI PGVectorStore initialization
 - MinIO endpoint configuration
-- Redis/ReBloom endpoint `120.53.242.78:16379`
+- Redis/ReBloom endpoint configured
 
 Run from PowerShell:
 

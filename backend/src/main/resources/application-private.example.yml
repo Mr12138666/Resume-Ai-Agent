@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:postgresql://120.53.242.78:15432/robot
+    url: jdbc:postgresql://<remote-host>:<postgres-port>/robot
     username: postgres
     password: replace-with-postgres-password
   flyway:
@@ -8,8 +8,8 @@ spring:
     baseline-version: 0
   data:
     redis:
-      host: 120.53.242.78
-      port: 16379
+      host: <remote-host>
+      port: <redis-port>
       password: replace-with-redis-password
       timeout: 1s
   ai:
@@ -44,6 +44,6 @@ resume-ai:
     enabled: true
   storage:
     bucket: resume-ai
-    endpoint: http://120.53.242.78:19000
+    endpoint: http://<remote-host>:<minio-api-port>
     access-key: replace-with-minio-access-key
     secret-key: replace-with-minio-secret-key
