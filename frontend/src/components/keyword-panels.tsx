@@ -42,11 +42,11 @@ export function HighlightedTextPanel({
   title: string;
 }) {
   return (
-    <article className="flex min-h-[28rem] flex-col overflow-hidden border border-black bg-[#f0f0e8] shadow-sw-sm">
+    <article className="flex min-h-[28rem] flex-col border border-black bg-[#f0f0e8] shadow-sw-sm">
       <div className="border-b border-black bg-[#e5e5e0] px-4 py-3">
         <h3 className="font-mono text-sm font-bold uppercase tracking-wide">{title}</h3>
       </div>
-      <div className="panel-scroll flex-1 overflow-auto p-5 font-mono text-sm leading-7">
+      <div className="flex-1 p-5 font-mono text-sm leading-7">
         {text ? <p className="whitespace-pre-wrap">{highlightText(text, keywords)}</p> : <p className="text-[#6b7280]">{emptyText}</p>}
       </div>
     </article>

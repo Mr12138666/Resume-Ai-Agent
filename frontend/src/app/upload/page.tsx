@@ -225,12 +225,12 @@ export default function UploadPage() {
 
           <div className="mt-6 border border-black bg-[#e5e5e0] p-4">
             <p className="font-mono text-xs font-bold uppercase tracking-wide text-[#1d4ed8]">解析预览</p>
-            <p className="panel-scroll mt-3 max-h-72 overflow-auto whitespace-pre-wrap font-mono text-xs uppercase leading-5 text-[#6b7280]">
+            <p className="mt-3 whitespace-pre-wrap font-mono text-xs uppercase leading-5 text-[#6b7280]">
               {resume?.rawText || "上传后这里会显示简历文本。"}
             </p>
           </div>
           {resume?.structuredJson ? (
-            <pre className="panel-scroll mt-4 max-h-72 overflow-auto whitespace-pre-wrap border border-black bg-black p-4 font-mono text-xs leading-5 text-white">
+            <pre className="mt-4 whitespace-pre-wrap border border-black bg-black p-4 font-mono text-xs leading-5 text-white">
               {formatJson(resume.structuredJson)}
             </pre>
           ) : null}
@@ -290,7 +290,7 @@ export default function UploadPage() {
             </div>
           </form>
           {job?.structuredJson ? (
-            <pre className="panel-scroll mt-4 max-h-72 overflow-auto whitespace-pre-wrap border border-black bg-black p-4 font-mono text-xs leading-5 text-white">
+            <pre className="mt-4 whitespace-pre-wrap border border-black bg-black p-4 font-mono text-xs leading-5 text-white">
               {formatJson(job.structuredJson)}
             </pre>
           ) : null}

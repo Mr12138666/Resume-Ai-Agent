@@ -70,7 +70,7 @@ public class DemoSmokeService {
                 originalBullet(),
                 rewrittenBullet(),
                 "在保留原始事实的前提下，强化了动作词、Spring Boot/PostgreSQL 技术证据、可追踪记录价值和与后端岗位匹配的 ATS 关键词。",
-                "{\"faithfulness\":\"passed_demo_review\",\"inventedFactsAllowed\":false,\"language\":\"zh-CN\"}"
+                "{\"结论\":\"演示数据已通过基础校验\",\"是否发现新增事实\":\"未发现\",\"需要人工复核\":\"建议复核\",\"依据摘要\":\"改写内容中的 Spring Boot、PostgreSQL、Redis 均来自原始演示简历。\",\"复核建议\":\"正式使用时仍需核对项目名称、数字指标和职责边界。\"}"
         ));
         var export = resumeRewriteService.exportMarkdown(rewrite.getId());
         return new DemoSmokeResponse(resume.getId(), job.getId(), analysis.getId(), rewrite.getId(), export);

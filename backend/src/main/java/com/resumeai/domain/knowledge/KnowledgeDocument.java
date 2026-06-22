@@ -73,6 +73,15 @@ public class KnowledgeDocument {
         this.status = KnowledgeDocumentStatus.FAILED;
     }
 
+    public void update(String documentType, String title, String sourceType, String content, String metadataJson) {
+        this.documentType = documentType;
+        this.title = title;
+        this.sourceType = sourceType;
+        this.content = content;
+        this.metadataJson = metadataJson;
+        this.status = KnowledgeDocumentStatus.CREATED;
+    }
+
     public UUID getId() {
         return id;
     }

@@ -42,12 +42,42 @@ public class KnowledgeDocumentApplicationService {
     public KnowledgeDocumentResponse index(UUID documentId) {
         var document = repository.findById(documentId)
                 .orElseThrow(() -> new IllegalArgumentException("Knowledge document not found: " + documentId));
-        ragKnowledgeService.index(document);
+        try {
+            ragKnowledgeService.deleteIndex(document);
+            ragKnowledgeService.index(document);
+        } catch (IllegalArgumentException exception) {
+            throw exception;
+        } catch (Exception exception) {
+            throw new IllegalStateException("知识文档索引失败，请检查向量模型配置、文档长度和 PGvector 表结构。原始原因："
+                    + exception.getMessage(), exception);
+        }
         document.markIndexed();
         return KnowledgeDocumentResponse.from(document);
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
+    public KnowledgeDocumentResponse update(UUID documentId, UpdateKnowledgeDocumentRequest request) {
+        var document = repository.findById(documentId)
+                .orElseThrow(() -> new IllegalArgumentException("Knowledge document not found: " + documentId));
+        ragKnowledgeService.deleteIndex(document);
+        document.update(
+                request.documentType().trim(),
+                request.title().trim(),
+                blankToNull(request.sourceType()),
+                request.content().trim(),
+                "{}"
+        );
+        return KnowledgeDocumentResponse.from(document);
+    }
+
+    @Transactional
+    public void delete(UUID documentId) {
+        var document = repository.findById(documentId)
+                .orElseThrow(() -> new IllegalArgumentException("Knowledge document not found: " + documentId));
+        ragKnowledgeService.deleteIndex(document);
+        repository.delete(document);
+    }
+
     public List<KnowledgeSearchResult> search(KnowledgeSearchRequest request) {
         return ragKnowledgeService.search(request.query(), request.topK() == null ? 5 : request.topK());
     }

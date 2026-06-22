@@ -82,14 +82,14 @@ export default function ResumeDetailPage({ params }: { params: Promise<{ resumeI
           <section className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
             <Card tone="paper">
               <CardHeader eyebrow="解析文本" title="解析文本" description="Tika 提取出的正文会作为匹配和改写的基础证据。" />
-              <pre className="panel-scroll mt-5 max-h-[42rem] overflow-auto whitespace-pre-wrap border border-black bg-[#e5e5e0] p-5 font-mono text-sm leading-7">
+              <pre className="mt-5 whitespace-pre-wrap border border-black bg-[#e5e5e0] p-5 font-mono text-sm leading-7">
                 {resume.rawText || "暂无文本预览。"}
               </pre>
             </Card>
             <Card tone="ink">
               <CardHeader eyebrow="结构化 JSON" title="结构化抽取" description="AI 结构化结果会用于更精细的章节识别和后续改写。" />
               {resume.structuredJson ? (
-                <pre className="panel-scroll mt-5 max-h-[42rem] overflow-auto whitespace-pre-wrap border border-white/80 bg-white/10 p-5 font-mono text-xs leading-5 text-white">
+                <pre className="mt-5 whitespace-pre-wrap border border-white/80 bg-white/10 p-5 font-mono text-xs leading-5 text-white">
                   {formatJson(resume.structuredJson)}
                 </pre>
               ) : (

@@ -156,10 +156,24 @@ export async function apiGet<T>(path: string): Promise<T> {
   });
 
   if (!response.ok) {
-    throw new Error(`API request failed: ${response.status}`);
+    await throwApiError(response, "接口请求失败");
   }
 
   return response.json() as Promise<T>;
+}
+
+async function throwApiError(response: Response, fallbackMessage: string): Promise<never> {
+  const fallback = `${fallbackMessage}：${response.status}`;
+  let message: string | undefined;
+
+  try {
+    const error = (await response.json()) as { message?: string; code?: string };
+    message = error.message;
+  } catch (error) {
+    message = undefined;
+  }
+
+  throw new Error(message ?? fallback);
 }
 
 export async function getSystemStatus(): Promise<SystemStatusResponse> {
@@ -211,7 +225,22 @@ export async function exportRewriteMarkdown(rewriteId: string): Promise<ExportRe
   });
 
   if (!response.ok) {
-    throw new Error(`改写导出失败：${response.status}`);
+    await throwApiError(response, "改写导出失败");
+  }
+
+  return response.json() as Promise<ExportRewriteResponse>;
+}
+
+export async function exportRewritePdf(rewriteId: string): Promise<ExportRewriteResponse> {
+  const response = await fetch(`${API_BASE_URL}/rewrites/${rewriteId}/exports/pdf`, {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    await throwApiError(response, "PDF 导出失败");
   }
 
   return response.json() as Promise<ExportRewriteResponse>;
@@ -226,7 +255,7 @@ export async function runDemoSmoke(): Promise<DemoSmokeResponse> {
   });
 
   if (!response.ok) {
-    throw new Error(`快速演示运行失败：${response.status}`);
+    await throwApiError(response, "快速演示运行失败");
   }
 
   return response.json() as Promise<DemoSmokeResponse>;
@@ -245,16 +274,7 @@ export async function uploadResume(file: File, title?: string): Promise<ResumeRe
   });
 
   if (!response.ok) {
-    const fallback = `简历上传失败：${response.status}`;
-    try {
-      const error = (await response.json()) as { message?: string };
-      throw new Error(error.message ?? fallback);
-    } catch (error) {
-      if (error instanceof Error && error.message !== fallback) {
-        throw error;
-      }
-      throw new Error(fallback);
-    }
+    await throwApiError(response, "简历上传失败");
   }
 
   return response.json() as Promise<ResumeResponse>;
@@ -275,7 +295,7 @@ export async function createJobDescription(input: {
   });
 
   if (!response.ok) {
-    throw new Error(`岗位描述创建失败：${response.status}`);
+    await throwApiError(response, "岗位描述创建失败");
   }
 
   return response.json() as Promise<JobDescriptionResponse>;
@@ -304,7 +324,7 @@ export async function createAnalysis(input: {
   });
 
   if (!response.ok) {
-    throw new Error(`匹配分析创建失败：${response.status}`);
+    await throwApiError(response, "匹配分析创建失败");
   }
 
   return response.json() as Promise<AnalysisResponse>;
@@ -319,7 +339,7 @@ export async function structureResume(resumeId: string): Promise<ResumeResponse>
   });
 
   if (!response.ok) {
-    throw new Error(`简历结构化失败：${response.status}`);
+    await throwApiError(response, "简历结构化失败");
   }
 
   return response.json() as Promise<ResumeResponse>;
@@ -334,7 +354,7 @@ export async function structureJob(jobId: string): Promise<JobDescriptionRespons
   });
 
   if (!response.ok) {
-    throw new Error(`岗位结构化失败：${response.status}`);
+    await throwApiError(response, "岗位结构化失败");
   }
 
   return response.json() as Promise<JobDescriptionResponse>;
@@ -358,7 +378,7 @@ export async function createRewrite(input: {
   });
 
   if (!response.ok) {
-    throw new Error(`改写草稿创建失败：${response.status}`);
+    await throwApiError(response, "改写草稿创建失败");
   }
 
   return response.json() as Promise<RewriteDraftResponse>;
@@ -384,10 +404,48 @@ export async function createKnowledgeDocument(input: {
   });
 
   if (!response.ok) {
-    throw new Error(`知识文档创建失败：${response.status}`);
+    await throwApiError(response, "知识文档创建失败");
   }
 
   return response.json() as Promise<KnowledgeDocumentResponse>;
+}
+
+export async function updateKnowledgeDocument(
+  documentId: string,
+  input: {
+    documentType: string;
+    title: string;
+    sourceType?: string;
+    content: string;
+  },
+): Promise<KnowledgeDocumentResponse> {
+  const response = await fetch(`${API_BASE_URL}/knowledge/documents/${documentId}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify(input),
+  });
+
+  if (!response.ok) {
+    await throwApiError(response, "知识文档保存失败");
+  }
+
+  return response.json() as Promise<KnowledgeDocumentResponse>;
+}
+
+export async function deleteKnowledgeDocument(documentId: string): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/knowledge/documents/${documentId}`, {
+    method: "DELETE",
+    headers: {
+      Accept: "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    await throwApiError(response, "知识文档删除失败");
+  }
 }
 
 export async function indexKnowledgeDocument(documentId: string): Promise<KnowledgeDocumentResponse> {
@@ -399,7 +457,7 @@ export async function indexKnowledgeDocument(documentId: string): Promise<Knowle
   });
 
   if (!response.ok) {
-    throw new Error(`知识文档索引失败：${response.status}`);
+    await throwApiError(response, "知识文档索引失败");
   }
 
   return response.json() as Promise<KnowledgeDocumentResponse>;
@@ -419,7 +477,7 @@ export async function searchKnowledge(input: {
   });
 
   if (!response.ok) {
-    throw new Error(`知识检索失败：${response.status}`);
+    await throwApiError(response, "知识检索失败");
   }
 
   return response.json() as Promise<KnowledgeSearchResult[]>;

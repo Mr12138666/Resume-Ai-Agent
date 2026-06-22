@@ -9,9 +9,10 @@ import {
   type ExportRewriteResponse,
   type RewriteDraftResponse,
   exportRewriteMarkdown,
+  exportRewritePdf,
   getRewrite,
 } from "@/lib/api/client";
-import { formatDate, formatDateTime, formatJson } from "@/lib/format";
+import { formatDate, formatDateTime } from "@/lib/format";
 
 export default function RewriteDetailPage({ params }: { params: Promise<{ rewriteId: string }> }) {
   const { rewriteId } = use(params);
@@ -50,6 +51,19 @@ export default function RewriteDetailPage({ params }: { params: Promise<{ rewrit
     }
   }
 
+  async function handleExportPdf() {
+    setIsExporting(true);
+    setError(null);
+    setExportResult(null);
+    try {
+      setExportResult(await exportRewritePdf(rewriteId));
+    } catch (exportError) {
+      setError(exportError instanceof Error ? exportError.message : "PDF 导出失败。");
+    } finally {
+      setIsExporting(false);
+    }
+  }
+
   return (
     <AppShell
       actions={
@@ -77,13 +91,18 @@ export default function RewriteDetailPage({ params }: { params: Promise<{ rewrit
           <Card tone="lime">
             <CardHeader
               action={
-                <Button disabled={isExporting} onClick={handleExportMarkdown} tone="ink" type="button">
-                  {isExporting ? "导出中" : "导出 Markdown"}
-                </Button>
+                <div className="flex flex-wrap gap-3">
+                  <Button disabled={isExporting} onClick={handleExportMarkdown} tone="ink" type="button">
+                    {isExporting ? "导出中" : "导出 Markdown"}
+                  </Button>
+                  <Button disabled={isExporting} onClick={handleExportPdf} tone="default" type="button">
+                    {isExporting ? "导出中" : "导出 PDF"}
+                  </Button>
+                </div>
               }
               eyebrow="导出"
               title="导出优化段落"
-              description="导出会写入 MinIO，并返回一个临时下载链接。"
+              description="Markdown 和 PDF 都会写入 MinIO，并返回一个临时下载链接。"
             />
             {exportResult ? (
               <div className="mt-5 grid gap-3 border border-black bg-[#f0f0e8] p-5 font-mono text-sm shadow-sw-xs md:grid-cols-2">
@@ -99,7 +118,7 @@ export default function RewriteDetailPage({ params }: { params: Promise<{ rewrit
                     rel="noreferrer"
                     target="_blank"
                   >
-                    下载 Markdown
+                    下载 {exportResult.format.toUpperCase()}
                   </a>
                 </div>
               </div>
@@ -114,16 +133,68 @@ export default function RewriteDetailPage({ params }: { params: Promise<{ rewrit
               <p className="mt-5 whitespace-pre-wrap font-mono text-xs uppercase leading-5 text-[#6b7280]">{rewrite.rationale}</p>
             </Card>
             <Card tone="ink">
-              <CardHeader eyebrow="事实校验" title="事实校验 JSON" description="模型输出应尽量说明是否引入了无法从原文支撑的新事实。" />
-              <pre className="panel-scroll mt-5 max-h-96 overflow-auto whitespace-pre-wrap border border-white/80 bg-white/10 p-4 font-mono text-xs leading-5 text-white">
-                {formatJson(rewrite.verificationJson)}
-              </pre>
+              <CardHeader eyebrow="事实校验" title="事实校验结果" description="这里用于提示哪些内容需要人工确认，避免把无法支撑的新事实写进简历。" />
+              <VerificationPanel value={rewrite.verificationJson} />
             </Card>
           </section>
         </div>
       ) : null}
     </AppShell>
   );
+}
+
+function VerificationPanel({ value }: { value: string | null | undefined }) {
+  const parsed = parseVerification(value);
+  if (!parsed) {
+    return (
+      <p className="mt-5 border border-white/60 bg-white/10 p-5 font-mono text-xs leading-5 text-white/75">
+        暂无可读的事实校验结果，请人工核对改写内容是否和原始简历一致。
+      </p>
+    );
+  }
+
+  const rows = [
+    ["校验结论", parsed["结论"]],
+    ["新增事实", parsed["是否发现新增事实"]],
+    ["人工复核", parsed["需要人工复核"]],
+    ["依据摘要", parsed["依据摘要"]],
+    ["复核建议", parsed["复核建议"]],
+  ].filter(([, text]) => Boolean(text));
+
+  return (
+    <dl className="mt-5 grid gap-3">
+      {rows.map(([label, text]) => (
+        <div className="border border-white/70 bg-white/10 p-4" key={label}>
+          <dt className="font-mono text-xs font-black uppercase tracking-[0.18em] text-white/60">{label}</dt>
+          <dd className="mt-2 text-sm leading-6 text-white">{text}</dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
+function parseVerification(value: string | null | undefined): Record<string, string> | null {
+  if (!value) {
+    return null;
+  }
+  try {
+    const parsed = JSON.parse(value) as Record<string, unknown>;
+    const normalized = Object.fromEntries(
+      Object.entries(parsed).map(([key, entry]) => [key, typeof entry === "string" ? entry : JSON.stringify(entry)]),
+    );
+    if (!normalized["结论"] && (normalized.faithfulness || normalized.inventedFactsAllowed)) {
+      return {
+        结论: normalized.faithfulness === "passed_demo_review" ? "演示数据已通过基础校验" : "待人工确认",
+        是否发现新增事实: normalized.inventedFactsAllowed === "true" ? "可能存在新增事实" : "未发现明确新增事实",
+        需要人工复核: "需要",
+        依据摘要: "这是旧版本生成的事实校验记录，字段已自动转换为中文展示。",
+        复核建议: "请人工核对改写内容中的公司、项目、时间、数字指标和技术栈是否都能被原始简历支撑。",
+      };
+    }
+    return normalized;
+  } catch {
+    return { 结论: "待人工确认", 依据摘要: value, 复核建议: "请人工核对改写内容是否和原始简历一致。" };
+  }
 }
 
 function Info({ label, value }: { label: string; value: string }) {

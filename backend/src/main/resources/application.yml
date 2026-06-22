@@ -39,7 +39,7 @@ spring:
   ai:
     model:
       chat: ${SPRING_AI_CHAT_MODEL:ollama}
-      embedding: ${SPRING_AI_EMBEDDING_MODEL:ollama}
+      embedding: ${SPRING_AI_EMBEDDING_MODEL:openai}
     ollama:
       base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
       chat:
@@ -56,12 +56,13 @@ spring:
           temperature: 0.2
       embedding:
         options:
-          model: ${OPENAI_EMBEDDING_MODEL:text-embedding-3-small}
+          model: ${OPENAI_EMBEDDING_MODEL:text-embedding-v4}
+          dimensions: ${RAG_EMBEDDING_DIMENSIONS:1024}
     vectorstore:
       pgvector:
         index-type: HNSW
         distance-type: COSINE_DISTANCE
-        dimensions: ${RAG_EMBEDDING_DIMENSIONS:768}
+        dimensions: ${RAG_EMBEDDING_DIMENSIONS:1024}
         initialize-schema: false
 
 management:
@@ -74,9 +75,9 @@ resume-ai:
   llm:
     provider: ${RESUME_AI_LLM_PROVIDER:ollama}
     default-chat-model: ${RESUME_AI_CHAT_MODEL:llama3.1}
-    default-embedding-model: ${RESUME_AI_EMBEDDING_MODEL:nomic-embed-text}
+    default-embedding-model: ${RESUME_AI_EMBEDDING_MODEL:text-embedding-v4}
   rag:
-    embedding-dimensions: ${RAG_EMBEDDING_DIMENSIONS:768}
+    embedding-dimensions: ${RAG_EMBEDDING_DIMENSIONS:1024}
     top-k: ${RAG_TOP_K:6}
     similarity-threshold: ${RAG_SIMILARITY_THRESHOLD:0.72}
   redis:

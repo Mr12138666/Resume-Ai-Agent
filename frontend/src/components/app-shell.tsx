@@ -28,8 +28,8 @@ export function AppShell({
   const pathname = usePathname();
 
   return (
-    <main className="swiss-grid flex min-h-screen w-full items-start justify-center overflow-hidden px-4 py-8 text-black md:px-8 md:py-12">
-      <div className="flex max-h-[calc(100vh-4rem)] w-full max-w-[86rem] flex-col overflow-hidden border border-black bg-[#f0f0e8] shadow-sw-lg">
+    <main className="swiss-grid flex min-h-screen w-full items-start justify-center px-4 py-8 text-black md:px-8 md:py-12">
+      <div className="flex w-full max-w-[86rem] flex-col border border-black bg-[#f0f0e8] shadow-sw-lg">
         <header className="relative z-30 shrink-0 border-b border-black bg-[#f0f0e8] p-6 md:p-10">
           <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
             <Link className="font-mono text-sm font-bold uppercase tracking-wide text-[#1d4ed8]" href="/">
@@ -63,7 +63,7 @@ export function AppShell({
             {actions ? <div className="flex flex-wrap gap-3 lg:justify-end">{actions}</div> : null}
           </div>
         </header>
-        <div className="panel-scroll flex-1 overflow-y-auto overflow-x-hidden p-[1.5px]">
+        <div className="p-[1.5px]">
           <div className="space-y-6 p-4 md:p-6">{children}</div>
         </div>
         <footer className="relative z-30 flex shrink-0 flex-wrap items-center justify-between gap-3 border-t border-black bg-[#f0f0e8] p-4 font-mono text-xs font-bold uppercase tracking-wide text-[#1d4ed8]">

@@ -6,12 +6,22 @@ import com.resumeai.domain.rewrite.RewriteDraft;
 import com.resumeai.infrastructure.persistence.AnalysisRepository;
 import com.resumeai.infrastructure.persistence.RewriteDraftRepository;
 import com.resumeai.infrastructure.storage.ObjectStorageService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
+import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.apache.pdfbox.pdmodel.font.PDFont;
+import org.apache.pdfbox.pdmodel.font.PDType0Font;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
@@ -30,19 +40,22 @@ public class ResumeRewriteService {
     private final ResumeOptimizationTools tools;
     private final ChatClient.Builder chatClientBuilder;
     private final ObjectStorageService objectStorageService;
+    private final ObjectMapper objectMapper;
 
     public ResumeRewriteService(
             AnalysisRepository analysisRepository,
             RewriteDraftRepository rewriteDraftRepository,
             ResumeOptimizationTools tools,
             ChatClient.Builder chatClientBuilder,
-            ObjectStorageService objectStorageService
+            ObjectStorageService objectStorageService,
+            ObjectMapper objectMapper
     ) {
         this.analysisRepository = analysisRepository;
         this.rewriteDraftRepository = rewriteDraftRepository;
         this.tools = tools;
         this.chatClientBuilder = chatClientBuilder;
         this.objectStorageService = objectStorageService;
+        this.objectMapper = objectMapper;
     }
 
     @Transactional
@@ -57,7 +70,7 @@ public class ResumeRewriteService {
                 originalText,
                 generated.rewrittenText(),
                 generated.rationale(),
-                "{\"faithfulness\":\"requires_user_review\",\"inventedFactsAllowed\":false}"
+                verificationJson(generated, originalText)
         );
         return RewriteDraftResponse.from(rewriteDraftRepository.save(draft));
     }
@@ -104,6 +117,33 @@ public class ResumeRewriteService {
         );
     }
 
+    @Transactional(readOnly = true)
+    public ExportRewriteResponse exportPdf(UUID rewriteId) {
+        var draft = rewriteDraftRepository.findById(rewriteId)
+                .orElseThrow(() -> new IllegalArgumentException("Rewrite draft not found: " + rewriteId));
+        var pdfBytes = buildPdf(draft);
+        var objectKey = "exports/rewrites/%s/optimized-section.pdf".formatted(rewriteId);
+        objectStorageService.put(
+                objectKey,
+                new ByteArrayInputStream(pdfBytes),
+                pdfBytes.length,
+                "application/pdf"
+        );
+        var exportedAt = OffsetDateTime.now();
+        var expiresAt = exportedAt.plus(EXPORT_DOWNLOAD_URL_EXPIRY);
+        var downloadUrl = objectStorageService.presignedGetUrl(objectKey, EXPORT_DOWNLOAD_URL_EXPIRY);
+        return new ExportRewriteResponse(
+                rewriteId,
+                "pdf",
+                objectKey,
+                "application/pdf",
+                pdfBytes.length,
+                exportedAt,
+                downloadUrl,
+                expiresAt
+        );
+    }
+
     private RewriteGeneration generateRewrite(Analysis analysis, String originalText) {
         try {
             return chatClientBuilder.build()
@@ -123,7 +163,11 @@ public class ResumeRewriteService {
                             %s
 
                             请先使用 RAG 建议和匹配评分工具，再给出最终改写。
-                            返回 rewrittenText 和 rationale，内容使用中文。
+                            请返回 JSON 对象，字段包括：
+                            - rewrittenText：改写后的中文简历文本。
+                            - rationale：中文改写理由。
+                            - verificationJson：字符串形式的 JSON，必须使用中文字段和值，包含：
+                              结论、是否发现新增事实、需要人工复核、依据摘要、复核建议。
                             """.formatted(limit(originalText), limit(analysis.getJob().getDescription())))
                     .tools(tools)
                     .call()
@@ -143,8 +187,32 @@ public class ResumeRewriteService {
                 """.formatted(originalText.strip());
         return new RewriteGeneration(
                 rewritten.strip(),
-                "模型调用失败，已使用兜底改写逻辑。参考到的检索建议：" + guidance
+                "模型调用失败，已使用兜底改写逻辑。参考到的检索建议：" + guidance,
+                null
         );
+    }
+
+    private String verificationJson(RewriteGeneration generated, String originalText) {
+        if (generated.verificationJson() != null && !generated.verificationJson().isBlank()) {
+            return generated.verificationJson().trim();
+        }
+        return writeVerification(new VerificationResult(
+                "待人工确认",
+                "未发现明确新增事实",
+                "需要",
+                "系统要求模型仅基于原始简历改写；原始文本长度 %d 字。".formatted(originalText == null ? 0 : originalText.length()),
+                "请重点核对数字指标、任职时间、公司名称、项目名称和技术栈是否都能在原始简历中找到依据。"
+        ));
+    }
+
+    private String writeVerification(VerificationResult verification) {
+        try {
+            return objectMapper.writeValueAsString(verification);
+        } catch (Exception exception) {
+            return """
+                    {"结论":"待人工确认","是否发现新增事实":"未发现明确新增事实","需要人工复核":"需要","依据摘要":"事实校验结果序列化失败。","复核建议":"请人工核对改写内容是否与原始简历一致。"}
+                    """.strip();
+        }
     }
 
     private String chooseOriginalText(Analysis analysis, CreateRewriteRequest request) {
@@ -213,7 +281,153 @@ public class ResumeRewriteService {
         ).strip() + "\n";
     }
 
+    private byte[] buildPdf(RewriteDraft draft) {
+        try (var document = new PDDocument(); var outputStream = new ByteArrayOutputStream()) {
+            var font = loadChineseFont(document);
+            var writer = new PdfTextWriter(document, font);
+            writer.writeTitle("优化后的简历段落");
+            writer.writeHeading("目标岗位");
+            var analysis = draft.getAnalysis();
+            var job = analysis.getJob();
+            writer.writeParagraph("岗位：" + blank(job.getTitle(), "未命名岗位"));
+            writer.writeParagraph("公司：" + blank(job.getCompany(), "未知公司"));
+            writer.writeHeading("改写后文本");
+            writer.writeParagraph(blank(draft.getRewrittenText(), ""));
+            writer.writeHeading("改写理由");
+            writer.writeParagraph(blank(draft.getRationale(), ""));
+            writer.writeHeading("事实校验");
+            writer.writeParagraph(blank(draft.getVerificationJson(), "{}"));
+            writer.close();
+            document.save(outputStream);
+            return outputStream.toByteArray();
+        } catch (Exception exception) {
+            throw new IllegalStateException("PDF 导出失败，请确认运行环境存在中文字体。", exception);
+        }
+    }
+
+    private PDFont loadChineseFont(PDDocument document) throws Exception {
+        var candidates = List.of(
+                "C:/Windows/Fonts/simhei.ttf",
+                "C:/Windows/Fonts/msyh.ttc",
+                "C:/Windows/Fonts/simsun.ttc",
+                "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
+                "/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc",
+                "/usr/share/fonts/truetype/wqy/wqy-microhei.ttc"
+        );
+        for (var path : candidates) {
+            var file = new File(path);
+            if (file.isFile()) {
+                return PDType0Font.load(document, file);
+            }
+        }
+        throw new IllegalStateException("未找到可用中文字体，无法生成中文 PDF。");
+    }
+
     private String blank(String value, String fallback) {
         return value == null || value.isBlank() ? fallback : value.strip();
+    }
+
+    private record VerificationResult(
+            String 结论,
+            String 是否发现新增事实,
+            String 需要人工复核,
+            String 依据摘要,
+            String 复核建议
+    ) {
+    }
+
+    private static class PdfTextWriter {
+        private static final float MARGIN = 54;
+        private static final float FONT_SIZE = 10.5f;
+        private static final float TITLE_SIZE = 18f;
+        private static final float HEADING_SIZE = 13f;
+        private static final float LINE_HEIGHT = 17f;
+
+        private final PDDocument document;
+        private final PDFont font;
+        private PDPage page;
+        private PDPageContentStream stream;
+        private float y;
+
+        PdfTextWriter(PDDocument document, PDFont font) throws Exception {
+            this.document = document;
+            this.font = font;
+            newPage();
+        }
+
+        void writeTitle(String text) throws Exception {
+            writeWrapped(text, TITLE_SIZE, 24f);
+            y -= 8;
+        }
+
+        void writeHeading(String text) throws Exception {
+            y -= 4;
+            writeWrapped(text, HEADING_SIZE, 20f);
+        }
+
+        void writeParagraph(String text) throws Exception {
+            for (var paragraph : blank(text).split("\\R", -1)) {
+                writeWrapped(paragraph.isBlank() ? " " : paragraph, FONT_SIZE, LINE_HEIGHT);
+            }
+            y -= 6;
+        }
+
+        void close() throws Exception {
+            if (stream != null) {
+                stream.close();
+            }
+        }
+
+        private void newPage() throws Exception {
+            if (stream != null) {
+                stream.close();
+            }
+            page = new PDPage(PDRectangle.A4);
+            document.addPage(page);
+            stream = new PDPageContentStream(document, page);
+            y = page.getMediaBox().getHeight() - MARGIN;
+        }
+
+        private void writeWrapped(String text, float fontSize, float lineHeight) throws Exception {
+            for (var line : wrap(text, fontSize)) {
+                if (y < MARGIN) {
+                    newPage();
+                }
+                stream.beginText();
+                stream.setFont(font, fontSize);
+                stream.newLineAtOffset(MARGIN, y);
+                stream.showText(line);
+                stream.endText();
+                y -= lineHeight;
+            }
+        }
+
+        private List<String> wrap(String text, float fontSize) throws Exception {
+            var maxWidth = page.getMediaBox().getWidth() - MARGIN * 2;
+            var lines = new java.util.ArrayList<String>();
+            var current = new StringBuilder();
+            for (var token : text.split("(?<=\\s)|(?=\\s)|(?<=[\\u4e00-\\u9fff])|(?=[\\u4e00-\\u9fff])")) {
+                if (token.isEmpty()) {
+                    continue;
+                }
+                var candidate = current + token;
+                if (!current.isEmpty() && textWidth(candidate, fontSize) > maxWidth) {
+                    lines.add(current.toString());
+                    current = new StringBuilder(token.stripLeading());
+                } else {
+                    current.append(token);
+                }
+            }
+            lines.add(current.isEmpty() ? " " : current.toString());
+            return lines;
+        }
+
+        private float textWidth(String text, float fontSize) throws Exception {
+            return font.getStringWidth(text) / 1000f * fontSize;
+        }
+
+        private static String blank(String value) {
+            return value == null || value.isBlank() ? " " : value.strip();
+        }
     }
 }

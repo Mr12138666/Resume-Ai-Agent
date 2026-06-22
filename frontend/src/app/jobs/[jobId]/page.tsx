@@ -149,14 +149,14 @@ export default function JobDetailPage({ params }: { params: Promise<{ jobId: str
           <section className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
             <Card tone="paper">
               <CardHeader eyebrow="JD 原文" title="岗位原文" description="建议粘贴完整职责、任职要求和加分项，以便关键词提取更稳定。" />
-              <pre className="panel-scroll mt-5 max-h-[42rem] overflow-auto whitespace-pre-wrap border border-black bg-[#e5e5e0] p-5 font-mono text-sm leading-7">
+              <pre className="mt-5 whitespace-pre-wrap border border-black bg-[#e5e5e0] p-5 font-mono text-sm leading-7">
                 {job.description}
               </pre>
             </Card>
             <Card tone="ink">
               <CardHeader eyebrow="结构化 JSON" title="岗位结构化结果" description="结构化 JD 会帮助后续分析识别职责、技能和优先级。" />
               {job.structuredJson ? (
-                <pre className="panel-scroll mt-5 max-h-[42rem] overflow-auto whitespace-pre-wrap border border-white/80 bg-white/10 p-5 font-mono text-xs leading-5 text-white">
+                <pre className="mt-5 whitespace-pre-wrap border border-white/80 bg-white/10 p-5 font-mono text-xs leading-5 text-white">
                   {formatJson(job.structuredJson)}
                 </pre>
               ) : (

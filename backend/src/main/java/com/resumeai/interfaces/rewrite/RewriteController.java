@@ -42,4 +42,9 @@ public class RewriteController {
     public ExportRewriteResponse exportMarkdown(@PathVariable UUID rewriteId) {
         return resumeRewriteService.exportMarkdown(rewriteId);
     }
+
+    @PostMapping("/rewrites/{rewriteId}/exports/pdf")
+    public ExportRewriteResponse exportPdf(@PathVariable UUID rewriteId) {
+        return resumeRewriteService.exportPdf(rewriteId);
+    }
 }
