@@ -95,8 +95,14 @@ export default function DashboardPage() {
           <Link className="border-2 border-slate-950 bg-slate-950 px-5 py-3 font-mono text-sm font-bold uppercase tracking-wider text-white shadow-[5px_5px_0_#95a36a]" href="/upload">
             Run workflow
           </Link>
+          <Link className="border-2 border-slate-950 bg-[#f6d875] px-5 py-3 font-mono text-sm font-bold uppercase tracking-wider shadow-[5px_5px_0_#0f172a]" href="/demo">
+            Demo smoke
+          </Link>
           <Link className="border-2 border-slate-950 bg-white px-5 py-3 font-mono text-sm font-bold uppercase tracking-wider shadow-[5px_5px_0_#0f172a]" href="/knowledge">
             Manage RAG
+          </Link>
+          <Link className="border-2 border-slate-950 bg-white px-5 py-3 font-mono text-sm font-bold uppercase tracking-wider shadow-[5px_5px_0_#0f172a]" href="/settings">
+            Settings
           </Link>
         </div>
 

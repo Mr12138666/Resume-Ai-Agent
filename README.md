@@ -32,7 +32,55 @@ The MVP is now runnable as a front/back separated platform:
 - Resume/JD matching with keyword evidence, scores, suggestions, and optional RAG guidance
 - RAG knowledge document creation, indexing, and search with PGvector
 - Agent-style rewrite endpoint using Spring AI tool calling with a safe fallback
-- Frontend pages for dashboard, upload workflow, and RAG workbench
+- Markdown export to MinIO with presigned download URLs
+- Frontend pages for dashboard, upload workflow, object details, demo smoke, settings, and RAG workbench
+
+## Run Locally
+
+Backend:
+
+```powershell
+Get-Content .env | ForEach-Object {
+  if ($_ -match '^\s*#' -or $_ -notmatch '=') { return }
+  $parts = $_.Split('=', 2)
+  [Environment]::SetEnvironmentVariable($parts[0], $parts[1], 'Process')
+}
+$env:SPRING_DOCKER_COMPOSE_ENABLED='false'
+mvn -f backend/pom.xml spring-boot:run
+```
+
+Frontend:
+
+```powershell
+cd frontend
+npm install
+npm run dev
+```
+
+Open `http://localhost:3000`.
+
+## Demo Paths
+
+Real workflow:
+
+1. Open `/upload`.
+2. Upload a PDF/DOCX/TXT resume.
+3. Paste a target JD and create an analysis.
+4. Open the full analysis page.
+5. Create a rewrite draft.
+6. Open the rewrite page and export Markdown.
+
+Fast smoke workflow:
+
+1. Open `/demo`.
+2. Click `Run demo smoke`.
+3. Open generated resume, JD, analysis, and rewrite records.
+4. Download the generated Markdown export.
+
+Configuration visibility:
+
+- `/settings` shows model/provider, RAG, MinIO, Redis, and runtime status without exposing secrets.
+- `/knowledge` manages RAG source documents and vector search.
 
 See:
 

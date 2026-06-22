@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { type FormEvent, useState } from "react";
 import {
   type AnalysisResponse,
@@ -150,6 +151,14 @@ export default function UploadPage() {
         <h1 className="mt-4 max-w-4xl text-4xl font-black md:text-6xl">
           Resume parsing, JD matching, and first-pass optimization signals.
         </h1>
+        <div className="mt-6 flex flex-wrap gap-3">
+          <Link className="border-2 border-slate-950 bg-white px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider shadow-[4px_4px_0_#0f172a]" href="/dashboard">
+            Dashboard
+          </Link>
+          <Link className="border-2 border-slate-950 bg-[#eef4dd] px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider shadow-[4px_4px_0_#0f172a]" href="/knowledge">
+            RAG Workbench
+          </Link>
+        </div>
 
         {error ? (
           <p className="mt-6 border-2 border-red-900 bg-red-50 p-4 text-red-900">{error}</p>
@@ -274,6 +283,12 @@ export default function UploadPage() {
                   <dt className="text-slate-600">Text Length</dt>
                   <dd className="font-bold">{resume.rawTextLength}</dd>
                 </dl>
+                <Link
+                  className="inline-block border-2 border-slate-950 bg-[#eef4dd] px-4 py-2 font-mono text-sm font-bold uppercase tracking-wider shadow-[4px_4px_0_#0f172a]"
+                  href={`/resumes/${resume.id}`}
+                >
+                  Open resume detail
+                </Link>
                 <pre className="max-h-80 overflow-auto whitespace-pre-wrap border-2 border-slate-950 bg-[#f8f5eb] p-4 text-sm leading-6">
                   {resume.rawTextPreview || "No text extracted yet."}
                 </pre>
@@ -307,6 +322,12 @@ export default function UploadPage() {
                         <p className="font-mono text-xs uppercase tracking-widest text-slate-600">Job record</p>
                         <p className="font-bold">{job.title || "Untitled role"}</p>
                       </div>
+                      <Link
+                        className="border-2 border-slate-950 bg-[#f8f5eb] px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider shadow-[4px_4px_0_#0f172a]"
+                        href={`/jobs/${job.id}`}
+                      >
+                        Open JD
+                      </Link>
                       <button
                         className="border-2 border-slate-950 bg-white px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider shadow-[4px_4px_0_#0f172a] disabled:opacity-60"
                         disabled={isStructuringJob}
@@ -337,6 +358,12 @@ export default function UploadPage() {
                     </div>
                   ))}
                 </div>
+                <Link
+                  className="inline-block border-2 border-slate-950 bg-slate-950 px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider text-white shadow-[4px_4px_0_#95a36a]"
+                  href={`/analyses/${analysis.id}`}
+                >
+                  Open full analysis
+                </Link>
 
                 <div>
                   <h3 className="font-mono text-sm font-bold uppercase tracking-widest">Missing keywords</h3>
@@ -407,6 +434,14 @@ export default function UploadPage() {
                       <div className="md:col-span-2">
                         <p className="font-mono text-xs font-bold uppercase tracking-widest">Rationale</p>
                         <p className="mt-2 border-2 border-slate-950 bg-white p-4 text-sm leading-6">{rewrite.rationale}</p>
+                      </div>
+                      <div className="md:col-span-2">
+                        <Link
+                          className="inline-block border-2 border-slate-950 bg-white px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider shadow-[4px_4px_0_#0f172a]"
+                          href={`/rewrites/${rewrite.id}`}
+                        >
+                          Open rewrite and export
+                        </Link>
                       </div>
                     </div>
                   ) : null}
