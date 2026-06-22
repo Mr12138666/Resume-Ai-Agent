@@ -1,8 +1,11 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
+import { AppShell } from "@/components/app-shell";
+import { Button, ButtonLink } from "@/components/ui/button";
+import { Card, CardHeader } from "@/components/ui/card";
 import { type DemoSmokeResponse, runDemoSmoke } from "@/lib/api/client";
+import { formatDateTime } from "@/lib/format";
 
 export default function DemoPage() {
   const [result, setResult] = useState<DemoSmokeResponse | null>(null);
@@ -23,93 +26,67 @@ export default function DemoPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_18%_15%,#dce8c4,transparent_24rem),linear-gradient(135deg,#f8f5eb,#e5ecdf)] px-6 py-10 text-slate-950">
-      <section className="mx-auto max-w-6xl">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <p className="font-mono text-sm uppercase tracking-[0.35em] text-slate-600">演示启动器</p>
-            <h1 className="mt-4 max-w-4xl text-4xl font-black leading-tight md:text-6xl">
-              一键生成完整的简历优化链路。
-            </h1>
+    <AppShell
+      actions={
+        <>
+          <Button disabled={isRunning} onClick={handleRunDemo} tone="gold" type="button">{isRunning ? "运行中" : "运行演示"}</Button>
+          <ButtonLink href="/dashboard" tone="paper">工作台</ButtonLink>
+        </>
+      }
+      description="一键生成演示简历、目标 JD、匹配分析、改写草稿和 Markdown 导出，用于快速验收整条链路。"
+      eyebrow="Demo Runner"
+      title="用一条样例链路检查平台是否真的跑通。"
+    >
+      {error ? <p className="mb-6 border-2 border-[#171713] bg-[#f2b8ad] p-4 font-bold">{error}</p> : null}
+
+      <section className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+        <Card tone="lime">
+          <CardHeader
+            eyebrow="Smoke Test"
+            title="快速演示会做什么"
+            description="后端会创建样例简历和 JD，生成分析报告与改写草稿，并将 Markdown 文件导出到 MinIO。"
+          />
+          <div className="mt-5 grid gap-3">
+            {["创建样例简历", "创建目标 JD", "生成匹配分析", "生成改写草稿", "导出 Markdown"].map((item, index) => (
+              <div className="border-2 border-[#171713] bg-[#fffaf0] p-4" key={item}>
+                <p className="font-mono text-xs font-black text-[#6f746d]">STEP {index + 1}</p>
+                <p className="mt-2 font-black">{item}</p>
+              </div>
+            ))}
           </div>
-          <Link
-            className="border-2 border-slate-950 bg-white px-5 py-3 font-mono text-sm font-bold uppercase tracking-wider shadow-[5px_5px_0_#0f172a]"
-            href="/dashboard"
-          >
-            工作台
-          </Link>
-        </div>
+        </Card>
 
-        <p className="mt-6 max-w-3xl text-lg leading-8 text-slate-700">
-          这里会创建一份演示简历、目标 JD、匹配分析、改写草稿，并在 MinIO 中生成 Markdown 导出文件，适合快速验收和项目展示。
-        </p>
-
-        {error ? (
-          <p className="mt-6 border-2 border-red-900 bg-red-50 p-4 text-red-900">{error}</p>
-        ) : null}
-
-        <section className="mt-8 border-2 border-slate-950 bg-[#eef4dd] p-8 shadow-[8px_8px_0_#95a36a]">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <h2 className="font-mono text-xl font-bold">快速演示</h2>
-              <p className="mt-2 leading-7 text-slate-700">
-                后端会把记录写入 PostgreSQL，将 Markdown 导出到 MinIO，并返回临时下载链接。
-              </p>
-            </div>
-            <button
-              className="border-2 border-slate-950 bg-slate-950 px-6 py-3 font-mono font-bold uppercase tracking-wider text-white shadow-[6px_6px_0_#ffffff] disabled:opacity-60"
-              disabled={isRunning}
-              onClick={handleRunDemo}
-              type="button"
-            >
-              {isRunning ? "运行中..." : "运行快速演示"}
-            </button>
-          </div>
-        </section>
-
-        {result ? (
-          <div className="mt-8 space-y-6">
-            <section className="grid gap-4 md:grid-cols-4">
-              {[
-                ["简历", result.resumeId, `/resumes/${result.resumeId}`],
-                ["岗位", result.jobId, `/jobs/${result.jobId}`],
-                ["分析", result.analysisId, `/analyses/${result.analysisId}`],
-                ["改写", result.rewriteId, `/rewrites/${result.rewriteId}`],
-              ].map(([label, value, href]) => (
-                <Link
-                  className="block border-2 border-slate-950 bg-white p-5 shadow-[5px_5px_0_#0f172a] transition hover:-translate-y-0.5"
-                  href={href}
-                  key={label}
-                >
-                  <p className="font-mono text-xs uppercase tracking-widest text-slate-600">{label}</p>
-                  <p className="mt-3 break-all text-sm font-black">{value}</p>
-                  <p className="mt-3 font-mono text-xs font-bold uppercase tracking-widest">查看详情</p>
-                </Link>
-              ))}
-            </section>
-
-            <section className="border-2 border-slate-950 bg-slate-950 p-6 text-white shadow-[8px_8px_0_#95a36a]">
-              <div className="flex flex-wrap items-start justify-between gap-4">
-                <div>
-                  <h2 className="font-mono text-xl font-bold">Markdown 导出</h2>
-                  <p className="mt-2 break-all text-sm leading-6 text-white/80">{result.export.objectKey}</p>
-                  <p className="mt-2 font-mono text-xs uppercase tracking-widest text-white/70">
-                    过期时间：{new Date(result.export.downloadUrlExpiresAt).toLocaleString()}
-                  </p>
-                </div>
-                <a
-                  className="border-2 border-white bg-white px-5 py-3 font-mono text-sm font-bold uppercase tracking-wider text-slate-950 shadow-[5px_5px_0_#95a36a]"
-                  href={result.export.downloadUrl}
-                  rel="noreferrer"
-                  target="_blank"
-                >
-                  下载 Markdown
+        <Card tone="ink">
+          <CardHeader eyebrow="Result" title={result ? "演示已完成" : "等待运行"} description="运行成功后，可直接打开每个生成实体进行展示。" />
+          {result ? (
+            <div className="mt-5 grid gap-3">
+              <DemoLink href={`/resumes/${result.resumeId}`} label="简历" value={result.resumeId} />
+              <DemoLink href={`/jobs/${result.jobId}`} label="岗位" value={result.jobId} />
+              <DemoLink href={`/analyses/${result.analysisId}`} label="分析" value={result.analysisId} />
+              <DemoLink href={`/rewrites/${result.rewriteId}`} label="改写" value={result.rewriteId} />
+              <div className="border-2 border-white/80 bg-white/10 p-4">
+                <p className="font-mono text-xs font-black uppercase tracking-[0.18em] text-white/70">Markdown</p>
+                <p className="mt-2 break-all text-sm text-white/75">{result.export.objectKey}</p>
+                <p className="mt-2 font-mono text-xs text-white/60">过期：{formatDateTime(result.export.downloadUrlExpiresAt)}</p>
+                <a className="mt-4 inline-flex border-2 border-white bg-white px-4 py-2 font-mono text-xs font-black uppercase tracking-[0.16em] text-[#171713]" href={result.export.downloadUrl} rel="noreferrer" target="_blank">
+                  下载
                 </a>
               </div>
-            </section>
-          </div>
-        ) : null}
+            </div>
+          ) : (
+            <p className="mt-5 border-2 border-white/60 bg-white/10 p-5 text-sm leading-7 text-white/75">点击运行演示后，这里会显示生成的记录和下载链接。</p>
+          )}
+        </Card>
       </section>
-    </main>
+    </AppShell>
+  );
+}
+
+function DemoLink({ href, label, value }: { href: string; label: string; value: string }) {
+  return (
+    <a className="block border-2 border-white/80 bg-white/10 p-4 text-white transition hover:-translate-y-0.5" href={href}>
+      <p className="font-mono text-xs font-black uppercase tracking-[0.18em] text-white/70">{label}</p>
+      <p className="mt-2 break-all text-sm font-black">{value}</p>
+    </a>
   );
 }

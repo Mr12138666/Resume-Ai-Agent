@@ -1,19 +1,26 @@
 "use client";
 
-import Link from "next/link";
-import { type FormEvent, useState } from "react";
+import { type FormEvent, useMemo, useState } from "react";
+import { AppShell } from "@/components/app-shell";
+import { JDResumeComparison, AnalysisPreviewStrip, RewriteDiffPreview } from "@/components/comparison-panels";
+import { EvidenceMatrix, KeywordCloud } from "@/components/keyword-panels";
+import { ScoreRing } from "@/components/score-ring";
+import { Button, ButtonLink } from "@/components/ui/button";
+import { Card, CardHeader } from "@/components/ui/card";
 import {
   type AnalysisResponse,
   type JobDescriptionResponse,
   type ResumeResponse,
   type RewriteDraftResponse,
   createAnalysis,
-  createRewrite,
   createJobDescription,
+  createRewrite,
   structureJob,
   structureResume,
   uploadResume,
 } from "@/lib/api/client";
+import { deriveJobKeywords, uniqueKeywords } from "@/lib/keywords";
+import { formatJson } from "@/lib/format";
 
 export default function UploadPage() {
   const [resumeTitle, setResumeTitle] = useState("");
@@ -33,6 +40,17 @@ export default function UploadPage() {
   const [isStructuringResume, setIsStructuringResume] = useState(false);
   const [isStructuringJob, setIsStructuringJob] = useState(false);
 
+  const comparisonKeywords = useMemo(() => {
+    if (analysis) {
+      return uniqueKeywords([
+        ...analysis.report.extractedKeywords,
+        ...analysis.report.matchedKeywords,
+        ...analysis.report.missingKeywords,
+      ]);
+    }
+    return deriveJobKeywords(jobDescription);
+  }, [analysis, jobDescription]);
+
   async function handleResumeUpload(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!file) {
@@ -48,8 +66,7 @@ export default function UploadPage() {
     setRewrite(null);
 
     try {
-      const uploaded = await uploadResume(file, resumeTitle);
-      setResume(uploaded);
+      setResume(await uploadResume(file, resumeTitle));
     } catch (uploadError) {
       setError(uploadError instanceof Error ? uploadError.message : "简历上传失败。");
     } finally {
@@ -63,29 +80,28 @@ export default function UploadPage() {
       setError("请先上传并解析简历，再创建匹配分析。");
       return;
     }
-    if (!jobDescription.trim()) {
-      setError("请先粘贴目标岗位 JD，再创建匹配分析。");
+    if (jobDescription.trim().length < 30) {
+      setError("请粘贴更完整的目标岗位 JD，至少包含岗位职责和任职要求。");
       return;
     }
 
     setIsAnalyzing(true);
     setError(null);
     setAnalysis(null);
+    setRewrite(null);
 
     try {
-      const job = await createJobDescription({
+      const createdJob = await createJobDescription({
         title: jobTitle,
         company,
         description: jobDescription,
       });
-      setJob(job);
-      const createdAnalysis = await createAnalysis({
+      setJob(createdJob);
+      setAnalysis(await createAnalysis({
         resumeId: resume.id,
-        jobId: job.id,
+        jobId: createdJob.id,
         useRag,
-      });
-      setAnalysis(createdAnalysis);
-      setRewrite(null);
+      }));
     } catch (analysisError) {
       setError(analysisError instanceof Error ? analysisError.message : "匹配分析失败。");
     } finally {
@@ -97,18 +113,18 @@ export default function UploadPage() {
     if (!analysis || !resume) {
       return;
     }
+
     setIsRewriting(true);
     setError(null);
     setRewrite(null);
     try {
-      const createdRewrite = await createRewrite({
+      setRewrite(await createRewrite({
         analysisId: analysis.id,
-        sectionId: "parsed-preview",
+        sectionId: "tailor-preview",
         sectionText: resume.rawTextPreview,
-      });
-      setRewrite(createdRewrite);
+      }));
     } catch (rewriteError) {
-      setError(rewriteError instanceof Error ? rewriteError.message : "简历改写失败。");
+      setError(rewriteError instanceof Error ? rewriteError.message : "智能体改写失败。");
     } finally {
       setIsRewriting(false);
     }
@@ -138,359 +154,255 @@ export default function UploadPage() {
     try {
       setJob(await structureJob(job.id));
     } catch (structureError) {
-      setError(structureError instanceof Error ? structureError.message : "岗位结构化失败。");
+      setError(structureError instanceof Error ? structureError.message : "JD 结构化失败。");
     } finally {
       setIsStructuringJob(false);
     }
   }
 
   return (
-    <main className="min-h-screen bg-[#f8f5eb] px-6 py-10 text-slate-950">
-      <section className="mx-auto max-w-6xl">
-        <p className="font-mono text-sm uppercase tracking-[0.3em] text-slate-600">简历优化流程</p>
-        <h1 className="mt-4 max-w-4xl text-4xl font-black md:text-6xl">
-          上传简历、匹配 JD，并拿到第一轮优化建议。
-        </h1>
-        <div className="mt-6 flex flex-wrap gap-3">
-          <Link className="border-2 border-slate-950 bg-white px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider shadow-[4px_4px_0_#0f172a]" href="/dashboard">
-            工作台
-          </Link>
-          <Link className="border-2 border-slate-950 bg-[#eef4dd] px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider shadow-[4px_4px_0_#0f172a]" href="/knowledge">
-            RAG 知识库
-          </Link>
-        </div>
+    <AppShell
+      actions={
+        <>
+          <ButtonLink href="/dashboard" tone="paper">回到工作台</ButtonLink>
+          <ButtonLink href="/knowledge" tone="lime">RAG 知识库</ButtonLink>
+        </>
+      }
+      description="尽量复现参考项目 Tailor 页面：上传主简历、粘贴目标 JD、选择 RAG、生成预览分析，再通过 diff 风格确认智能体改写。"
+      eyebrow="Tailor Resume"
+      title="为一个目标岗位定制你的简历。"
+    >
+      {error ? <p className="mb-6 border-2 border-[#171713] bg-[#f2b8ad] p-4 font-bold">{error}</p> : null}
 
-        {error ? (
-          <p className="mt-6 border-2 border-red-900 bg-red-50 p-4 text-red-900">{error}</p>
-        ) : null}
+      <section className="mb-6 grid gap-3 md:grid-cols-4">
+        <FlowStep active done={Boolean(resume)} index="01" label="上传主简历" />
+        <FlowStep active={Boolean(resume)} done={Boolean(job)} index="02" label="粘贴目标 JD" />
+        <FlowStep active={Boolean(job)} done={Boolean(analysis)} index="03" label="匹配分析" />
+        <FlowStep active={Boolean(analysis)} done={Boolean(rewrite)} index="04" label="改写预览" />
+      </section>
 
-        {analysis || rewrite ? (
-          <section className="mt-6 border-2 border-slate-950 bg-slate-950 p-5 text-white shadow-[6px_6px_0_#95a36a]">
-            <div className="flex flex-wrap items-center justify-between gap-4">
-              <div>
-                <p className="font-mono text-xs font-bold uppercase tracking-[0.25em] text-white/70">
-                  下一步
-                </p>
-                <h2 className="mt-2 text-2xl font-black">
-                  {rewrite ? "改写草稿已生成，可以检查并导出。" : "匹配分析已生成，可以进入完整报告。"}
-                </h2>
-                <p className="mt-2 max-w-2xl text-sm leading-6 text-white/75">
-                  进入详情页可以查看证据链、继续智能体改写，并导出 Markdown 成果。
-                </p>
-              </div>
-              <div className="flex flex-wrap gap-3">
-                {analysis ? (
-                  <Link
-                    className="border-2 border-white bg-white px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider text-slate-950 shadow-[4px_4px_0_#95a36a]"
-                    href={`/analyses/${analysis.id}`}
-                  >
-                    打开分析报告
-                  </Link>
-                ) : null}
-                {rewrite ? (
-                  <Link
-                    className="border-2 border-white bg-[#f6d875] px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider text-slate-950 shadow-[4px_4px_0_#95a36a]"
-                    href={`/rewrites/${rewrite.id}`}
-                  >
-                    查看并导出
-                  </Link>
-                ) : null}
-              </div>
-            </div>
-          </section>
-        ) : null}
-
-        <div className="mt-8 grid gap-6 lg:grid-cols-2">
-          <form
-            className="border-2 border-slate-950 bg-white p-8 shadow-[8px_8px_0_#0f172a]"
-            onSubmit={handleResumeUpload}
-          >
-            <h2 className="font-mono text-xl font-bold">1. 上传简历</h2>
-            <p className="mt-4 text-slate-700">
-              后端会把原始文件保存到 MinIO，用 Apache Tika 提取文本，并把解析内容写入 PostgreSQL。
-            </p>
-
-            <label className="mt-8 block font-mono text-sm font-bold uppercase tracking-widest">
+      <section className="grid gap-6 lg:grid-cols-[0.92fr_1.08fr]">
+        <Card tone="paper">
+          <CardHeader
+            eyebrow="Master Resume"
+            title="上传或替换主简历"
+            description="支持 PDF、DOCX、TXT。解析后会显示文本预览，也可以进一步调用模型抽取结构化 JSON。"
+          />
+          <form className="mt-6 space-y-5" onSubmit={handleResumeUpload}>
+            <label className="block font-mono text-xs font-black uppercase tracking-[0.18em]">
               简历标题
               <input
-                className="mt-3 w-full border-2 border-slate-950 px-4 py-3 font-serif text-base outline-none focus:bg-[#eef4dd]"
-                placeholder="Java 后端简历"
+                className="mt-2 w-full border-2 border-[#171713] bg-white px-4 py-3 outline-none focus:bg-[#d8e89b]/35"
+                placeholder="Java 后端工程师主简历"
                 value={resumeTitle}
                 onChange={(event) => setResumeTitle(event.target.value)}
               />
             </label>
-
-            <label className="mt-6 block font-mono text-sm font-bold uppercase tracking-widest">
-              简历文件
+            <label className="block cursor-pointer border-2 border-dashed border-[#171713] bg-[#f5f0df] p-6">
+              <span className="font-mono text-xs font-black uppercase tracking-[0.18em]">拖放/选择文件</span>
+              <span className="mt-3 block text-sm leading-6 text-[#424036]">{file ? `${file.name} · ${Math.ceil(file.size / 1024)} KB` : "选择一份原始简历，建议小于 25MB。"}</span>
               <input
                 accept=".pdf,.doc,.docx,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                className="mt-3 w-full border-2 border-dashed border-slate-950 bg-[#f8f5eb] px-4 py-6"
+                className="sr-only"
                 type="file"
                 onChange={(event) => setFile(event.target.files?.[0] ?? null)}
               />
             </label>
-
-            <button
-              className="mt-8 border-2 border-slate-950 bg-slate-950 px-6 py-3 font-mono font-bold uppercase tracking-wider text-white shadow-[6px_6px_0_#95a36a] disabled:cursor-not-allowed disabled:opacity-60"
-              disabled={isUploading}
-              type="submit"
-            >
-              {isUploading ? "解析中..." : "上传并解析"}
-            </button>
+            <div className="flex flex-wrap gap-3">
+              <Button disabled={isUploading} tone="ink" type="submit">
+                {isUploading ? "解析中" : "上传并解析"}
+              </Button>
+              {resume ? (
+                <>
+                  <Button disabled={isStructuringResume} onClick={handleStructureResume} tone="paper" type="button">
+                    {isStructuringResume ? "结构化中" : "结构化简历"}
+                  </Button>
+                  <ButtonLink href={`/resumes/${resume.id}`} tone="lime">详情</ButtonLink>
+                </>
+              ) : null}
+            </div>
           </form>
 
-          <form
-            className="border-2 border-slate-950 bg-[#eef4dd] p-8 shadow-[8px_8px_0_#95a36a]"
-            onSubmit={handleAnalysis}
-          >
-            <h2 className="font-mono text-xl font-bold">2. 粘贴目标 JD</h2>
-            <p className="mt-4 text-slate-700">
-              系统会创建岗位记录，并基于解析后的简历生成透明的关键词与证据匹配结果。
+          <div className="mt-6 border-2 border-[#171713] bg-[#f5f0df] p-4">
+            <p className="font-mono text-xs font-black uppercase tracking-[0.18em] text-[#6f746d]">解析预览</p>
+            <p className="mt-3 max-h-72 overflow-auto whitespace-pre-wrap text-sm leading-7 text-[#424036] panel-scroll">
+              {resume?.rawTextPreview || "上传后这里会显示简历文本。"}
             </p>
+          </div>
+          {resume?.structuredJson ? (
+            <pre className="panel-scroll mt-4 max-h-72 overflow-auto whitespace-pre-wrap border-2 border-[#171713] bg-[#171713] p-4 text-xs leading-5 text-white">
+              {formatJson(resume.structuredJson)}
+            </pre>
+          ) : null}
+        </Card>
 
-            <div className="mt-8 grid gap-4 md:grid-cols-2">
-              <label className="block font-mono text-sm font-bold uppercase tracking-widest">
+        <Card tone="lime">
+          <CardHeader
+            eyebrow="Job Description"
+            title="粘贴目标岗位"
+            description="这里相当于参考项目的 Tailor 输入区，提交后会创建岗位记录并生成匹配报告。"
+          />
+          <form className="mt-6 space-y-5" onSubmit={handleAnalysis}>
+            <div className="grid gap-4 md:grid-cols-2">
+              <label className="block font-mono text-xs font-black uppercase tracking-[0.18em]">
                 岗位名称
                 <input
-                  className="mt-3 w-full border-2 border-slate-950 px-4 py-3 font-serif text-base outline-none focus:bg-white"
-                  placeholder="Java 后端工程师"
+                  className="mt-2 w-full border-2 border-[#171713] bg-white px-4 py-3 outline-none focus:bg-[#fffaf0]"
+                  placeholder="高级 Java / AI 后端工程师"
                   value={jobTitle}
                   onChange={(event) => setJobTitle(event.target.value)}
                 />
               </label>
-              <label className="block font-mono text-sm font-bold uppercase tracking-widest">
+              <label className="block font-mono text-xs font-black uppercase tracking-[0.18em]">
                 公司
                 <input
-                  className="mt-3 w-full border-2 border-slate-950 px-4 py-3 font-serif text-base outline-none focus:bg-white"
+                  className="mt-2 w-full border-2 border-[#171713] bg-white px-4 py-3 outline-none focus:bg-[#fffaf0]"
                   placeholder="目标公司"
                   value={company}
                   onChange={(event) => setCompany(event.target.value)}
                 />
               </label>
             </div>
-
-            <label className="mt-6 block font-mono text-sm font-bold uppercase tracking-widest">
-              岗位 JD
+            <label className="block font-mono text-xs font-black uppercase tracking-[0.18em]">
+              JD 原文
               <textarea
-                className="mt-3 min-h-52 w-full border-2 border-slate-950 px-4 py-3 font-serif text-base leading-7 outline-none focus:bg-white"
-                placeholder="在这里粘贴完整 JD..."
+                className="panel-scroll mt-2 min-h-80 w-full resize-y border-2 border-[#171713] bg-white px-4 py-3 text-base leading-7 outline-none focus:bg-[#fffaf0]"
+                placeholder="粘贴岗位职责、任职要求、加分项..."
                 value={jobDescription}
                 onChange={(event) => setJobDescription(event.target.value)}
               />
             </label>
-
-            <label className="mt-6 flex items-start gap-3 border-2 border-slate-950 bg-white/70 p-4">
-              <input
-                checked={useRag}
-                className="mt-1 h-5 w-5 accent-slate-950"
-                onChange={(event) => setUseRag(event.target.checked)}
-                type="checkbox"
-              />
-              <span>
-                <span className="block font-mono text-sm font-bold uppercase tracking-widest">
-                  使用 RAG 建议
-                </span>
-                <span className="mt-1 block text-sm leading-6 text-slate-700">
-                  从知识库检索已索引的简历优化规则，并加入分析建议。
-                </span>
-              </span>
-            </label>
-
-            <button
-              className="mt-8 border-2 border-slate-950 bg-slate-950 px-6 py-3 font-mono font-bold uppercase tracking-wider text-white shadow-[6px_6px_0_#ffffff] disabled:cursor-not-allowed disabled:opacity-60"
-              disabled={isAnalyzing || !resume}
-              type="submit"
-            >
-              {isAnalyzing ? "分析中..." : "创建匹配分析"}
-            </button>
-          </form>
-        </div>
-
-        <div className="mt-8 grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-          <section className="border-2 border-slate-950 bg-white p-8">
-            <h2 className="font-mono text-xl font-bold">简历解析结果</h2>
-            {resume ? (
-              <div className="mt-6 space-y-4">
-                <dl className="grid grid-cols-2 gap-3 font-mono text-sm">
-                  <dt className="text-slate-600">状态</dt>
-                  <dd className="font-bold">{resume.status}</dd>
-                  <dt className="text-slate-600">文件</dt>
-                  <dd className="break-all font-bold">{resume.originalFilename}</dd>
-                  <dt className="text-slate-600">文本长度</dt>
-                  <dd className="font-bold">{resume.rawTextLength}</dd>
-                </dl>
-                <Link
-                  className="inline-block border-2 border-slate-950 bg-[#eef4dd] px-4 py-2 font-mono text-sm font-bold uppercase tracking-wider shadow-[4px_4px_0_#0f172a]"
-                  href={`/resumes/${resume.id}`}
-                >
-                  打开简历详情
-                </Link>
-                <pre className="max-h-80 overflow-auto whitespace-pre-wrap border-2 border-slate-950 bg-[#f8f5eb] p-4 text-sm leading-6">
-                  {resume.rawTextPreview || "暂未提取到文本。"}
-                </pre>
-                <button
-                  className="border-2 border-slate-950 bg-white px-4 py-2 font-mono text-sm font-bold uppercase tracking-wider shadow-[4px_4px_0_#0f172a] disabled:opacity-60"
-                  disabled={isStructuringResume}
-                  onClick={handleStructureResume}
-                  type="button"
-                >
-                  {isStructuringResume ? "结构化中..." : "生成简历 JSON"}
-                </button>
-                {resume.structuredJson ? (
-                  <pre className="max-h-80 overflow-auto whitespace-pre-wrap border-2 border-slate-950 bg-slate-950 p-4 text-xs leading-5 text-white">
-                    {JSON.stringify(JSON.parse(resume.structuredJson), null, 2)}
-                  </pre>
-                ) : null}
-              </div>
-            ) : (
-              <p className="mt-6 leading-7 text-slate-700">上传简历后，这里会显示解析出的文本预览。</p>
-            )}
-          </section>
-
-          <section className="border-2 border-slate-950 bg-white p-8">
-            <h2 className="font-mono text-xl font-bold">匹配分析结果</h2>
-            {analysis ? (
-              <div className="mt-6 space-y-6">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-2 border-[#171713] bg-white/70 p-4">
+              <label className="flex items-center gap-3 font-mono text-xs font-black uppercase tracking-[0.16em]">
+                <input checked={useRag} className="h-5 w-5 accent-[#171713]" onChange={(event) => setUseRag(event.target.checked)} type="checkbox" />
+                使用 RAG 建议
+              </label>
+              <div className="flex flex-wrap gap-3">
+                <Button disabled={isAnalyzing || !resume} tone="ink" type="submit">
+                  {isAnalyzing ? "分析中" : "生成匹配预览"}
+                </Button>
                 {job ? (
-                  <div className="border-2 border-slate-950 bg-[#eef4dd] p-4">
-                    <div className="flex flex-wrap items-center justify-between gap-3">
-                      <div>
-                        <p className="font-mono text-xs uppercase tracking-widest text-slate-600">岗位记录</p>
-                        <p className="font-bold">{job.title || "未命名岗位"}</p>
-                      </div>
-                      <Link
-                        className="border-2 border-slate-950 bg-[#f8f5eb] px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider shadow-[4px_4px_0_#0f172a]"
-                        href={`/jobs/${job.id}`}
-                      >
-                        打开 JD
-                      </Link>
-                      <button
-                        className="border-2 border-slate-950 bg-white px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider shadow-[4px_4px_0_#0f172a] disabled:opacity-60"
-                        disabled={isStructuringJob}
-                        onClick={handleStructureJob}
-                        type="button"
-                      >
-                        {isStructuringJob ? "结构化中..." : "生成 JD JSON"}
-                      </button>
-                    </div>
-                    {job.structuredJson ? (
-                      <pre className="mt-4 max-h-80 overflow-auto whitespace-pre-wrap border-2 border-slate-950 bg-slate-950 p-4 text-xs leading-5 text-white">
-                        {JSON.stringify(JSON.parse(job.structuredJson), null, 2)}
-                      </pre>
-                    ) : null}
-                  </div>
+                  <Button disabled={isStructuringJob} onClick={handleStructureJob} tone="paper" type="button">
+                    {isStructuringJob ? "结构化中" : "结构化 JD"}
+                  </Button>
                 ) : null}
-
-                <div className="grid gap-3 md:grid-cols-4">
-                  {[
-                    ["综合", analysis.overallScore],
-                    ["关键词", analysis.keywordScore],
-                    ["语义", analysis.semanticScore],
-                    ["ATS", analysis.atsScore],
-                  ].map(([label, score]) => (
-                    <div key={label} className="border-2 border-slate-950 bg-[#eef4dd] p-4">
-                      <p className="font-mono text-xs uppercase tracking-widest text-slate-600">{label}</p>
-                      <p className="mt-2 text-3xl font-black">{score}</p>
-                    </div>
-                  ))}
-                </div>
-                <Link
-                  className="inline-block border-2 border-slate-950 bg-slate-950 px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider text-white shadow-[4px_4px_0_#95a36a]"
-                  href={`/analyses/${analysis.id}`}
-                >
-                  打开完整分析
-                </Link>
-
-                <div>
-                  <h3 className="font-mono text-sm font-bold uppercase tracking-widest">缺失关键词</h3>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {analysis.report.missingKeywords.slice(0, 16).map((keyword) => (
-                      <span key={keyword} className="border border-slate-950 bg-red-50 px-2 py-1 font-mono text-xs">
-                        {keyword}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="font-mono text-sm font-bold uppercase tracking-widest">优化建议</h3>
-                  <ul className="mt-3 space-y-2">
-                    {analysis.report.suggestions.map((suggestion) => (
-                      <li key={suggestion} className="border-l-4 border-slate-950 bg-[#f8f5eb] px-4 py-2">
-                        {suggestion}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                <div>
-                  <h3 className="font-mono text-sm font-bold uppercase tracking-widest">RAG 检索建议</h3>
-                  {analysis.report.retrievedGuidance.length > 0 ? (
-                    <ul className="mt-3 space-y-2">
-                      {analysis.report.retrievedGuidance.map((guidance) => (
-                        <li key={guidance} className="border-2 border-slate-950 bg-white px-4 py-3 text-sm leading-6">
-                          {guidance}
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p className="mt-3 text-slate-600">暂未检索到建议。请先在知识库中索引文档以启用 RAG 上下文。</p>
-                  )}
-                </div>
-
-                <div className="border-2 border-slate-950 bg-[#eef4dd] p-4">
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div>
-                      <h3 className="font-mono text-sm font-bold uppercase tracking-widest">智能体改写</h3>
-                      <p className="mt-1 text-sm text-slate-700">使用 DeepSeek、工具调用和 RAG 建议生成忠于事实的改写草稿。</p>
-                    </div>
-                    <button
-                      className="border-2 border-slate-950 bg-slate-950 px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider text-white shadow-[4px_4px_0_#ffffff] disabled:opacity-60"
-                      disabled={isRewriting}
-                      onClick={handleRewrite}
-                      type="button"
-                    >
-                      {isRewriting ? "改写中..." : "智能体改写"}
-                    </button>
-                  </div>
-                  {rewrite ? (
-                    <div className="mt-4 grid gap-4 md:grid-cols-2">
-                      <div>
-                        <p className="font-mono text-xs font-bold uppercase tracking-widest">原文</p>
-                        <pre className="mt-2 max-h-72 overflow-auto whitespace-pre-wrap border-2 border-slate-950 bg-white p-4 text-xs leading-5">
-                          {rewrite.originalText}
-                        </pre>
-                      </div>
-                      <div>
-                        <p className="font-mono text-xs font-bold uppercase tracking-widest">改写后</p>
-                        <pre className="mt-2 max-h-72 overflow-auto whitespace-pre-wrap border-2 border-slate-950 bg-slate-950 p-4 text-xs leading-5 text-white">
-                          {rewrite.rewrittenText}
-                        </pre>
-                      </div>
-                      <div className="md:col-span-2">
-                        <p className="font-mono text-xs font-bold uppercase tracking-widest">改写理由</p>
-                        <p className="mt-2 border-2 border-slate-950 bg-white p-4 text-sm leading-6">{rewrite.rationale}</p>
-                      </div>
-                      <div className="md:col-span-2">
-                        <Link
-                          className="inline-block border-2 border-slate-950 bg-white px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider shadow-[4px_4px_0_#0f172a]"
-                          href={`/rewrites/${rewrite.id}`}
-                        >
-                          打开改写并导出
-                        </Link>
-                      </div>
-                    </div>
-                  ) : null}
-                </div>
               </div>
-            ) : (
-              <p className="mt-6 leading-7 text-slate-700">
-                上传简历并提交 JD 后，这里会显示匹配分数和第一轮优化建议。
-              </p>
-            )}
-          </section>
-        </div>
+            </div>
+          </form>
+          {job?.structuredJson ? (
+            <pre className="panel-scroll mt-4 max-h-72 overflow-auto whitespace-pre-wrap border-2 border-[#171713] bg-[#171713] p-4 text-xs leading-5 text-white">
+              {formatJson(job.structuredJson)}
+            </pre>
+          ) : null}
+        </Card>
       </section>
-    </main>
+
+      <section className="mt-6">
+        <JDResumeComparison
+          jobDescription={jobDescription}
+          keywords={comparisonKeywords}
+          resumeText={resume?.rawTextPreview ?? ""}
+        />
+      </section>
+
+      {analysis ? (
+        <section className="mt-6 grid gap-6 lg:grid-cols-[0.8fr_1.2fr]">
+          <Card tone="paper">
+            <CardHeader
+              action={<ButtonLink href={`/analyses/${analysis.id}`} tone="ink">完整报告</ButtonLink>}
+              eyebrow="Analysis"
+              title="匹配预览已生成"
+              description="这一步对应参考项目里的预览检查：先看分数、缺口、证据，再决定是否生成改写。"
+            />
+            <div className="mt-5">
+              <ScoreRing label="综合匹配" score={analysis.overallScore} />
+            </div>
+            <div className="mt-5">
+              <AnalysisPreviewStrip analysis={analysis} />
+            </div>
+          </Card>
+
+          <Card tone="sky">
+            <CardHeader
+              action={
+                <Button disabled={isRewriting} onClick={handleRewrite} tone="ink" type="button">
+                  {isRewriting ? "改写中" : "生成改写"}
+                </Button>
+              }
+              eyebrow="Keywords"
+              title="关键词覆盖与缺口"
+              description="绿色是简历已有证据，红色是建议补齐或改写时强化的岗位关键词。"
+            />
+            <div className="mt-5 grid gap-5 md:grid-cols-2">
+              <div>
+                <h3 className="mb-3 font-mono text-xs font-black uppercase tracking-[0.18em]">已匹配</h3>
+                <KeywordCloud keywords={analysis.report.matchedKeywords} tone="matched" />
+              </div>
+              <div>
+                <h3 className="mb-3 font-mono text-xs font-black uppercase tracking-[0.18em]">缺失</h3>
+                <KeywordCloud keywords={analysis.report.missingKeywords} tone="missing" />
+              </div>
+            </div>
+          </Card>
+        </section>
+      ) : null}
+
+      {analysis ? (
+        <section className="mt-6 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+          <Card tone="paper">
+            <CardHeader eyebrow="Evidence Map" title="证据映射" description="每个关键词都应该能追溯到简历证据，缺证据时不要硬编经历。" />
+            <div className="mt-5">
+              <EvidenceMatrix evidence={analysis.report.evidenceMap} />
+            </div>
+          </Card>
+          <Card tone="ink">
+            <CardHeader eyebrow="RAG Guidance" title="检索建议" description="来自 PGvector 的简历优化规则会作为模型改写的参考上下文。" />
+            <div className="mt-5 space-y-3">
+              {analysis.report.retrievedGuidance.length > 0 ? (
+                analysis.report.retrievedGuidance.map((guidance) => (
+                  <p className="border-2 border-white/80 bg-white/10 p-4 text-sm leading-6 text-white/80" key={guidance}>{guidance}</p>
+                ))
+              ) : (
+                <p className="border-2 border-white/50 bg-white/10 p-4 text-sm leading-6 text-white/75">本次没有检索到 RAG 建议。可以先去知识库创建并索引规则文档。</p>
+              )}
+            </div>
+          </Card>
+        </section>
+      ) : null}
+
+      {rewrite ? (
+        <section className="mt-6 space-y-6">
+          <RewriteDiffPreview rewrite={rewrite} />
+          <Card tone="lime">
+            <CardHeader
+              action={<ButtonLink href={`/rewrites/${rewrite.id}`} tone="ink">查看并导出</ButtonLink>}
+              eyebrow="Confirm"
+              title="改写草稿已生成"
+              description={rewrite.rationale}
+            />
+          </Card>
+        </section>
+      ) : null}
+    </AppShell>
+  );
+}
+
+function FlowStep({
+  active,
+  done,
+  index,
+  label,
+}: {
+  active: boolean;
+  done: boolean;
+  index: string;
+  label: string;
+}) {
+  return (
+    <article className={`border-2 border-[#171713] p-4 shadow-[5px_5px_0_#171713] ${done ? "bg-[#d8e89b]" : active ? "bg-[#f3cf5c]" : "bg-[#fffaf0]"}`}>
+      <p className="font-mono text-xs font-black uppercase tracking-[0.18em] text-[#6f746d]">{index}</p>
+      <p className="mt-2 text-lg font-black">{label}</p>
+      <p className="mt-2 font-mono text-xs font-black uppercase tracking-[0.14em]">{done ? "完成" : active ? "当前" : "等待"}</p>
+    </article>
   );
 }

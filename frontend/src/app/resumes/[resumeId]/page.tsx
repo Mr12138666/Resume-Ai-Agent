@@ -1,14 +1,13 @@
 "use client";
 
-import Link from "next/link";
 import { use, useEffect, useState } from "react";
+import { AppShell } from "@/components/app-shell";
+import { Button, ButtonLink } from "@/components/ui/button";
+import { Card, CardHeader, MetricCard } from "@/components/ui/card";
 import { type ResumeResponse, getResume, structureResume } from "@/lib/api/client";
+import { formatDate, formatJson } from "@/lib/format";
 
-export default function ResumeDetailPage({
-  params,
-}: {
-  params: Promise<{ resumeId: string }>;
-}) {
+export default function ResumeDetailPage({ params }: { params: Promise<{ resumeId: string }> }) {
   const { resumeId } = use(params);
   const [resume, setResume] = useState<ResumeResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -44,99 +43,64 @@ export default function ResumeDetailPage({
   }
 
   return (
-    <main className="min-h-screen bg-[linear-gradient(135deg,#f8f5eb,#edf3dc_55%,#dfe8df)] px-6 py-10 text-slate-950">
-      <section className="mx-auto max-w-6xl">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <p className="font-mono text-sm uppercase tracking-[0.35em] text-slate-600">简历文件</p>
-            <h1 className="mt-4 max-w-4xl text-4xl font-black leading-tight md:text-6xl">
-              查看解析文本和结构化抽取结果。
-            </h1>
-          </div>
-          <Link
-            className="border-2 border-slate-950 bg-white px-5 py-3 font-mono text-sm font-bold uppercase tracking-wider shadow-[5px_5px_0_#0f172a]"
-            href="/dashboard"
-          >
-            工作台
-          </Link>
-        </div>
+    <AppShell
+      actions={
+        <>
+          <ButtonLink href="/dashboard" tone="paper">工作台</ButtonLink>
+          <ButtonLink href="/upload" tone="gold">用于 Tailor</ButtonLink>
+        </>
+      }
+      description="主简历详情页保留参考项目里的“原始简历底座”概念：解析文本、结构化 JSON、后续定制都从这里出发。"
+      eyebrow="Resume"
+      title={resume?.title ?? "简历详情"}
+    >
+      {error ? <p className="mb-6 border-2 border-[#171713] bg-[#f2b8ad] p-4 font-bold">{error}</p> : null}
+      {isLoading ? <p className="border-2 border-[#171713] bg-[#fffaf0] p-6 font-mono font-black">正在加载简历...</p> : null}
 
-        {error ? (
-          <p className="mt-6 border-2 border-red-900 bg-red-50 p-4 text-red-900">{error}</p>
-        ) : null}
+      {resume ? (
+        <div className="space-y-6">
+          <section className="grid gap-4 md:grid-cols-4">
+            <MetricCard label="状态" value={resume.status} tone="lime" />
+            <MetricCard label="文本长度" value={resume.rawTextLength} tone="paper" />
+            <MetricCard label="创建" value={formatDate(resume.createdAt)} tone="sky" />
+            <MetricCard label="更新" value={formatDate(resume.updatedAt)} tone="gold" />
+          </section>
 
-        {isLoading ? (
-          <p className="mt-8 border-2 border-slate-950 bg-white p-6 font-mono">正在加载简历...</p>
-        ) : null}
+          <Card tone="lime">
+            <CardHeader
+              action={
+                <Button disabled={isStructuring} onClick={handleStructure} tone="ink" type="button">
+                  {isStructuring ? "结构化中" : "生成 Resume JSON"}
+                </Button>
+              }
+              eyebrow="Source File"
+              title={resume.originalFilename}
+              description={`${resume.contentType} · 文件已保存到对象存储，文本已写入数据库。`}
+            />
+          </Card>
 
-        {resume ? (
-          <div className="mt-8 space-y-8">
-            <section className="grid gap-4 md:grid-cols-4">
-              {[
-                ["状态", resume.status],
-                ["文本长度", resume.rawTextLength],
-                ["创建时间", new Date(resume.createdAt).toLocaleDateString()],
-                ["更新时间", new Date(resume.updatedAt).toLocaleDateString()],
-              ].map(([label, value]) => (
-                <article key={label} className="border-2 border-slate-950 bg-white p-5 shadow-[5px_5px_0_#0f172a]">
-                  <p className="font-mono text-xs uppercase tracking-widest text-slate-600">{label}</p>
-                  <p className="mt-3 break-words text-xl font-black">{value}</p>
-                </article>
-              ))}
-            </section>
-
-            <section className="border-2 border-slate-950 bg-[#eef4dd] p-6 shadow-[8px_8px_0_#95a36a]">
-              <div className="flex flex-wrap items-start justify-between gap-4">
-                <div>
-                  <p className="font-mono text-xs uppercase tracking-widest text-slate-600">源文件</p>
-                  <h2 className="mt-2 text-2xl font-black">{resume.title}</h2>
-                  <p className="mt-2 break-all text-sm leading-6 text-slate-700">
-                    {resume.originalFilename} · {resume.contentType}
-                  </p>
-                </div>
-                <button
-                  className="border-2 border-slate-950 bg-slate-950 px-5 py-3 font-mono text-sm font-bold uppercase tracking-wider text-white shadow-[5px_5px_0_#ffffff] disabled:opacity-60"
-                  disabled={isStructuring}
-                  onClick={handleStructure}
-                  type="button"
-                >
-                  {isStructuring ? "结构化中..." : "生成 JSON"}
-                </button>
-              </div>
-            </section>
-
-            <div className="grid gap-6 lg:grid-cols-[1fr_0.9fr]">
-              <section className="border-2 border-slate-950 bg-white p-6 shadow-[8px_8px_0_#0f172a]">
-                <h2 className="font-mono text-xl font-bold">解析文本预览</h2>
-                <pre className="mt-5 max-h-[36rem] overflow-auto whitespace-pre-wrap border-2 border-slate-950 bg-[#f8f5eb] p-5 text-sm leading-6">
-                  {resume.rawTextPreview || "暂无文本预览。"}
+          <section className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
+            <Card tone="paper">
+              <CardHeader eyebrow="Parsed Text" title="解析文本" description="Tika 提取出的正文会作为匹配和改写的基础证据。" />
+              <pre className="panel-scroll mt-5 max-h-[42rem] overflow-auto whitespace-pre-wrap border-2 border-[#171713] bg-[#f5f0df] p-5 text-sm leading-7">
+                {resume.rawTextPreview || "暂无文本预览。"}
+              </pre>
+            </Card>
+            <Card tone="ink">
+              <CardHeader eyebrow="Structured JSON" title="结构化抽取" description="AI 结构化结果会用于更精细的章节识别和后续改写。" />
+              {resume.structuredJson ? (
+                <pre className="panel-scroll mt-5 max-h-[42rem] overflow-auto whitespace-pre-wrap border-2 border-white/80 bg-white/10 p-5 text-xs leading-5 text-white">
+                  {formatJson(resume.structuredJson)}
                 </pre>
-              </section>
-
-              <section className="border-2 border-slate-950 bg-slate-950 p-6 text-white shadow-[8px_8px_0_#95a36a]">
-                <h2 className="font-mono text-xl font-bold">结构化 JSON</h2>
-                {resume.structuredJson ? (
-                  <pre className="mt-5 max-h-[36rem] overflow-auto whitespace-pre-wrap border-2 border-white/80 bg-white/10 p-5 text-xs leading-5">
-                    {formatJson(resume.structuredJson)}
-                  </pre>
-                ) : (
-                  <p className="mt-5 leading-7 text-white/80">
-                    暂无结构化简历 JSON。点击结构化后会调用 AI 结构化网关。
-                  </p>
-                )}
-              </section>
-            </div>
-          </div>
-        ) : null}
-      </section>
-    </main>
+              ) : (
+                <p className="mt-5 border-2 border-white/60 bg-white/10 p-5 text-sm leading-7 text-white/75">
+                  暂无结构化 JSON。点击按钮后会调用中文提示词进行结构化解析。
+                </p>
+              )}
+            </Card>
+          </section>
+        </div>
+      ) : null}
+    </AppShell>
   );
-}
-
-function formatJson(value: string) {
-  try {
-    return JSON.stringify(JSON.parse(value), null, 2);
-  } catch {
-    return value;
-  }
 }

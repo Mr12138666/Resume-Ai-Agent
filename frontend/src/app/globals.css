@@ -1,12 +1,78 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f8f5eb;
-  --foreground: #0f172a;
+  --canvas: #f5f0df;
+  --paper: #fffaf0;
+  --paper-tint: #ebe4cf;
+  --ink: #171713;
+  --ink-soft: #424036;
+  --steel: #6f746d;
+  --lime: #d8e89b;
+  --gold: #f3cf5c;
+  --sky: #b7d8f0;
+  --rose: #f2b8ad;
+  --mint: #cce7cf;
+  --shadow: #171713;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-height: 100%;
+  background: var(--canvas);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  min-height: 100vh;
+  margin: 0;
+  background:
+    radial-gradient(circle at 16% 10%, rgba(216, 232, 155, 0.8), transparent 24rem),
+    radial-gradient(circle at 88% 4%, rgba(183, 216, 240, 0.7), transparent 22rem),
+    linear-gradient(135deg, #f8f3e4 0%, #ede5d0 46%, #dfe8d5 100%);
+  color: var(--ink);
+  font-family: "LXGW WenKai Screen", "Source Han Serif SC", "Noto Serif CJK SC", "Songti SC", Georgia, serif;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+::selection {
+  background: var(--gold);
+  color: var(--ink);
+}
+
+.swiss-grid {
+  background-image:
+    linear-gradient(rgba(23, 23, 19, 0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(23, 23, 19, 0.055) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+.hard-shadow {
+  box-shadow: 8px 8px 0 var(--shadow);
+}
+
+.soft-shadow {
+  box-shadow: 5px 5px 0 var(--shadow);
+}
+
+.panel-scroll {
+  scrollbar-color: var(--ink) transparent;
+  scrollbar-width: thin;
+}
+
+.panel-scroll::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.panel-scroll::-webkit-scrollbar-thumb {
+  background: var(--ink);
+  border: 2px solid var(--paper);
 }

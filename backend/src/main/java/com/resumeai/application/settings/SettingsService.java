@@ -2,6 +2,7 @@ package com.resumeai.application.settings;
 
 import com.resumeai.infrastructure.config.ResumeAiProperties;
 import org.springframework.core.env.Environment;
+import org.springframework.boot.servlet.autoconfigure.MultipartProperties;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -9,10 +10,16 @@ public class SettingsService {
 
     private final ResumeAiProperties properties;
     private final Environment environment;
+    private final MultipartProperties multipartProperties;
 
-    public SettingsService(ResumeAiProperties properties, Environment environment) {
+    public SettingsService(
+            ResumeAiProperties properties,
+            Environment environment,
+            MultipartProperties multipartProperties
+    ) {
         this.properties = properties;
         this.environment = environment;
+        this.multipartProperties = multipartProperties;
     }
 
     public SettingsResponse getSettings() {
@@ -34,6 +41,10 @@ public class SettingsService {
                         properties.redis().host(),
                         properties.redis().port(),
                         hasText(environment.getProperty("spring.data.redis.password"))
+                ),
+                new SettingsResponse.UploadSettings(
+                        multipartProperties.getMaxFileSize().toString(),
+                        multipartProperties.getMaxRequestSize().toString()
                 )
         );
     }

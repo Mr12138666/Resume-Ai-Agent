@@ -1,67 +1,57 @@
-import Link from "next/link";
+import { AppShell } from "@/components/app-shell";
+import { ButtonLink } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 
 export default function HomePage() {
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,#e7f0d2,transparent_28rem),linear-gradient(135deg,#f8f5eb,#dfe8df)] px-6 py-10 text-slate-950">
-      <section className="mx-auto flex max-w-6xl flex-col gap-10">
-        <div className="max-w-3xl">
-          <p className="font-mono text-sm uppercase tracking-[0.35em] text-slate-600">
-            Resume AI Agent
-          </p>
-          <h1 className="mt-6 text-5xl font-black leading-tight tracking-tight md:text-7xl">
-            把简历和岗位描述放到同一张战术地图上。
-          </h1>
-          <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-700">
-            上传原始简历，输入目标 JD，系统将解析文档、匹配岗位要求、发现差距，并用 RAG 与 Agent 工具链生成可信的修改建议和段落改写。
-          </p>
-        </div>
-
-        <div className="grid gap-4 md:grid-cols-3">
-          {[
-            ["结构化解析", "PDF/DOCX/TXT 转结构化 Resume JSON 与 Job Requirement JSON。"],
-            ["RAG 匹配", "PGvector 检索简历优化规则、岗位能力画像和历史上下文。"],
-            ["Agent 改写", "通过工具调用完成解析、检索、评分、改写与事实校验。"],
-          ].map(([title, body]) => (
-            <article key={title} className="border-2 border-slate-950 bg-white/70 p-6 shadow-[8px_8px_0_#0f172a]">
-              <h2 className="font-mono text-xl font-bold">{title}</h2>
-              <p className="mt-4 leading-7 text-slate-700">{body}</p>
-            </article>
-          ))}
-        </div>
-
-        <div className="flex flex-wrap gap-4">
-          <Link
-            className="w-fit border-2 border-slate-950 bg-white px-6 py-3 font-mono font-bold uppercase tracking-wider text-slate-950 shadow-[6px_6px_0_#0f172a]"
-            href="/dashboard"
-          >
-            打开工作台
-          </Link>
-          <Link
-            className="w-fit border-2 border-slate-950 bg-[#f6d875] px-6 py-3 font-mono font-bold uppercase tracking-wider text-slate-950 shadow-[6px_6px_0_#0f172a]"
-            href="/demo"
-          >
-            快速演示
-          </Link>
-          <Link
-            className="w-fit border-2 border-slate-950 bg-slate-950 px-6 py-3 font-mono font-bold uppercase tracking-wider text-white shadow-[6px_6px_0_#95a36a]"
-            href="/upload"
-          >
-            开始优化流程
-          </Link>
-          <Link
-            className="w-fit border-2 border-slate-950 bg-[#eef4dd] px-6 py-3 font-mono font-bold uppercase tracking-wider text-slate-950 shadow-[6px_6px_0_#0f172a]"
-            href="/knowledge"
-          >
-            打开 RAG 知识库
-          </Link>
-          <Link
-            className="w-fit border-2 border-slate-950 bg-white px-6 py-3 font-mono font-bold uppercase tracking-wider text-slate-950 shadow-[6px_6px_0_#0f172a]"
-            href="/settings"
-          >
-            系统配置
-          </Link>
-        </div>
+    <AppShell
+      actions={
+        <>
+          <ButtonLink href="/dashboard" tone="ink">进入工作台</ButtonLink>
+          <ButtonLink href="/upload" tone="gold">开始 Tailor</ButtonLink>
+        </>
+      }
+      description="尽可能复现 Resume-Matcher 的主流程体验：主简历、目标 JD、关键词命中、差异预览、智能体改写与导出，同时接入当前 Spring Boot、PGvector、MinIO、DeepSeek 后端。"
+      eyebrow="Resume AI Agent"
+      title="把简历优化做成一条可追踪的求职作战流水线。"
+    >
+      <section className="grid gap-5 md:grid-cols-3">
+        {[
+          ["主简历底座", "上传 PDF/DOCX/TXT，保存到 MinIO，使用 Tika 解析文本，并可调用模型生成结构化 Resume JSON。"],
+          ["JD 匹配地图", "粘贴目标岗位，提取关键词、职责和能力要求，和简历内容进行证据级对照。"],
+          ["Agent 改写闭环", "结合 RAG 规则、匹配证据和提示词工程生成中文改写草稿，并导出 Markdown。"],
+        ].map(([title, body], index) => (
+          <Card className="min-h-56" key={title} tone={index === 1 ? "gold" : index === 2 ? "lime" : "paper"}>
+            <p className="font-mono text-xs font-black uppercase tracking-[0.22em] text-[#6f746d]">0{index + 1}</p>
+            <h2 className="mt-5 text-3xl font-black leading-tight">{title}</h2>
+            <p className="mt-4 text-sm leading-7 text-[#424036]">{body}</p>
+          </Card>
+        ))}
       </section>
-    </main>
+
+      <section className="mt-8 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+        <Card tone="ink">
+          <p className="font-mono text-xs font-black uppercase tracking-[0.22em] text-white/60">Pipeline</p>
+          <div className="mt-5 grid gap-3 md:grid-cols-4">
+            {["上传简历", "粘贴 JD", "分析证据", "改写导出"].map((step, index) => (
+              <div className="border-2 border-white/80 bg-white/10 p-4" key={step}>
+                <p className="font-mono text-xs text-white/60">STEP {index + 1}</p>
+                <p className="mt-3 text-xl font-black">{step}</p>
+              </div>
+            ))}
+          </div>
+        </Card>
+        <Card tone="sky">
+          <h2 className="text-3xl font-black">不是“帮我润色一下”。</h2>
+          <p className="mt-4 text-sm leading-7 text-[#424036]">
+            平台会把每条建议和岗位要求、简历证据、RAG 规则关联起来，尽量避免虚构经历，适合项目展示和真实求职使用。
+          </p>
+          <div className="mt-5 flex flex-wrap gap-3">
+            <ButtonLink href="/knowledge" tone="paper">管理 RAG</ButtonLink>
+            <ButtonLink href="/settings" tone="paper">检查配置</ButtonLink>
+          </div>
+        </Card>
+      </section>
+    </AppShell>
   );
 }

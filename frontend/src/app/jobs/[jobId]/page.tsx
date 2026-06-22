@@ -1,7 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { use, useEffect, useState } from "react";
+import { AppShell } from "@/components/app-shell";
+import { Button, ButtonLink } from "@/components/ui/button";
+import { Card, CardHeader, MetricCard } from "@/components/ui/card";
 import {
   type AnalysisResponse,
   type JobDescriptionResponse,
@@ -11,12 +13,9 @@ import {
   listResumes,
   structureJob,
 } from "@/lib/api/client";
+import { formatDate, formatJson } from "@/lib/format";
 
-export default function JobDetailPage({
-  params,
-}: {
-  params: Promise<{ jobId: string }>;
-}) {
+export default function JobDetailPage({ params }: { params: Promise<{ jobId: string }> }) {
   const { jobId } = use(params);
   const [job, setJob] = useState<JobDescriptionResponse | null>(null);
   const [resumes, setResumes] = useState<ResumeResponse[]>([]);
@@ -32,10 +31,7 @@ export default function JobDetailPage({
     setIsLoading(true);
     setError(null);
     try {
-      const [loadedJob, loadedResumes] = await Promise.all([
-        getJobDescription(jobId),
-        listResumes(),
-      ]);
+      const [loadedJob, loadedResumes] = await Promise.all([getJobDescription(jobId), listResumes()]);
       setJob(loadedJob);
       setResumes(loadedResumes);
       setSelectedResumeId((current) => current || loadedResumes[0]?.id || "");
@@ -67,16 +63,11 @@ export default function JobDetailPage({
       setError("请先选择一份简历，再创建匹配分析。");
       return;
     }
-
     setIsAnalyzing(true);
     setError(null);
     setCreatedAnalysis(null);
     try {
-      setCreatedAnalysis(await createAnalysis({
-        resumeId: selectedResumeId,
-        jobId,
-        useRag,
-      }));
+      setCreatedAnalysis(await createAnalysis({ resumeId: selectedResumeId, jobId, useRag }));
     } catch (analysisError) {
       setError(analysisError instanceof Error ? analysisError.message : "匹配分析创建失败。");
     } finally {
@@ -85,154 +76,96 @@ export default function JobDetailPage({
   }
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,#dce8c4,transparent_24rem),linear-gradient(135deg,#f8f5eb,#e7eee0)] px-6 py-10 text-slate-950">
-      <section className="mx-auto max-w-6xl">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <p className="font-mono text-sm uppercase tracking-[0.35em] text-slate-600">目标岗位</p>
-            <h1 className="mt-4 max-w-4xl text-4xl font-black leading-tight md:text-6xl">
-              查看岗位要求、结构化结果，并发起简历匹配。
-            </h1>
-          </div>
-          <Link
-            className="border-2 border-slate-950 bg-white px-5 py-3 font-mono text-sm font-bold uppercase tracking-wider shadow-[5px_5px_0_#0f172a]"
-            href="/dashboard"
-          >
-            工作台
-          </Link>
-        </div>
+    <AppShell
+      actions={
+        <>
+          <ButtonLink href="/dashboard" tone="paper">工作台</ButtonLink>
+          <ButtonLink href="/upload" tone="gold">新建 Tailor</ButtonLink>
+        </>
+      }
+      description="岗位详情页用于查看 JD 原文、生成结构化 Job Requirement JSON，并快速选择简历创建匹配报告。"
+      eyebrow="Job Description"
+      title={job?.title || "目标岗位"}
+    >
+      {error ? <p className="mb-6 border-2 border-[#171713] bg-[#f2b8ad] p-4 font-bold">{error}</p> : null}
+      {isLoading ? <p className="border-2 border-[#171713] bg-[#fffaf0] p-6 font-mono font-black">正在加载岗位...</p> : null}
 
-        {error ? (
-          <p className="mt-6 border-2 border-red-900 bg-red-50 p-4 text-red-900">{error}</p>
-        ) : null}
+      {job ? (
+        <div className="space-y-6">
+          <section className="grid gap-4 md:grid-cols-4">
+            <MetricCard label="状态" value={job.status} tone="lime" />
+            <MetricCard label="公司" value={job.company || "未知"} tone="paper" />
+            <MetricCard label="创建" value={formatDate(job.createdAt)} tone="sky" />
+            <MetricCard label="更新" value={formatDate(job.updatedAt)} tone="gold" />
+          </section>
 
-        {isLoading ? (
-          <p className="mt-8 border-2 border-slate-950 bg-white p-6 font-mono">正在加载岗位...</p>
-        ) : null}
-
-        {job ? (
-          <div className="mt-8 space-y-8">
-            <section className="grid gap-4 md:grid-cols-4">
-              {[
-                ["状态", job.status],
-                ["公司", job.company || "未知"],
-                ["创建时间", new Date(job.createdAt).toLocaleDateString()],
-                ["更新时间", new Date(job.updatedAt).toLocaleDateString()],
-              ].map(([label, value]) => (
-                <article key={label} className="border-2 border-slate-950 bg-white p-5 shadow-[5px_5px_0_#0f172a]">
-                  <p className="font-mono text-xs uppercase tracking-widest text-slate-600">{label}</p>
-                  <p className="mt-3 break-words text-xl font-black">{value}</p>
-                </article>
-              ))}
-            </section>
-
-            <section className="border-2 border-slate-950 bg-[#eef4dd] p-6 shadow-[8px_8px_0_#95a36a]">
-              <div className="flex flex-wrap items-start justify-between gap-4">
-                <div>
-                  <p className="font-mono text-xs uppercase tracking-widest text-slate-600">岗位</p>
-                  <h2 className="mt-2 text-2xl font-black">{job.title || "未命名岗位"}</h2>
-                  <p className="mt-2 text-sm leading-6 text-slate-700">
-                    如果需要查看可追溯的岗位要求 JSON，可以先对 JD 做结构化。
-                  </p>
-                </div>
-                <button
-                  className="border-2 border-slate-950 bg-slate-950 px-5 py-3 font-mono text-sm font-bold uppercase tracking-wider text-white shadow-[5px_5px_0_#ffffff] disabled:opacity-60"
-                  disabled={isStructuring}
-                  onClick={handleStructure}
-                  type="button"
+          <Card tone="lime">
+            <CardHeader
+              action={
+                <Button disabled={isStructuring} onClick={handleStructure} tone="ink" type="button">
+                  {isStructuring ? "结构化中" : "生成 JD JSON"}
+                </Button>
+              }
+              eyebrow="Create Analysis"
+              title="基于该 JD 创建匹配分析"
+              description="这条支线保留参考项目从岗位进入定制流程的能力。"
+            />
+            <div className="mt-5 grid gap-4 md:grid-cols-[1fr_auto]">
+              <label className="block font-mono text-xs font-black uppercase tracking-[0.18em]">
+                选择简历
+                <select
+                  className="mt-2 w-full border-2 border-[#171713] bg-white px-4 py-3 outline-none focus:bg-[#fffaf0]"
+                  value={selectedResumeId}
+                  onChange={(event) => setSelectedResumeId(event.target.value)}
                 >
-                  {isStructuring ? "结构化中..." : "生成 JSON"}
-                </button>
-              </div>
-            </section>
-
-            <section className="border-2 border-slate-950 bg-white p-6 shadow-[8px_8px_0_#0f172a]">
-              <h2 className="font-mono text-xl font-bold">基于该 JD 创建匹配分析</h2>
-              <div className="mt-5 grid gap-4 md:grid-cols-[1fr_auto]">
-                <label className="block font-mono text-sm font-bold uppercase tracking-widest">
-                  简历
-                  <select
-                    className="mt-3 w-full border-2 border-slate-950 bg-white px-4 py-3 font-serif text-base outline-none focus:bg-[#eef4dd]"
-                    value={selectedResumeId}
-                    onChange={(event) => setSelectedResumeId(event.target.value)}
-                  >
-                    {resumes.length > 0 ? (
-                      resumes.map((resume) => (
-                        <option key={resume.id} value={resume.id}>
-                          {resume.title} · {resume.status}
-                        </option>
-                      ))
-                    ) : (
-                      <option value="">暂无可用简历</option>
-                    )}
-                  </select>
+                  {resumes.length > 0 ? (
+                    resumes.map((resume) => (
+                      <option key={resume.id} value={resume.id}>{resume.title} · {resume.status}</option>
+                    ))
+                  ) : (
+                    <option value="">暂无简历</option>
+                  )}
+                </select>
+              </label>
+              <div className="flex flex-col justify-end gap-3">
+                <label className="flex items-center gap-2 font-mono text-xs font-black uppercase tracking-[0.16em]">
+                  <input checked={useRag} className="h-4 w-4 accent-[#171713]" onChange={(event) => setUseRag(event.target.checked)} type="checkbox" />
+                  使用 RAG
                 </label>
-                <div className="flex flex-col justify-end gap-3">
-                  <label className="flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-widest">
-                    <input
-                      checked={useRag}
-                      className="h-4 w-4 accent-slate-950"
-                      onChange={(event) => setUseRag(event.target.checked)}
-                      type="checkbox"
-                    />
-                    使用 RAG
-                  </label>
-                  <button
-                    className="border-2 border-slate-950 bg-slate-950 px-5 py-3 font-mono text-sm font-bold uppercase tracking-wider text-white shadow-[5px_5px_0_#95a36a] disabled:opacity-60"
-                    disabled={isAnalyzing || !selectedResumeId}
-                    onClick={handleCreateAnalysis}
-                    type="button"
-                  >
-                    {isAnalyzing ? "分析中..." : "创建分析"}
-                  </button>
-                </div>
+                <Button disabled={isAnalyzing || !selectedResumeId} onClick={handleCreateAnalysis} tone="ink" type="button">
+                  {isAnalyzing ? "分析中" : "创建分析"}
+                </Button>
               </div>
-              {createdAnalysis ? (
-                <div className="mt-5 border-2 border-slate-950 bg-[#f8f5eb] p-5">
-                  <p className="font-mono text-xs uppercase tracking-widest text-slate-600">分析已创建</p>
-                  <p className="mt-2 text-xl font-black">综合得分 {createdAnalysis.overallScore}</p>
-                  <Link
-                    className="mt-4 inline-block border-2 border-slate-950 bg-white px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider shadow-[4px_4px_0_#0f172a]"
-                    href={`/analyses/${createdAnalysis.id}`}
-                  >
-                    打开分析报告
-                  </Link>
-                </div>
-              ) : null}
-            </section>
-
-            <div className="grid gap-6 lg:grid-cols-[1fr_0.9fr]">
-              <section className="border-2 border-slate-950 bg-white p-6 shadow-[8px_8px_0_#0f172a]">
-                <h2 className="font-mono text-xl font-bold">岗位 JD</h2>
-                <pre className="mt-5 max-h-[36rem] overflow-auto whitespace-pre-wrap border-2 border-slate-950 bg-[#f8f5eb] p-5 text-sm leading-6">
-                  {job.description}
-                </pre>
-              </section>
-
-              <section className="border-2 border-slate-950 bg-slate-950 p-6 text-white shadow-[8px_8px_0_#95a36a]">
-                <h2 className="font-mono text-xl font-bold">结构化 JSON</h2>
-                {job.structuredJson ? (
-                  <pre className="mt-5 max-h-[36rem] overflow-auto whitespace-pre-wrap border-2 border-white/80 bg-white/10 p-5 text-xs leading-5">
-                    {formatJson(job.structuredJson)}
-                  </pre>
-                ) : (
-                  <p className="mt-5 leading-7 text-white/80">
-                    暂无结构化 JD JSON。点击结构化后即可查看解析出的岗位要求。
-                  </p>
-                )}
-              </section>
             </div>
-          </div>
-        ) : null}
-      </section>
-    </main>
-  );
-}
+            {createdAnalysis ? (
+              <div className="mt-5 border-2 border-[#171713] bg-[#fffaf0] p-5">
+                <p className="font-mono text-xs font-black uppercase tracking-[0.18em] text-[#6f746d]">分析已创建</p>
+                <p className="mt-2 text-3xl font-black">综合得分 {createdAnalysis.overallScore}</p>
+                <ButtonLink className="mt-4" href={`/analyses/${createdAnalysis.id}`} tone="ink">打开报告</ButtonLink>
+              </div>
+            ) : null}
+          </Card>
 
-function formatJson(value: string) {
-  try {
-    return JSON.stringify(JSON.parse(value), null, 2);
-  } catch {
-    return value;
-  }
+          <section className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
+            <Card tone="paper">
+              <CardHeader eyebrow="JD Text" title="岗位原文" description="建议粘贴完整职责、任职要求和加分项，以便关键词提取更稳定。" />
+              <pre className="panel-scroll mt-5 max-h-[42rem] overflow-auto whitespace-pre-wrap border-2 border-[#171713] bg-[#f5f0df] p-5 text-sm leading-7">
+                {job.description}
+              </pre>
+            </Card>
+            <Card tone="ink">
+              <CardHeader eyebrow="Structured JSON" title="岗位结构化结果" description="结构化 JD 会帮助后续分析识别职责、技能和优先级。" />
+              {job.structuredJson ? (
+                <pre className="panel-scroll mt-5 max-h-[42rem] overflow-auto whitespace-pre-wrap border-2 border-white/80 bg-white/10 p-5 text-xs leading-5 text-white">
+                  {formatJson(job.structuredJson)}
+                </pre>
+              ) : (
+                <p className="mt-5 border-2 border-white/60 bg-white/10 p-5 text-sm leading-7 text-white/75">暂无结构化 JSON。点击按钮后调用中文 JD 解析提示词。</p>
+              )}
+            </Card>
+          </section>
+        </div>
+      ) : null}
+    </AppShell>
+  );
 }

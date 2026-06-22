@@ -1,19 +1,19 @@
 "use client";
 
-import Link from "next/link";
 import { use, useEffect, useState } from "react";
+import { AppShell } from "@/components/app-shell";
+import { RewriteDiffPreview } from "@/components/comparison-panels";
+import { Button, ButtonLink } from "@/components/ui/button";
+import { Card, CardHeader, MetricCard } from "@/components/ui/card";
 import {
   type ExportRewriteResponse,
   type RewriteDraftResponse,
   exportRewriteMarkdown,
   getRewrite,
 } from "@/lib/api/client";
+import { formatDate, formatDateTime, formatJson } from "@/lib/format";
 
-export default function RewriteDetailPage({
-  params,
-}: {
-  params: Promise<{ rewriteId: string }>;
-}) {
+export default function RewriteDetailPage({ params }: { params: Promise<{ rewriteId: string }> }) {
   const { rewriteId } = use(params);
   const [rewrite, setRewrite] = useState<RewriteDraftResponse | null>(null);
   const [exportResult, setExportResult] = useState<ExportRewriteResponse | null>(null);
@@ -51,136 +51,86 @@ export default function RewriteDetailPage({
   }
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top_right,#dce8c4,transparent_24rem),linear-gradient(135deg,#f8f5eb,#e7eee0)] px-6 py-10 text-slate-950">
-      <section className="mx-auto max-w-6xl">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <p className="font-mono text-sm uppercase tracking-[0.35em] text-slate-600">改写草稿</p>
-            <h1 className="mt-4 max-w-4xl text-4xl font-black leading-tight md:text-6xl">
-              对照原文，检查事实，再导出可用版本。
-            </h1>
-          </div>
-          <Link
-            className="border-2 border-slate-950 bg-white px-5 py-3 font-mono text-sm font-bold uppercase tracking-wider shadow-[5px_5px_0_#0f172a]"
-            href="/dashboard"
-          >
-            工作台
-          </Link>
-        </div>
+    <AppShell
+      actions={
+        <>
+          <ButtonLink href="/dashboard" tone="paper">工作台</ButtonLink>
+          {rewrite ? <ButtonLink href={`/analyses/${rewrite.analysisId}`} tone="gold">返回分析</ButtonLink> : null}
+        </>
+      }
+      description="参考项目里的 diff preview 是确认改写质量的关键。这里把原文、改写、理由、事实校验和 Markdown 导出放在同一页。"
+      eyebrow="Rewrite Draft"
+      title="先看差异，再决定是否导出。"
+    >
+      {error ? <p className="mb-6 border-2 border-[#171713] bg-[#f2b8ad] p-4 font-bold">{error}</p> : null}
+      {isLoading ? <p className="border-2 border-[#171713] bg-[#fffaf0] p-6 font-mono font-black">正在加载改写草稿...</p> : null}
 
-        {error ? (
-          <p className="mt-6 border-2 border-red-900 bg-red-50 p-4 text-red-900">{error}</p>
-        ) : null}
+      {rewrite ? (
+        <div className="space-y-6">
+          <section className="grid gap-4 md:grid-cols-4">
+            <MetricCard label="状态" value={rewrite.status} tone="paper" />
+            <MetricCard label="段落" value={rewrite.sectionId || "默认"} tone="sky" />
+            <MetricCard label="创建" value={formatDate(rewrite.createdAt)} tone="lime" />
+            <MetricCard label="更新" value={formatDate(rewrite.updatedAt)} tone="gold" />
+          </section>
 
-        {isLoading ? (
-          <p className="mt-8 border-2 border-slate-950 bg-white p-6 font-mono">正在加载改写草稿...</p>
-        ) : null}
-
-        {rewrite ? (
-          <div className="mt-8 space-y-8">
-            <section className="grid gap-4 md:grid-cols-4">
-              {[
-                ["状态", rewrite.status],
-                ["段落", rewrite.sectionId || "默认"],
-                ["创建时间", new Date(rewrite.createdAt).toLocaleDateString()],
-                ["更新时间", new Date(rewrite.updatedAt).toLocaleDateString()],
-              ].map(([label, value]) => (
-                <article key={label} className="border-2 border-slate-950 bg-white p-5 shadow-[5px_5px_0_#0f172a]">
-                  <p className="font-mono text-xs uppercase tracking-widest text-slate-600">{label}</p>
-                  <p className="mt-3 break-words text-xl font-black">{value}</p>
-                </article>
-              ))}
-            </section>
-
-            <section className="border-2 border-slate-950 bg-[#eef4dd] p-6 shadow-[8px_8px_0_#95a36a]">
-              <div className="flex flex-wrap items-start justify-between gap-4">
-                <div>
-                  <h2 className="font-mono text-xl font-bold">导出文件</h2>
-                  <p className="mt-2 max-w-2xl leading-7 text-slate-700">
-                    将优化后的段落保存为 MinIO 中的 Markdown 文件，后续可用于下载链接或导出记录。
-                  </p>
+          <Card tone="lime">
+            <CardHeader
+              action={
+                <Button disabled={isExporting} onClick={handleExportMarkdown} tone="ink" type="button">
+                  {isExporting ? "导出中" : "导出 Markdown"}
+                </Button>
+              }
+              eyebrow="Export"
+              title="导出优化段落"
+              description="导出会写入 MinIO，并返回一个临时下载链接。"
+            />
+            {exportResult ? (
+              <div className="mt-5 grid gap-3 border-2 border-[#171713] bg-[#fffaf0] p-5 font-mono text-sm md:grid-cols-2">
+                <Info label="对象 Key" value={exportResult.objectKey} />
+                <Info label="内容类型" value={exportResult.contentType} />
+                <Info label="大小" value={`${exportResult.size} bytes`} />
+                <Info label="导出时间" value={formatDateTime(exportResult.exportedAt)} />
+                <Info label="过期时间" value={formatDateTime(exportResult.downloadUrlExpiresAt)} />
+                <div className="md:col-span-2">
+                  <a
+                    className="inline-flex border-2 border-[#171713] bg-[#171713] px-5 py-3 font-mono text-xs font-black uppercase tracking-[0.16em] text-white shadow-[5px_5px_0_#95a36a]"
+                    href={exportResult.downloadUrl}
+                    rel="noreferrer"
+                    target="_blank"
+                  >
+                    下载 Markdown
+                  </a>
                 </div>
-                <button
-                  className="border-2 border-slate-950 bg-slate-950 px-5 py-3 font-mono text-sm font-bold uppercase tracking-wider text-white shadow-[5px_5px_0_#ffffff] disabled:opacity-60"
-                  disabled={isExporting}
-                  onClick={handleExportMarkdown}
-                  type="button"
-                >
-                  {isExporting ? "导出中..." : "导出 Markdown"}
-                </button>
               </div>
-              {exportResult ? (
-                <dl className="mt-5 grid gap-3 border-2 border-slate-950 bg-white p-5 font-mono text-sm md:grid-cols-2">
-                  <dt className="text-slate-600">对象 Key</dt>
-                  <dd className="break-all font-bold">{exportResult.objectKey}</dd>
-                  <dt className="text-slate-600">内容类型</dt>
-                  <dd className="font-bold">{exportResult.contentType}</dd>
-                  <dt className="text-slate-600">大小</dt>
-                  <dd className="font-bold">{exportResult.size} bytes</dd>
-                  <dt className="text-slate-600">导出时间</dt>
-                  <dd className="font-bold">{new Date(exportResult.exportedAt).toLocaleString()}</dd>
-                  <dt className="text-slate-600">下载过期时间</dt>
-                  <dd className="font-bold">{new Date(exportResult.downloadUrlExpiresAt).toLocaleString()}</dd>
-                  <dt className="text-slate-600 md:col-span-2">下载</dt>
-                  <dd className="md:col-span-2">
-                    <a
-                      className="inline-block border-2 border-slate-950 bg-slate-950 px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider text-white shadow-[4px_4px_0_#95a36a]"
-                      href={exportResult.downloadUrl}
-                      rel="noreferrer"
-                      target="_blank"
-                    >
-                      下载 Markdown
-                    </a>
-                  </dd>
-                </dl>
-              ) : null}
-            </section>
+            ) : null}
+          </Card>
 
-            <section className="grid gap-6 lg:grid-cols-2">
-              <article className="border-2 border-slate-950 bg-white p-6 shadow-[8px_8px_0_#0f172a]">
-                <h2 className="font-mono text-xl font-bold">原文</h2>
-                <pre className="mt-5 max-h-[32rem] overflow-auto whitespace-pre-wrap border-2 border-slate-950 bg-[#f8f5eb] p-5 text-sm leading-6">
-                  {rewrite.originalText}
-                </pre>
-              </article>
-              <article className="border-2 border-slate-950 bg-slate-950 p-6 text-white shadow-[8px_8px_0_#95a36a]">
-                <h2 className="font-mono text-xl font-bold">改写后</h2>
-                <pre className="mt-5 max-h-[32rem] overflow-auto whitespace-pre-wrap border-2 border-white/80 bg-white/10 p-5 text-sm leading-6">
-                  {rewrite.rewrittenText}
-                </pre>
-              </article>
-            </section>
+          <RewriteDiffPreview rewrite={rewrite} />
 
-            <section className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-              <article className="border-2 border-slate-950 bg-[#eef4dd] p-6 shadow-[8px_8px_0_#95a36a]">
-                <h2 className="font-mono text-xl font-bold">改写理由</h2>
-                <p className="mt-5 whitespace-pre-wrap leading-7 text-slate-700">{rewrite.rationale}</p>
-              </article>
-              <article className="border-2 border-slate-950 bg-white p-6 shadow-[8px_8px_0_#0f172a]">
-                <h2 className="font-mono text-xl font-bold">事实校验</h2>
-                <pre className="mt-5 max-h-80 overflow-auto whitespace-pre-wrap border-2 border-slate-950 bg-slate-950 p-4 text-xs leading-5 text-white">
-                  {formatJson(rewrite.verificationJson)}
-                </pre>
-              </article>
-            </section>
-
-            <Link
-              className="inline-block border-2 border-slate-950 bg-white px-5 py-3 font-mono text-sm font-bold uppercase tracking-wider shadow-[5px_5px_0_#0f172a]"
-              href={`/analyses/${rewrite.analysisId}`}
-            >
-              返回分析报告
-            </Link>
-          </div>
-        ) : null}
-      </section>
-    </main>
+          <section className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
+            <Card tone="gold">
+              <CardHeader eyebrow="Rationale" title="改写理由" description="这里解释为什么这样重写，方便人工确认是否符合真实经历。" />
+              <p className="mt-5 whitespace-pre-wrap text-sm leading-7 text-[#424036]">{rewrite.rationale}</p>
+            </Card>
+            <Card tone="ink">
+              <CardHeader eyebrow="Verification" title="事实校验 JSON" description="模型输出应尽量说明是否引入了无法从原文支撑的新事实。" />
+              <pre className="panel-scroll mt-5 max-h-96 overflow-auto whitespace-pre-wrap border-2 border-white/80 bg-white/10 p-4 text-xs leading-5 text-white">
+                {formatJson(rewrite.verificationJson)}
+              </pre>
+            </Card>
+          </section>
+        </div>
+      ) : null}
+    </AppShell>
   );
 }
 
-function formatJson(value: string) {
-  try {
-    return JSON.stringify(JSON.parse(value), null, 2);
-  } catch {
-    return value;
-  }
+function Info({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <p className="text-xs uppercase tracking-[0.16em] text-[#6f746d]">{label}</p>
+      <p className="mt-1 break-all font-black">{value}</p>
+    </div>
+  );
 }

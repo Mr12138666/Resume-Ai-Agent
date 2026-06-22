@@ -4,7 +4,8 @@ public record SettingsResponse(
         AiSettings ai,
         RagSettings rag,
         StorageSettings storage,
-        RedisSettings redis
+        RedisSettings redis,
+        UploadSettings upload
 ) {
     public record AiSettings(
             String provider,
@@ -40,6 +41,12 @@ public record SettingsResponse(
             String host,
             int port,
             boolean passwordConfigured
+    ) {
+    }
+
+    public record UploadSettings(
+            String maxFileSize,
+            String maxRequestSize
     ) {
     }
 }

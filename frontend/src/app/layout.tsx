@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "简历优化智能体",
-  description: "面向求职者的 AI 简历优化平台。",
+  title: "Resume AI Agent | 简历优化智能平台",
+  description: "上传简历和目标 JD，完成结构化解析、RAG 匹配、证据分析与智能体改写。",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

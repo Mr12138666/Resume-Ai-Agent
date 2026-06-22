@@ -141,6 +141,10 @@ export type SettingsResponse = {
     port: number;
     passwordConfigured: boolean;
   };
+  upload: {
+    maxFileSize: string;
+    maxRequestSize: string;
+  };
 };
 
 export async function apiGet<T>(path: string): Promise<T> {
@@ -206,7 +210,7 @@ export async function exportRewriteMarkdown(rewriteId: string): Promise<ExportRe
   });
 
   if (!response.ok) {
-    throw new Error(`Rewrite export failed: ${response.status}`);
+    throw new Error(`改写导出失败：${response.status}`);
   }
 
   return response.json() as Promise<ExportRewriteResponse>;
@@ -221,7 +225,7 @@ export async function runDemoSmoke(): Promise<DemoSmokeResponse> {
   });
 
   if (!response.ok) {
-    throw new Error(`Demo smoke run failed: ${response.status}`);
+    throw new Error(`快速演示运行失败：${response.status}`);
   }
 
   return response.json() as Promise<DemoSmokeResponse>;
@@ -240,7 +244,7 @@ export async function uploadResume(file: File, title?: string): Promise<ResumeRe
   });
 
   if (!response.ok) {
-    const fallback = `Resume upload failed: ${response.status}`;
+    const fallback = `简历上传失败：${response.status}`;
     try {
       const error = (await response.json()) as { message?: string };
       throw new Error(error.message ?? fallback);
@@ -270,7 +274,7 @@ export async function createJobDescription(input: {
   });
 
   if (!response.ok) {
-    throw new Error(`Job description creation failed: ${response.status}`);
+    throw new Error(`岗位描述创建失败：${response.status}`);
   }
 
   return response.json() as Promise<JobDescriptionResponse>;
@@ -299,7 +303,7 @@ export async function createAnalysis(input: {
   });
 
   if (!response.ok) {
-    throw new Error(`Analysis creation failed: ${response.status}`);
+    throw new Error(`匹配分析创建失败：${response.status}`);
   }
 
   return response.json() as Promise<AnalysisResponse>;
@@ -314,7 +318,7 @@ export async function structureResume(resumeId: string): Promise<ResumeResponse>
   });
 
   if (!response.ok) {
-    throw new Error(`Resume structuring failed: ${response.status}`);
+    throw new Error(`简历结构化失败：${response.status}`);
   }
 
   return response.json() as Promise<ResumeResponse>;
@@ -329,7 +333,7 @@ export async function structureJob(jobId: string): Promise<JobDescriptionRespons
   });
 
   if (!response.ok) {
-    throw new Error(`Job structuring failed: ${response.status}`);
+    throw new Error(`岗位结构化失败：${response.status}`);
   }
 
   return response.json() as Promise<JobDescriptionResponse>;
@@ -353,7 +357,7 @@ export async function createRewrite(input: {
   });
 
   if (!response.ok) {
-    throw new Error(`Rewrite creation failed: ${response.status}`);
+    throw new Error(`改写草稿创建失败：${response.status}`);
   }
 
   return response.json() as Promise<RewriteDraftResponse>;
@@ -379,7 +383,7 @@ export async function createKnowledgeDocument(input: {
   });
 
   if (!response.ok) {
-    throw new Error(`Knowledge document creation failed: ${response.status}`);
+    throw new Error(`知识文档创建失败：${response.status}`);
   }
 
   return response.json() as Promise<KnowledgeDocumentResponse>;
@@ -394,7 +398,7 @@ export async function indexKnowledgeDocument(documentId: string): Promise<Knowle
   });
 
   if (!response.ok) {
-    throw new Error(`Knowledge indexing failed: ${response.status}`);
+    throw new Error(`知识文档索引失败：${response.status}`);
   }
 
   return response.json() as Promise<KnowledgeDocumentResponse>;
@@ -414,7 +418,7 @@ export async function searchKnowledge(input: {
   });
 
   if (!response.ok) {
-    throw new Error(`Knowledge search failed: ${response.status}`);
+    throw new Error(`知识检索失败：${response.status}`);
   }
 
   return response.json() as Promise<KnowledgeSearchResult[]>;
