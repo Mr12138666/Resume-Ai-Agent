@@ -12,6 +12,7 @@ Resume-Ai-Agent/
   frontend/    # Web app workspace
   deploy/      # Local infrastructure and deployment assets
   docs/        # Architecture, stack, API, and roadmap documents
+  samples/     # Demo resume, JD, and RAG knowledge inputs
   参考/        # Upstream reference project copied by the user
 ```
 
@@ -58,8 +59,8 @@ The backend script loads root `.env` values into the current process only and do
 Real workflow:
 
 1. Open `/upload`.
-2. Upload a PDF/DOCX/TXT resume.
-3. Paste a target JD and create an analysis.
+2. Upload `samples/resumes/java-backend-resume.txt`.
+3. Paste `samples/jobs/senior-java-ai-backend-jd.txt` and create an analysis.
 4. Open the full analysis page.
 5. Create a rewrite draft.
 6. Open the rewrite page and export Markdown.
@@ -75,6 +76,7 @@ Configuration visibility:
 
 - `/settings` shows model/provider, RAG, MinIO, Redis, and runtime status without exposing secrets.
 - `/knowledge` manages RAG source documents and vector search.
+- [Demo Script](docs/demo-script.md) gives a complete presentation flow using the sample files.
 
 See:
 

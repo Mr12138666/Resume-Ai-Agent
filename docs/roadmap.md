@@ -168,3 +168,9 @@ Deliverables:
 - Testcontainers integration tests
 - Frontend smoke tests
 - Demo script
+
+Current progress:
+
+- Sample resume, JD, and RAG guidance live under `samples/`.
+- Built-in seed knowledge documents are created on backend startup.
+- `docs/demo-script.md` documents both the real upload workflow and the fast smoke workflow.

@@ -1,0 +1,25 @@
+Senior Java Backend Engineer - AI Document Platform
+
+Company
+Demo Cloud
+
+About the role
+We are building an AI-enabled document workflow platform for resume analysis, enterprise knowledge extraction, and structured content generation. The backend team owns ingestion, parsing, storage, analysis orchestration, and reliable integrations with LLM providers.
+
+Responsibilities
+- Build Java 21 and Spring Boot services for document upload, parsing, analysis, and export workflows.
+- Design REST APIs and PostgreSQL schemas for traceable processing records and generated artifacts.
+- Integrate Redis, object storage, and containerized deployment practices into reliable backend services.
+- Work with LLM prompts, RAG retrieval, vector databases, and tool-calling workflows to improve AI output quality.
+- Collaborate with frontend engineers to deliver clear analysis reports, evidence maps, and rewrite experiences.
+- Add observability, error handling, validation, and tests for production-facing backend features.
+
+Required qualifications
+- Strong Java and Spring Boot experience.
+- Experience with PostgreSQL, SQL schema design, and migration tooling such as Flyway.
+- Experience with Redis, Docker, REST API design, and backend service reliability.
+- Familiarity with LLM application development, prompt engineering, RAG, or vector databases.
+- Ability to explain technical tradeoffs and keep AI-generated output grounded in source evidence.
+
+Nice to have
+- PGvector, MinIO, Apache Tika, Spring AI, Kubernetes, distributed tracing, Testcontainers, or document parsing experience.

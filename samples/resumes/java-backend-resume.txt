@@ -1,0 +1,32 @@
+Alex Chen
+Java Backend Engineer
+Email: alex.chen@example.com
+Location: Shanghai, China
+
+Summary
+Java backend engineer with 4 years of experience building Spring Boot services, PostgreSQL data models, Redis-backed caching, Docker deployments, and document processing workflows. Interested in AI-enabled productivity products and reliable backend systems.
+
+Skills
+Java 17/21, Spring Boot, Spring MVC, Spring Data JPA, PostgreSQL, Redis, MinIO, Docker, REST API design, Flyway, Apache Tika, basic prompt engineering, GitHub Actions
+
+Experience
+Backend Engineer, Nova Workflow Lab
+2022-2026
+- Built Spring Boot REST APIs for uploading, parsing, and storing PDF/DOCX/TXT business documents with Apache Tika and MinIO.
+- Designed PostgreSQL schemas and Flyway migrations for traceable document records, processing status, and generated output artifacts.
+- Added Redis-backed cache and health checks for frequently accessed metadata endpoints, reducing repeated database reads in the dashboard workflow.
+- Integrated an OpenAI-compatible LLM provider to generate structured JSON summaries from parsed text and added fallback behavior when model calls failed.
+- Improved API reliability by adding centralized exception handling, input validation, and deterministic status responses for frontend polling.
+
+Project
+Resume AI Agent
+- Implemented resume upload, JD matching, and rewrite draft APIs with Java 21, Spring Boot, PostgreSQL, MinIO, Redis, and Spring AI.
+- Built a keyword evidence matcher that maps job requirements to resume text and returns matched keywords, missing keywords, scores, and suggestions.
+- Connected a PGvector-backed RAG knowledge base for resume optimization guidance and exposed indexing/search endpoints for independent testing.
+- Created an agent-style rewrite flow that uses tool calling to retrieve guidance and verify that rewritten bullets do not invent facts.
+
+Education
+B.S. Software Engineering
+
+Notes
+Looking for a Java backend or AI application engineering role focused on Spring Boot services, document workflows, RAG, and practical LLM product features.
