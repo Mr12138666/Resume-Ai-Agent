@@ -164,6 +164,42 @@ export default function UploadPage() {
           <p className="mt-6 border-2 border-red-900 bg-red-50 p-4 text-red-900">{error}</p>
         ) : null}
 
+        {analysis || rewrite ? (
+          <section className="mt-6 border-2 border-slate-950 bg-slate-950 p-5 text-white shadow-[6px_6px_0_#95a36a]">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <p className="font-mono text-xs font-bold uppercase tracking-[0.25em] text-white/70">
+                  Workflow handoff
+                </p>
+                <h2 className="mt-2 text-2xl font-black">
+                  {rewrite ? "Rewrite draft is ready for review and export." : "Analysis is ready for full review."}
+                </h2>
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-white/75">
+                  Continue from the dedicated detail page for deeper evidence, agent rewriting, and Markdown export.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-3">
+                {analysis ? (
+                  <Link
+                    className="border-2 border-white bg-white px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider text-slate-950 shadow-[4px_4px_0_#95a36a]"
+                    href={`/analyses/${analysis.id}`}
+                  >
+                    Open analysis
+                  </Link>
+                ) : null}
+                {rewrite ? (
+                  <Link
+                    className="border-2 border-white bg-[#f6d875] px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider text-slate-950 shadow-[4px_4px_0_#95a36a]"
+                    href={`/rewrites/${rewrite.id}`}
+                  >
+                    Review export
+                  </Link>
+                ) : null}
+              </div>
+            </div>
+          </section>
+        ) : null}
+
         <div className="mt-8 grid gap-6 lg:grid-cols-2">
           <form
             className="border-2 border-slate-950 bg-white p-8 shadow-[8px_8px_0_#0f172a]"

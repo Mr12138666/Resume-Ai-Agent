@@ -40,24 +40,18 @@ The MVP is now runnable as a front/back separated platform:
 Backend:
 
 ```powershell
-Get-Content .env | ForEach-Object {
-  if ($_ -match '^\s*#' -or $_ -notmatch '=') { return }
-  $parts = $_.Split('=', 2)
-  [Environment]::SetEnvironmentVariable($parts[0], $parts[1], 'Process')
-}
-$env:SPRING_DOCKER_COMPOSE_ENABLED='false'
-mvn -f backend/pom.xml spring-boot:run
+.\scripts\start-backend.ps1
 ```
 
 Frontend:
 
 ```powershell
-cd frontend
-npm install
-npm run dev
+.\scripts\start-frontend.ps1 -Install
 ```
 
 Open `http://localhost:3000`.
+
+The backend script loads root `.env` values into the current process only and does not print secrets. By default it disables Spring Docker Compose so the app uses the configured remote or local services instead of starting another infrastructure stack.
 
 ## Demo Paths
 
