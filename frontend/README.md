@@ -1,38 +1,34 @@
-# Frontend
+# 前端应用
 
-This directory is reserved for the web application.
+这里是简历优化智能体的 Next.js 前端，提供中文化的上传、分析、知识库、改写对比、导出、设置和记录管理界面。
 
-## Recommended Stack
+## 页面
 
-- Next.js
-- React
-- TypeScript
-- Tailwind CSS
-- shadcn/ui
-- TanStack Query
-- Zustand
-- React Hook Form
-- Zod
-- Tiptap
+- `/`：首页
+- `/dashboard`：工作台和历史记录
+- `/upload`：简历上传、岗位录入和分析创建
+- `/resumes/[resumeId]`：简历详情
+- `/jobs/[jobId]`：岗位详情
+- `/analyses/[analysisId]`：匹配分析报告
+- `/rewrites/[rewriteId]`：改写草稿、差异对比、事实校验和导出
+- `/knowledge`：RAG 知识库管理
+- `/settings`：运行配置和组件状态
 
-## Product Pages
+## 本地启动
 
-- `/` landing page
-- `/dashboard`
-- `/upload`
-- `/analyses/[id]`
-- `/rewrites/[id]`
-- `/builder/[resumeId]`
-- `/knowledge`
-- `/settings`
+```powershell
+.\scripts\start-frontend.ps1 -Install
+```
 
-## First Implementation Milestone
+如需指定后端地址：
 
-Create a frontend shell with:
+```powershell
+.\scripts\start-frontend.ps1 -ApiBaseUrl "http://localhost:8080/api/v1"
+```
 
-- App layout
-- API client
-- Upload form
-- Job description input
-- Analysis progress panel
-- Basic report page
+## 类型检查
+
+```powershell
+cd frontend
+npm run typecheck
+```

@@ -104,14 +104,6 @@ export type SystemStatusResponse = {
   }>;
 };
 
-export type DemoSmokeResponse = {
-  resumeId: string;
-  jobId: string;
-  analysisId: string;
-  rewriteId: string;
-  export: ExportRewriteResponse;
-};
-
 export type SettingsResponse = {
   ai: {
     provider: string;
@@ -246,21 +238,6 @@ export async function exportRewritePdf(rewriteId: string): Promise<ExportRewrite
   return response.json() as Promise<ExportRewriteResponse>;
 }
 
-export async function runDemoSmoke(): Promise<DemoSmokeResponse> {
-  const response = await fetch(`${API_BASE_URL}/demo/smoke`, {
-    method: "POST",
-    headers: {
-      Accept: "application/json",
-    },
-  });
-
-  if (!response.ok) {
-    await throwApiError(response, "快速演示运行失败");
-  }
-
-  return response.json() as Promise<DemoSmokeResponse>;
-}
-
 export async function uploadResume(file: File, title?: string): Promise<ResumeResponse> {
   const formData = new FormData();
   formData.append("file", file);
@@ -339,14 +316,14 @@ export async function createAnalysis(input: {
       Accept: "application/json",
     },
     body: JSON.stringify({
-      resumeId: input.resumeId,
-      jobId: input.jobId,
-      options: {
-        useRag: input.useRag ?? true,
-        includeAtsScore: true,
-        language: "en-US",
-      },
-    }),
+        resumeId: input.resumeId,
+        jobId: input.jobId,
+        options: {
+          useRag: input.useRag ?? true,
+          includeAtsScore: true,
+          language: "zh-CN",
+        },
+      }),
   });
 
   if (!response.ok) {

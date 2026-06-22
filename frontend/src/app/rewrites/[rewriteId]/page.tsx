@@ -221,7 +221,7 @@ function parseVerification(value: string | null | undefined): Record<string, str
     );
     if (!normalized["结论"] && (normalized.faithfulness || normalized.inventedFactsAllowed)) {
       return {
-        结论: normalized.faithfulness === "passed_demo_review" ? "演示数据已通过基础校验" : "待人工确认",
+        结论: normalized.faithfulness === "passed" ? "旧版记录已通过基础校验" : "待人工确认",
         是否发现新增事实: normalized.inventedFactsAllowed === "true" ? "可能存在新增事实" : "未发现明确新增事实",
         需要人工复核: "需要",
         依据摘要: "这是旧版本生成的事实校验记录，字段已自动转换为中文展示。",

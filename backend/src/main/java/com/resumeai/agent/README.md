@@ -1,13 +1,5 @@
-# Agent Layer
+# 智能体层
 
-This package will contain Spring AI prompts, advisors, tools, and orchestration code.
+该包承载 Spring AI 工具调用相关代码。当前已经实现 `ResumeOptimizationTools`，用于把简历解析、岗位解析、RAG 检索、匹配评分、段落改写和事实校验等后端能力暴露给改写流程。
 
-Planned components:
-
-- `ResumeOptimizationAgent`
-- `ResumeParsingTool`
-- `JobDescriptionParsingTool`
-- `KnowledgeRetrievalTool`
-- `MatchScoringTool`
-- `ResumeRewriteTool`
-- `RewriteVerificationTool`
+后续如果需要拆分更复杂的工作流，可以在这里继续补充编排类、工具注册、提示词版本和调用日志。

@@ -141,7 +141,7 @@ Acceptance:
 
 ## Phase 8: Agent and Tool Hardening
 
-Goal: Make the AI workflow more explicit and demonstrable.
+Goal: Make the AI workflow more explicit and observable.
 
 Deliverables:
 
@@ -153,11 +153,11 @@ Deliverables:
 
 Acceptance:
 
-- Demo can show agent invoking tools for parsing, retrieval, scoring, and rewriting.
+- Product workflow can show agent invoking tools for parsing, retrieval, scoring, and rewriting.
 
-## Phase 9: Quality and Demo Polish
+## Phase 9: Quality and Release Polish
 
-Goal: Prepare for presentation or submission.
+Goal: Prepare for presentation, submission, and public repository release.
 
 Deliverables:
 
@@ -165,12 +165,12 @@ Deliverables:
 - Seed knowledge documents
 - README run guide
 - Screenshots
-- Testcontainers integration tests
-- Frontend smoke tests
-- Demo script
+- PostgreSQL/PGvector integration tests
+- Frontend workflow tests
+- Chinese README and clean public examples
 
 Current progress:
 
 - Sample resume, JD, and RAG guidance live under `samples/`.
 - Built-in seed knowledge documents are created on backend startup.
-- `docs/demo-script.md` documents both the real upload workflow and the fast smoke workflow.
+- The main README documents local startup, configuration, and the complete resume optimization workflow.

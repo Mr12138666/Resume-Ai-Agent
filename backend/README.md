@@ -1,51 +1,36 @@
-# Backend
+# 后端服务
 
-This directory is reserved for the Java backend rewrite.
+这里是简历优化智能体的 Spring Boot 后端，负责文档上传解析、岗位结构化、匹配分析、RAG 检索、改写草稿、事实校验、导出和记录删除。
 
-## Target Stack
+## 主要模块
 
-- Java 21
-- Spring Boot 3.x
-- Spring AI
-- Spring Web
-- Spring Data JPA
-- PostgreSQL + PGvector
-- Flyway
-- Redis
-- MinIO
-- Apache Tika, PDFBox, docx4j
-- springdoc-openapi
-- JUnit 5 + Testcontainers
+- `interfaces`：REST Controller、异常处理、跨域配置。
+- `application`：简历、岗位、分析、知识库、改写和设置等用例编排。
+- `domain`：核心业务实体和状态枚举。
+- `infrastructure`：JPA、PGvector、MinIO、Redis、文档解析和大模型适配。
+- `agent`：Spring AI 工具调用相关能力。
 
-## Intended Package Layout
+## 本地启动
 
-```text
-com.resumeai
-  interfaces
-  application
-  domain
-  infrastructure
-  agent
+先准备 `.env` 或 `backend/src/main/resources/application-private.yml`，再运行：
+
+```powershell
+.\scripts\start-backend.ps1
 ```
 
-## First Implementation Milestone
+后端默认监听 `http://localhost:8080`，接口前缀为 `/api/v1`。
 
-Create a runnable Spring Boot app with:
+## 数据库初始化
 
-- `GET /api/v1/health`
-- `GET /api/v1/status`
-- PostgreSQL connection
-- Flyway migration
-- OpenAPI UI
-- Spring AI provider configuration
+Flyway 会在启动时自动执行 `src/main/resources/db/migration` 下的迁移脚本。首次连接空库时不需要手动执行 SQL；连接已有对象的数据库时，可设置：
 
-Then implement document upload and parsing.
+```env
+FLYWAY_BASELINE_ON_MIGRATE=true
+FLYWAY_BASELINE_VERSION=0
+```
 
-## Implemented MVP Slice
+## 测试
 
-- `POST /api/v1/resumes`: upload a PDF/DOCX/TXT resume as `multipart/form-data`.
-- `GET /api/v1/resumes`: list uploaded resumes.
-- `GET /api/v1/resumes/{resumeId}`: fetch parsed resume metadata and text preview.
-- Raw files are stored in MinIO.
-- Text extraction uses Apache Tika with auto-detection.
-- Resume metadata and parsed raw text are stored in PostgreSQL.
+```powershell
+mvn -f backend\pom.xml test
+```

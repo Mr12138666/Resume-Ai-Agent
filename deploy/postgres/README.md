@@ -1,11 +1,11 @@
-# PostgreSQL and PGvector
+# PostgreSQL 与 PGvector
 
-The local database uses the `pgvector/pgvector` image.
+本地数据库建议使用 `pgvector/pgvector` 镜像，保证 PostgreSQL 和向量扩展版本一致。
 
-Flyway migrations live in:
+Flyway 迁移脚本位于：
 
 ```text
 backend/src/main/resources/db/migration
 ```
 
-The first migration enables the `vector` extension and creates the core tables for resumes, job descriptions, analyses, rewrite drafts, knowledge documents, and vector chunks.
+首个迁移会启用 `vector` 扩展，并创建简历、岗位、分析报告、改写草稿、知识文档和向量分块等核心表。正常连接空库时不需要手动执行这些 SQL，后端启动时会自动迁移。

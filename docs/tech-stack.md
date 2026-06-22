@@ -4,7 +4,7 @@
 
 Use Java 21, Spring Boot 4.1, and Spring AI 2.0 as the primary backend stack.
 
-This matches the project goal because it can demonstrate:
+This matches the project goal because it can show:
 
 - Model deployment and invocation
 - Prompt engineering
@@ -29,8 +29,8 @@ This matches the project goal because it can demonstrate:
 | Document parsing | Apache Tika + PDFBox + docx4j | PDF/DOCX/TXT parsing in Java |
 | Object storage | MinIO | Stores original and exported files |
 | Cache/progress | Redis/ReBloom | Health-checked now; useful for async progress, SSE state, and Bloom-filter dedupe later |
-| API docs | springdoc-openapi | Frontend/backend contract visibility |
-| Testing | JUnit 5, Testcontainers, WireMock | Covers DB/vector/LLM adapter behavior |
+| API docs | REST contract documents | Frontend/backend contract visibility |
+| Testing | JUnit 5 | Covers parser and core service behavior |
 
 ## Spring AI Components
 
@@ -50,7 +50,7 @@ Support provider abstraction from the start, but only implement two providers in
 - OpenAI-compatible HTTP API for cloud models
 - Ollama for local deployment
 
-This gives a clean story for both deployed model calls and local privacy-first demos.
+This gives a clean story for both deployed model calls and local privacy-first runs.
 
 Suggested config:
 
@@ -87,13 +87,12 @@ Use Next.js with TypeScript.
 | Framework | Next.js | Good routing, product pages, SSR where needed |
 | Language | TypeScript | Safer frontend API contracts |
 | Styling | Tailwind CSS | Fast systemized UI |
-| Components | shadcn/ui | Practical accessible components |
-| Data fetching | TanStack Query | Clear API state and caching |
-| Local state | Zustand | Lightweight editor/session state |
-| Forms | React Hook Form + Zod | Structured form validation |
-| Editor | Tiptap | Resume section editing |
-| Upload | react-dropzone | Better document upload UX |
-| Charts | Recharts | Match score and coverage visualization |
+| Components | Local component primitives | Keep the product UI small and easy to audit |
+| Data fetching | Native `fetch` wrapper | Matches the current API surface without extra state libraries |
+| Local state | React state | Enough for the current single-user workflow |
+| Forms | Controlled React forms | Keeps dependencies minimal until validation needs grow |
+| Upload | Native file input | Works for PDF/DOCX/TXT without an additional upload library |
+| Charts | CSS/SVG primitives | Current score cards and rings are custom components |
 
 ## Why Not Vue or Plain React
 
@@ -156,8 +155,8 @@ Each prompt should define:
 Prioritize these tests:
 
 - Parser tests with sample PDF/DOCX/TXT files
-- Prompt contract tests with mocked LLM responses
-- Repository tests with Testcontainers PostgreSQL + PGvector
+- Prompt contract tests with fixed LLM responses
+- Repository tests against PostgreSQL + PGvector
 - API tests for upload/analyze/rewrite flows
 - Frontend component tests for analysis and rewrite views
 
@@ -171,7 +170,7 @@ Local development:
 - Backend runs from IDE or Maven
 - Frontend runs with pnpm/npm dev
 
-Demo deployment:
+Release deployment:
 
 - Backend container
 - Frontend container

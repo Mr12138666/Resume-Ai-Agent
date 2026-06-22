@@ -1,43 +1,53 @@
-# Deploy
+# 部署与基础设施
 
-This directory contains local development and deployment assets.
+该目录保存本地开发和远程部署相关的辅助文件。
 
-## Local Infrastructure
+## 本地基础设施
 
-The intended local stack is:
+推荐本地启动以下组件：
 
-- PostgreSQL with PGvector
-- Redis or Redis Stack/ReBloom
+- PostgreSQL + PGvector
+- Redis 或 Redis Stack/ReBloom
 - MinIO
-- Ollama
+- Ollama，可选，用于本地模型调用
 
-## Remote Infrastructure
+`docker-compose.yml` 可作为本地基础设施参考。如果使用远程 PostgreSQL、Redis 或 MinIO，不要在同一端口重复启动本地服务，除非你明确想覆盖连接目标。
 
-You can point the backend at a remote PGvector, Redis, and MinIO environment exposed through a tunnel:
+## 远程环境
 
-| Service | Local Container Port | Tunnel Endpoint |
+后端可以连接通过隧道暴露的远程 PGvector、Redis 和 MinIO。公开仓库只保留占位符，不包含真实主机、端口或密钥。
+
+| 服务 | 容器默认端口 | 配置占位符 |
 |---|---:|---|
-| PGvector/PostgreSQL | 5432 | `<remote-host>:<postgres-port>` |
+| PostgreSQL/PGvector | 5432 | `<remote-host>:<postgres-port>` |
 | Redis/ReBloom | 6379 | `<remote-host>:<redis-port>` |
 | MinIO API | 9000 | `<remote-host>:<minio-api-port>` |
 | MinIO Console | 9090 | `<remote-host>:<minio-console-port>` |
 
-Use [env.remote.example](env.remote.example) as the backend environment template.
+可以复制 [env.remote.example](env.remote.example) 作为远程环境变量模板。
 
-Required secrets are intentionally placeholders:
+## 必填密钥
+
+以下配置必须使用真实值，但只能写入本地 `.env` 或 `application-private.yml`：
 
 - `POSTGRES_PASSWORD`
 - `MINIO_ACCESS_KEY`
 - `MINIO_SECRET_KEY`
+- `REDIS_PASSWORD`，如果 Redis 开启密码
+- `OPENAI_API_KEY` 或兼容模型服务的 API Key
 
-The remote `robot` database may already contain objects in `public`. For that case, enable Flyway baselining without skipping the first migration:
+## Flyway baseline
+
+如果远程数据库不是空库，且 `public` schema 已经存在对象，可以启用 Flyway baseline：
 
 ```env
 FLYWAY_BASELINE_ON_MIGRATE=true
 FLYWAY_BASELINE_VERSION=0
 ```
 
-PowerShell example:
+这样 Flyway 会从版本 `0` 开始接管迁移，仍然会执行项目内的正式迁移脚本。
+
+## PowerShell 示例
 
 ```powershell
 $env:POSTGRES_URL="jdbc:postgresql://<remote-host>:<postgres-port>/resume_ai"
@@ -53,26 +63,7 @@ $env:MINIO_BUCKET="resume-ai"
 mvn -f ..\backend\pom.xml spring-boot:run
 ```
 
-For the current server, the database name is `robot`, so use:
-
-```powershell
-$env:POSTGRES_URL="jdbc:postgresql://<remote-host>:<postgres-port>/robot"
-```
-
-## Verified Remote Startup Checklist
-
-Verified on 2026-06-22:
-
-- PostgreSQL/PGvector endpoint configured
-- Database `robot`
-- Flyway baseline at version `0`
-- Flyway migration `V1__init_core_schema.sql`
-- JPA schema validation
-- Spring AI PGVectorStore initialization
-- MinIO endpoint configuration
-- Redis/ReBloom endpoint configured
-
-Run from PowerShell:
+也可以从根目录 `.env` 读取配置：
 
 ```powershell
 Get-Content ..\.env | ForEach-Object {
@@ -84,18 +75,12 @@ $env:SPRING_DOCKER_COMPOSE_ENABLED='false'
 mvn -f ..\backend\pom.xml spring-boot:run
 ```
 
-## Files
+## 文件说明
 
 ```text
 deploy/
-  docker-compose.yml
-  env.remote.example
+  docker-compose.yml      本地基础设施编排
+  env.remote.example      远程环境变量模板
   postgres/
-    README.md
-  minio/
-    README.md
+    README.md             PostgreSQL/PGvector 说明
 ```
-
-## Notes
-
-`docker-compose.yml` remains useful for local-only development. When using the remote services, do not start local PostgreSQL or MinIO on the same ports unless you intentionally want to override them.

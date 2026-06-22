@@ -1,7 +1,7 @@
 Senior Java Backend Engineer - AI Document Platform
 
 Company
-Demo Cloud
+Nova Cloud
 
 About the role
 We are building an AI-enabled document workflow platform for resume analysis, enterprise knowledge extraction, and structured content generation. The backend team owns ingestion, parsing, storage, analysis orchestration, and reliable integrations with LLM providers.
@@ -22,4 +22,4 @@ Required qualifications
 - Ability to explain technical tradeoffs and keep AI-generated output grounded in source evidence.
 
 Nice to have
-- PGvector, MinIO, Apache Tika, Spring AI, Kubernetes, distributed tracing, Testcontainers, or document parsing experience.
+- PGvector, MinIO, Apache Tika, Spring AI, Kubernetes, distributed tracing, or document parsing experience.

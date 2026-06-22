@@ -8,7 +8,6 @@ const navItems = [
   { href: "/dashboard", label: "工作台" },
   { href: "/upload", label: "简历定制" },
   { href: "/knowledge", label: "知识库" },
-  { href: "/demo", label: "演示" },
   { href: "/settings", label: "设置" },
 ];
 
