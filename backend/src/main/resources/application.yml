@@ -17,6 +17,10 @@ spring:
     url: ${POSTGRES_URL:jdbc:postgresql://localhost:5432/resume_ai}
     username: ${POSTGRES_USER:resume_ai}
     password: ${POSTGRES_PASSWORD:resume_ai}
+  servlet:
+    multipart:
+      max-file-size: ${RESUME_AI_MAX_FILE_SIZE:25MB}
+      max-request-size: ${RESUME_AI_MAX_REQUEST_SIZE:30MB}
   jpa:
     defer-datasource-initialization: false
     hibernate:
