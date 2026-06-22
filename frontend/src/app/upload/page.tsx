@@ -121,7 +121,7 @@ export default function UploadPage() {
       setRewrite(await createRewrite({
         analysisId: analysis.id,
         sectionId: "tailor-preview",
-        sectionText: resume.rawTextPreview,
+        sectionText: resume.rawText,
       }));
     } catch (rewriteError) {
       setError(rewriteError instanceof Error ? rewriteError.message : "智能体改写失败。");
@@ -226,7 +226,7 @@ export default function UploadPage() {
           <div className="mt-6 border border-black bg-[#e5e5e0] p-4">
             <p className="font-mono text-xs font-bold uppercase tracking-wide text-[#1d4ed8]">解析预览</p>
             <p className="panel-scroll mt-3 max-h-72 overflow-auto whitespace-pre-wrap font-mono text-xs uppercase leading-5 text-[#6b7280]">
-              {resume?.rawTextPreview || "上传后这里会显示简历文本。"}
+              {resume?.rawText || "上传后这里会显示简历文本。"}
             </p>
           </div>
           {resume?.structuredJson ? (
@@ -301,7 +301,7 @@ export default function UploadPage() {
         <JDResumeComparison
           jobDescription={jobDescription}
           keywords={comparisonKeywords}
-          resumeText={resume?.rawTextPreview ?? ""}
+          resumeText={resume?.rawText ?? ""}
         />
       </section>
 

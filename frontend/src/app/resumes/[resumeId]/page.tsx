@@ -83,7 +83,7 @@ export default function ResumeDetailPage({ params }: { params: Promise<{ resumeI
             <Card tone="paper">
               <CardHeader eyebrow="解析文本" title="解析文本" description="Tika 提取出的正文会作为匹配和改写的基础证据。" />
               <pre className="panel-scroll mt-5 max-h-[42rem] overflow-auto whitespace-pre-wrap border border-black bg-[#e5e5e0] p-5 font-mono text-sm leading-7">
-                {resume.rawTextPreview || "暂无文本预览。"}
+                {resume.rawText || "暂无文本预览。"}
               </pre>
             </Card>
             <Card tone="ink">

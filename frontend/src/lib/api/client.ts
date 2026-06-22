@@ -8,6 +8,7 @@ export type ResumeResponse = {
   contentType: string;
   status: string;
   rawTextLength: number;
+  rawText: string;
   rawTextPreview: string;
   structuredJson: string | null;
   createdAt: string;

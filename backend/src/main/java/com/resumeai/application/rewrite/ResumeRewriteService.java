@@ -155,7 +155,7 @@ public class ResumeRewriteService {
         if (rawText == null || rawText.isBlank()) {
             return "";
         }
-        return rawText.length() <= 1600 ? rawText : rawText.substring(0, 1600);
+        return rawText;
     }
 
     private String limit(String text) {
