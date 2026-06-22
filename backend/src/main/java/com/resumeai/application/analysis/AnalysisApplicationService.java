@@ -117,16 +117,16 @@ public class AnalysisApplicationService {
     private List<String> suggestions(List<String> missingKeywords, int keywordScore, List<String> guidance) {
         var suggestions = new ArrayList<String>();
         if (keywordScore < 60) {
-            suggestions.add("Add a targeted summary section that mirrors the role's core requirements.");
+            suggestions.add("补充一段面向目标岗位的中文摘要，直接回应岗位核心要求。");
         }
         if (!missingKeywords.isEmpty()) {
-            suggestions.add("Review these missing JD keywords and add truthful evidence where your experience supports them: "
+            suggestions.add("检查这些 JD 关键词缺口，并在真实经历支持时补充证据："
                     + String.join(", ", missingKeywords.stream().limit(8).toList()));
         }
-        suggestions.add("Rewrite project bullets with action verb + technical scope + measurable result.");
-        suggestions.add("Keep every optimization faithful to existing experience; do not invent responsibilities or metrics.");
+        suggestions.add("按“动作词 + 技术范围 + 业务场景 + 可验证结果”的结构改写项目经历。");
+        suggestions.add("所有优化必须忠于已有经历，不要编造职责、指标或技术栈。");
         if (!guidance.isEmpty()) {
-            suggestions.add("Use retrieved resume guidance to improve relevance: " + guidance.getFirst());
+            suggestions.add("结合检索到的简历规则提升相关性：" + guidance.getFirst());
         }
         return suggestions;
     }

@@ -19,7 +19,7 @@ public class RedisHealthService {
 
     public ComponentStatus getStatus() {
         if (!properties.redis().enabled()) {
-            return new ComponentStatus("redis", "DISABLED", "Redis integration is disabled.");
+            return new ComponentStatus("redis", "DISABLED", "Redis 集成已禁用。");
         }
 
         try {
@@ -27,7 +27,7 @@ public class RedisHealthService {
             return new ComponentStatus(
                     "redis",
                     "UP",
-                    "Ping response from " + properties.redis().host() + ":" + properties.redis().port() + " = " + pong
+                    "来自 " + properties.redis().host() + ":" + properties.redis().port() + " 的 Ping 响应：" + pong
             );
         } catch (RedisConnectionFailureException exception) {
             return downStatus(exception);
@@ -42,14 +42,14 @@ public class RedisHealthService {
                     "redis",
                     "DOWN",
                     "Redis " + properties.redis().host() + ":" + properties.redis().port()
-                            + " requires authentication. Set REDIS_PASSWORD in the backend environment."
+                            + " 需要认证，请在后端配置中设置 REDIS_PASSWORD。"
             );
         }
 
         return new ComponentStatus(
                 "redis",
                 "DOWN",
-                "Redis " + properties.redis().host() + ":" + properties.redis().port() + " is not reachable: " + exception.getMessage()
+                "无法连接 Redis " + properties.redis().host() + ":" + properties.redis().port() + "：" + exception.getMessage()
         );
     }
 }

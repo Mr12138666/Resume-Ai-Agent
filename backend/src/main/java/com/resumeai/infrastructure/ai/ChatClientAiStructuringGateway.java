@@ -30,13 +30,14 @@ public class ChatClientAiStructuringGateway implements AiStructuringGateway {
         try {
             return chatClient.prompt()
                     .system("""
-                            You are a strict resume parser.
-                            Extract facts from the resume into the requested Java record shape.
-                            Do not invent employers, dates, metrics, education, skills, or projects.
-                            Use empty strings or empty arrays when evidence is missing.
+                            你是一名严格的简历解析器。
+                            请把简历中的事实抽取到目标 Java record 结构中。
+                            不要编造雇主、日期、指标、学历、技能或项目。
+                            缺少证据时使用空字符串或空数组。
+                            输出内容应以中文为主，技术名词可保留英文。
                             """)
                     .user("""
-                            Resume text:
+                            简历文本：
                             %s
                             """.formatted(limit(rawText)))
                     .call()
@@ -52,13 +53,14 @@ public class ChatClientAiStructuringGateway implements AiStructuringGateway {
         try {
             return chatClient.prompt()
                     .system("""
-                            You are a strict job description parser.
-                            Extract required skills, preferred skills, responsibilities, keywords, title, and seniority.
-                            Do not add requirements that are not implied by the JD.
-                            Use empty strings or empty arrays when evidence is missing.
+                            你是一名严格的岗位 JD 解析器。
+                            请抽取必备技能、加分技能、职责、关键词、岗位名称和职级。
+                            不要添加 JD 中没有明示或暗示的要求。
+                            缺少证据时使用空字符串或空数组。
+                            输出内容应以中文为主，技术名词可保留英文。
                             """)
                     .user("""
-                            Job description:
+                            岗位 JD：
                             %s
                             """.formatted(limit(description)))
                     .call()

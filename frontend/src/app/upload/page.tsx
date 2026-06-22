@@ -36,7 +36,7 @@ export default function UploadPage() {
   async function handleResumeUpload(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!file) {
-      setError("Choose a PDF, DOCX, or TXT resume first.");
+      setError("请先选择 PDF、DOCX 或 TXT 简历文件。");
       return;
     }
 
@@ -51,7 +51,7 @@ export default function UploadPage() {
       const uploaded = await uploadResume(file, resumeTitle);
       setResume(uploaded);
     } catch (uploadError) {
-      setError(uploadError instanceof Error ? uploadError.message : "Resume upload failed.");
+      setError(uploadError instanceof Error ? uploadError.message : "简历上传失败。");
     } finally {
       setIsUploading(false);
     }
@@ -60,11 +60,11 @@ export default function UploadPage() {
   async function handleAnalysis(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!resume) {
-      setError("Upload and parse a resume before creating an analysis.");
+      setError("请先上传并解析简历，再创建匹配分析。");
       return;
     }
     if (!jobDescription.trim()) {
-      setError("Paste a target job description before creating an analysis.");
+      setError("请先粘贴目标岗位 JD，再创建匹配分析。");
       return;
     }
 
@@ -87,7 +87,7 @@ export default function UploadPage() {
       setAnalysis(createdAnalysis);
       setRewrite(null);
     } catch (analysisError) {
-      setError(analysisError instanceof Error ? analysisError.message : "Analysis failed.");
+      setError(analysisError instanceof Error ? analysisError.message : "匹配分析失败。");
     } finally {
       setIsAnalyzing(false);
     }
@@ -108,7 +108,7 @@ export default function UploadPage() {
       });
       setRewrite(createdRewrite);
     } catch (rewriteError) {
-      setError(rewriteError instanceof Error ? rewriteError.message : "Rewrite failed.");
+      setError(rewriteError instanceof Error ? rewriteError.message : "简历改写失败。");
     } finally {
       setIsRewriting(false);
     }
@@ -123,7 +123,7 @@ export default function UploadPage() {
     try {
       setResume(await structureResume(resume.id));
     } catch (structureError) {
-      setError(structureError instanceof Error ? structureError.message : "Resume structuring failed.");
+      setError(structureError instanceof Error ? structureError.message : "简历结构化失败。");
     } finally {
       setIsStructuringResume(false);
     }
@@ -138,7 +138,7 @@ export default function UploadPage() {
     try {
       setJob(await structureJob(job.id));
     } catch (structureError) {
-      setError(structureError instanceof Error ? structureError.message : "Job structuring failed.");
+      setError(structureError instanceof Error ? structureError.message : "岗位结构化失败。");
     } finally {
       setIsStructuringJob(false);
     }
@@ -147,16 +147,16 @@ export default function UploadPage() {
   return (
     <main className="min-h-screen bg-[#f8f5eb] px-6 py-10 text-slate-950">
       <section className="mx-auto max-w-6xl">
-        <p className="font-mono text-sm uppercase tracking-[0.3em] text-slate-600">MVP Workflow</p>
+        <p className="font-mono text-sm uppercase tracking-[0.3em] text-slate-600">简历优化流程</p>
         <h1 className="mt-4 max-w-4xl text-4xl font-black md:text-6xl">
-          Resume parsing, JD matching, and first-pass optimization signals.
+          上传简历、匹配 JD，并拿到第一轮优化建议。
         </h1>
         <div className="mt-6 flex flex-wrap gap-3">
           <Link className="border-2 border-slate-950 bg-white px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider shadow-[4px_4px_0_#0f172a]" href="/dashboard">
-            Dashboard
+            工作台
           </Link>
           <Link className="border-2 border-slate-950 bg-[#eef4dd] px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider shadow-[4px_4px_0_#0f172a]" href="/knowledge">
-            RAG Workbench
+            RAG 知识库
           </Link>
         </div>
 
@@ -169,13 +169,13 @@ export default function UploadPage() {
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div>
                 <p className="font-mono text-xs font-bold uppercase tracking-[0.25em] text-white/70">
-                  Workflow handoff
+                  下一步
                 </p>
                 <h2 className="mt-2 text-2xl font-black">
-                  {rewrite ? "Rewrite draft is ready for review and export." : "Analysis is ready for full review."}
+                  {rewrite ? "改写草稿已生成，可以检查并导出。" : "匹配分析已生成，可以进入完整报告。"}
                 </h2>
                 <p className="mt-2 max-w-2xl text-sm leading-6 text-white/75">
-                  Continue from the dedicated detail page for deeper evidence, agent rewriting, and Markdown export.
+                  进入详情页可以查看证据链、继续智能体改写，并导出 Markdown 成果。
                 </p>
               </div>
               <div className="flex flex-wrap gap-3">
@@ -184,7 +184,7 @@ export default function UploadPage() {
                     className="border-2 border-white bg-white px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider text-slate-950 shadow-[4px_4px_0_#95a36a]"
                     href={`/analyses/${analysis.id}`}
                   >
-                    Open analysis
+                    打开分析报告
                   </Link>
                 ) : null}
                 {rewrite ? (
@@ -192,7 +192,7 @@ export default function UploadPage() {
                     className="border-2 border-white bg-[#f6d875] px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider text-slate-950 shadow-[4px_4px_0_#95a36a]"
                     href={`/rewrites/${rewrite.id}`}
                   >
-                    Review export
+                    查看并导出
                   </Link>
                 ) : null}
               </div>
@@ -205,23 +205,23 @@ export default function UploadPage() {
             className="border-2 border-slate-950 bg-white p-8 shadow-[8px_8px_0_#0f172a]"
             onSubmit={handleResumeUpload}
           >
-            <h2 className="font-mono text-xl font-bold">1. Upload resume</h2>
+            <h2 className="font-mono text-xl font-bold">1. 上传简历</h2>
             <p className="mt-4 text-slate-700">
-              The backend stores the raw file in MinIO, extracts text with Apache Tika, and saves parsed content in PostgreSQL.
+              后端会把原始文件保存到 MinIO，用 Apache Tika 提取文本，并把解析内容写入 PostgreSQL。
             </p>
 
             <label className="mt-8 block font-mono text-sm font-bold uppercase tracking-widest">
-              Resume title
+              简历标题
               <input
                 className="mt-3 w-full border-2 border-slate-950 px-4 py-3 font-serif text-base outline-none focus:bg-[#eef4dd]"
-                placeholder="Java Backend Resume"
+                placeholder="Java 后端简历"
                 value={resumeTitle}
                 onChange={(event) => setResumeTitle(event.target.value)}
               />
             </label>
 
             <label className="mt-6 block font-mono text-sm font-bold uppercase tracking-widest">
-              Resume file
+              简历文件
               <input
                 accept=".pdf,.doc,.docx,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                 className="mt-3 w-full border-2 border-dashed border-slate-950 bg-[#f8f5eb] px-4 py-6"
@@ -235,7 +235,7 @@ export default function UploadPage() {
               disabled={isUploading}
               type="submit"
             >
-              {isUploading ? "Parsing..." : "Upload and parse"}
+              {isUploading ? "解析中..." : "上传并解析"}
             </button>
           </form>
 
@@ -243,26 +243,26 @@ export default function UploadPage() {
             className="border-2 border-slate-950 bg-[#eef4dd] p-8 shadow-[8px_8px_0_#95a36a]"
             onSubmit={handleAnalysis}
           >
-            <h2 className="font-mono text-xl font-bold">2. Paste target JD</h2>
+            <h2 className="font-mono text-xl font-bold">2. 粘贴目标 JD</h2>
             <p className="mt-4 text-slate-700">
-              This creates a job description record and runs a transparent keyword/evidence match against the parsed resume.
+              系统会创建岗位记录，并基于解析后的简历生成透明的关键词与证据匹配结果。
             </p>
 
             <div className="mt-8 grid gap-4 md:grid-cols-2">
               <label className="block font-mono text-sm font-bold uppercase tracking-widest">
-                Role title
+                岗位名称
                 <input
                   className="mt-3 w-full border-2 border-slate-950 px-4 py-3 font-serif text-base outline-none focus:bg-white"
-                  placeholder="Java Backend Engineer"
+                  placeholder="Java 后端工程师"
                   value={jobTitle}
                   onChange={(event) => setJobTitle(event.target.value)}
                 />
               </label>
               <label className="block font-mono text-sm font-bold uppercase tracking-widest">
-                Company
+                公司
                 <input
                   className="mt-3 w-full border-2 border-slate-950 px-4 py-3 font-serif text-base outline-none focus:bg-white"
-                  placeholder="Target Company"
+                  placeholder="目标公司"
                   value={company}
                   onChange={(event) => setCompany(event.target.value)}
                 />
@@ -270,10 +270,10 @@ export default function UploadPage() {
             </div>
 
             <label className="mt-6 block font-mono text-sm font-bold uppercase tracking-widest">
-              Job description
+              岗位 JD
               <textarea
                 className="mt-3 min-h-52 w-full border-2 border-slate-950 px-4 py-3 font-serif text-base leading-7 outline-none focus:bg-white"
-                placeholder="Paste the full JD here..."
+                placeholder="在这里粘贴完整 JD..."
                 value={jobDescription}
                 onChange={(event) => setJobDescription(event.target.value)}
               />
@@ -288,10 +288,10 @@ export default function UploadPage() {
               />
               <span>
                 <span className="block font-mono text-sm font-bold uppercase tracking-widest">
-                  Use RAG guidance
+                  使用 RAG 建议
                 </span>
                 <span className="mt-1 block text-sm leading-6 text-slate-700">
-                  Retrieve indexed resume rules from the knowledge base and include them in analysis suggestions.
+                  从知识库检索已索引的简历优化规则，并加入分析建议。
                 </span>
               </span>
             </label>
@@ -301,32 +301,32 @@ export default function UploadPage() {
               disabled={isAnalyzing || !resume}
               type="submit"
             >
-              {isAnalyzing ? "Analyzing..." : "Create analysis"}
+              {isAnalyzing ? "分析中..." : "创建匹配分析"}
             </button>
           </form>
         </div>
 
         <div className="mt-8 grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
           <section className="border-2 border-slate-950 bg-white p-8">
-            <h2 className="font-mono text-xl font-bold">Parsed resume</h2>
+            <h2 className="font-mono text-xl font-bold">简历解析结果</h2>
             {resume ? (
               <div className="mt-6 space-y-4">
                 <dl className="grid grid-cols-2 gap-3 font-mono text-sm">
-                  <dt className="text-slate-600">Status</dt>
+                  <dt className="text-slate-600">状态</dt>
                   <dd className="font-bold">{resume.status}</dd>
-                  <dt className="text-slate-600">File</dt>
+                  <dt className="text-slate-600">文件</dt>
                   <dd className="break-all font-bold">{resume.originalFilename}</dd>
-                  <dt className="text-slate-600">Text Length</dt>
+                  <dt className="text-slate-600">文本长度</dt>
                   <dd className="font-bold">{resume.rawTextLength}</dd>
                 </dl>
                 <Link
                   className="inline-block border-2 border-slate-950 bg-[#eef4dd] px-4 py-2 font-mono text-sm font-bold uppercase tracking-wider shadow-[4px_4px_0_#0f172a]"
                   href={`/resumes/${resume.id}`}
                 >
-                  Open resume detail
+                  打开简历详情
                 </Link>
                 <pre className="max-h-80 overflow-auto whitespace-pre-wrap border-2 border-slate-950 bg-[#f8f5eb] p-4 text-sm leading-6">
-                  {resume.rawTextPreview || "No text extracted yet."}
+                  {resume.rawTextPreview || "暂未提取到文本。"}
                 </pre>
                 <button
                   className="border-2 border-slate-950 bg-white px-4 py-2 font-mono text-sm font-bold uppercase tracking-wider shadow-[4px_4px_0_#0f172a] disabled:opacity-60"
@@ -334,7 +334,7 @@ export default function UploadPage() {
                   onClick={handleStructureResume}
                   type="button"
                 >
-                  {isStructuringResume ? "Structuring..." : "Structure resume JSON"}
+                  {isStructuringResume ? "结构化中..." : "生成简历 JSON"}
                 </button>
                 {resume.structuredJson ? (
                   <pre className="max-h-80 overflow-auto whitespace-pre-wrap border-2 border-slate-950 bg-slate-950 p-4 text-xs leading-5 text-white">
@@ -343,26 +343,26 @@ export default function UploadPage() {
                 ) : null}
               </div>
             ) : (
-              <p className="mt-6 leading-7 text-slate-700">Upload a resume to see parsed text preview.</p>
+              <p className="mt-6 leading-7 text-slate-700">上传简历后，这里会显示解析出的文本预览。</p>
             )}
           </section>
 
           <section className="border-2 border-slate-950 bg-white p-8">
-            <h2 className="font-mono text-xl font-bold">Analysis result</h2>
+            <h2 className="font-mono text-xl font-bold">匹配分析结果</h2>
             {analysis ? (
               <div className="mt-6 space-y-6">
                 {job ? (
                   <div className="border-2 border-slate-950 bg-[#eef4dd] p-4">
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div>
-                        <p className="font-mono text-xs uppercase tracking-widest text-slate-600">Job record</p>
-                        <p className="font-bold">{job.title || "Untitled role"}</p>
+                        <p className="font-mono text-xs uppercase tracking-widest text-slate-600">岗位记录</p>
+                        <p className="font-bold">{job.title || "未命名岗位"}</p>
                       </div>
                       <Link
                         className="border-2 border-slate-950 bg-[#f8f5eb] px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider shadow-[4px_4px_0_#0f172a]"
                         href={`/jobs/${job.id}`}
                       >
-                        Open JD
+                        打开 JD
                       </Link>
                       <button
                         className="border-2 border-slate-950 bg-white px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider shadow-[4px_4px_0_#0f172a] disabled:opacity-60"
@@ -370,7 +370,7 @@ export default function UploadPage() {
                         onClick={handleStructureJob}
                         type="button"
                       >
-                        {isStructuringJob ? "Structuring..." : "Structure JD JSON"}
+                        {isStructuringJob ? "结构化中..." : "生成 JD JSON"}
                       </button>
                     </div>
                     {job.structuredJson ? (
@@ -383,9 +383,9 @@ export default function UploadPage() {
 
                 <div className="grid gap-3 md:grid-cols-4">
                   {[
-                    ["Overall", analysis.overallScore],
-                    ["Keyword", analysis.keywordScore],
-                    ["Semantic", analysis.semanticScore],
+                    ["综合", analysis.overallScore],
+                    ["关键词", analysis.keywordScore],
+                    ["语义", analysis.semanticScore],
                     ["ATS", analysis.atsScore],
                   ].map(([label, score]) => (
                     <div key={label} className="border-2 border-slate-950 bg-[#eef4dd] p-4">
@@ -398,11 +398,11 @@ export default function UploadPage() {
                   className="inline-block border-2 border-slate-950 bg-slate-950 px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider text-white shadow-[4px_4px_0_#95a36a]"
                   href={`/analyses/${analysis.id}`}
                 >
-                  Open full analysis
+                  打开完整分析
                 </Link>
 
                 <div>
-                  <h3 className="font-mono text-sm font-bold uppercase tracking-widest">Missing keywords</h3>
+                  <h3 className="font-mono text-sm font-bold uppercase tracking-widest">缺失关键词</h3>
                   <div className="mt-3 flex flex-wrap gap-2">
                     {analysis.report.missingKeywords.slice(0, 16).map((keyword) => (
                       <span key={keyword} className="border border-slate-950 bg-red-50 px-2 py-1 font-mono text-xs">
@@ -413,7 +413,7 @@ export default function UploadPage() {
                 </div>
 
                 <div>
-                  <h3 className="font-mono text-sm font-bold uppercase tracking-widest">Suggestions</h3>
+                  <h3 className="font-mono text-sm font-bold uppercase tracking-widest">优化建议</h3>
                   <ul className="mt-3 space-y-2">
                     {analysis.report.suggestions.map((suggestion) => (
                       <li key={suggestion} className="border-l-4 border-slate-950 bg-[#f8f5eb] px-4 py-2">
@@ -424,7 +424,7 @@ export default function UploadPage() {
                 </div>
 
                 <div>
-                  <h3 className="font-mono text-sm font-bold uppercase tracking-widest">Retrieved RAG guidance</h3>
+                  <h3 className="font-mono text-sm font-bold uppercase tracking-widest">RAG 检索建议</h3>
                   {analysis.report.retrievedGuidance.length > 0 ? (
                     <ul className="mt-3 space-y-2">
                       {analysis.report.retrievedGuidance.map((guidance) => (
@@ -434,15 +434,15 @@ export default function UploadPage() {
                       ))}
                     </ul>
                   ) : (
-                    <p className="mt-3 text-slate-600">No guidance retrieved yet. Index knowledge documents to enable RAG context.</p>
+                    <p className="mt-3 text-slate-600">暂未检索到建议。请先在知识库中索引文档以启用 RAG 上下文。</p>
                   )}
                 </div>
 
                 <div className="border-2 border-slate-950 bg-[#eef4dd] p-4">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
-                      <h3 className="font-mono text-sm font-bold uppercase tracking-widest">Agent rewrite</h3>
-                      <p className="mt-1 text-sm text-slate-700">Generate a faithful rewrite draft using DeepSeek, tools, and RAG guidance.</p>
+                      <h3 className="font-mono text-sm font-bold uppercase tracking-widest">智能体改写</h3>
+                      <p className="mt-1 text-sm text-slate-700">使用 DeepSeek、工具调用和 RAG 建议生成忠于事实的改写草稿。</p>
                     </div>
                     <button
                       className="border-2 border-slate-950 bg-slate-950 px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider text-white shadow-[4px_4px_0_#ffffff] disabled:opacity-60"
@@ -450,25 +450,25 @@ export default function UploadPage() {
                       onClick={handleRewrite}
                       type="button"
                     >
-                      {isRewriting ? "Rewriting..." : "Rewrite with Agent"}
+                      {isRewriting ? "改写中..." : "智能体改写"}
                     </button>
                   </div>
                   {rewrite ? (
                     <div className="mt-4 grid gap-4 md:grid-cols-2">
                       <div>
-                        <p className="font-mono text-xs font-bold uppercase tracking-widest">Original</p>
+                        <p className="font-mono text-xs font-bold uppercase tracking-widest">原文</p>
                         <pre className="mt-2 max-h-72 overflow-auto whitespace-pre-wrap border-2 border-slate-950 bg-white p-4 text-xs leading-5">
                           {rewrite.originalText}
                         </pre>
                       </div>
                       <div>
-                        <p className="font-mono text-xs font-bold uppercase tracking-widest">Rewritten</p>
+                        <p className="font-mono text-xs font-bold uppercase tracking-widest">改写后</p>
                         <pre className="mt-2 max-h-72 overflow-auto whitespace-pre-wrap border-2 border-slate-950 bg-slate-950 p-4 text-xs leading-5 text-white">
                           {rewrite.rewrittenText}
                         </pre>
                       </div>
                       <div className="md:col-span-2">
-                        <p className="font-mono text-xs font-bold uppercase tracking-widest">Rationale</p>
+                        <p className="font-mono text-xs font-bold uppercase tracking-widest">改写理由</p>
                         <p className="mt-2 border-2 border-slate-950 bg-white p-4 text-sm leading-6">{rewrite.rationale}</p>
                       </div>
                       <div className="md:col-span-2">
@@ -476,7 +476,7 @@ export default function UploadPage() {
                           className="inline-block border-2 border-slate-950 bg-white px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider shadow-[4px_4px_0_#0f172a]"
                           href={`/rewrites/${rewrite.id}`}
                         >
-                          Open rewrite and export
+                          打开改写并导出
                         </Link>
                       </div>
                     </div>
@@ -485,7 +485,7 @@ export default function UploadPage() {
               </div>
             ) : (
               <p className="mt-6 leading-7 text-slate-700">
-                After uploading a resume and submitting a JD, match scores and first-pass suggestions will appear here.
+                上传简历并提交 JD 后，这里会显示匹配分数和第一轮优化建议。
               </p>
             )}
           </section>

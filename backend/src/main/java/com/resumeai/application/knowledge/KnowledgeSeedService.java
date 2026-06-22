@@ -20,23 +20,23 @@ public class KnowledgeSeedService implements ApplicationRunner {
     @Override
     @Transactional
     public void run(ApplicationArguments args) {
-        seed("ATS Resume Rules", "OPTIMIZATION_RULE", """
-                ATS-friendly resumes should use standard section titles, explicit skill names, simple formatting, and role-relevant keywords.
-                Avoid tables for core content, image-only resumes, vague summaries, and unsupported claims.
-                Tailor the summary, skills, and recent project bullets to the target job description.
+        seed("ATS 简历规则", "OPTIMIZATION_RULE", """
+                适合 ATS 的简历应使用标准章节标题、明确技能名称、简单排版和与岗位相关的关键词。
+                避免把核心内容放在表格或图片中，避免空泛摘要和没有证据支撑的能力描述。
+                摘要、技能和最近项目经历应围绕目标 JD 做定向调整。
                 """);
-        seed("STAR Bullet Writing", "RESUME_GUIDE", """
-                Strong resume bullets follow action + task + technical scope + measurable result.
-                Prefer evidence such as latency reduction, throughput, cost savings, conversion lift, reliability improvement, or team impact.
-                Do not invent metrics; if no metric exists, use concrete scope and outcome.
+        seed("STAR 项目经历写法", "RESUME_GUIDE", """
+                有说服力的简历项目经历通常遵循：动作 + 任务 + 技术范围 + 可验证结果。
+                优先使用延迟下降、吞吐提升、成本节省、转化提升、可靠性改进或团队影响等证据。
+                不要编造指标；如果没有指标，就写清具体范围和真实结果。
                 """);
-        seed("Java Backend Role Profile", "ROLE_GUIDE", """
-                Java backend roles commonly expect Spring Boot, REST APIs, SQL, Redis, message queues, Docker, observability, testing, and distributed system fundamentals.
-                Strong resumes connect these skills to production outcomes such as performance, reliability, maintainability, and business workflows.
+        seed("Java 后端岗位画像", "ROLE_GUIDE", """
+                Java 后端岗位通常关注 Spring Boot、REST API、SQL、Redis、消息队列、Docker、可观测性、测试和分布式系统基础。
+                好的简历会把这些技能连接到性能、可靠性、可维护性和业务流程等真实产出上。
                 """);
-        seed("AI Agent Role Profile", "ROLE_GUIDE", """
-                AI agent roles value LLM integration, prompt engineering, RAG, vector databases, tool calling, evaluation, observability, and safe fallback behavior.
-                Resume evidence should name model providers, retrieval strategy, document parsing, orchestration flow, and measurable product impact.
+        seed("AI Agent 岗位画像", "ROLE_GUIDE", """
+                AI Agent 岗位通常关注 LLM 集成、提示词工程、RAG、向量数据库、工具调用、评估、可观测性和安全兜底。
+                简历证据应尽量说明模型提供方、检索策略、文档解析、编排流程和可验证的产品影响。
                 """);
     }
 

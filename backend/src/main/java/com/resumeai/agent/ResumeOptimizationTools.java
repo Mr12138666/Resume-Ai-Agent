@@ -17,21 +17,21 @@ public class ResumeOptimizationTools {
         this.keywordMatcher = keywordMatcher;
     }
 
-    @Tool(description = "Retrieve resume optimization guidance from the RAG knowledge base.")
-    public String retrieveGuidance(@ToolParam(description = "Search query built from the target job and resume gap.") String query) {
+    @Tool(description = "从 RAG 知识库检索简历优化建议。")
+    public String retrieveGuidance(@ToolParam(description = "根据目标岗位和简历缺口构造的检索问题。") String query) {
         var results = ragKnowledgeService.search(query, 4);
         if (results.isEmpty()) {
-            return "No retrieved guidance available.";
+            return "暂未检索到可用建议。";
         }
         return String.join("\n\n", results.stream()
                 .map(result -> result.title() + ": " + result.content())
                 .toList());
     }
 
-    @Tool(description = "Calculate a transparent keyword match score between resume text and target job description.")
+    @Tool(description = "计算简历文本与目标岗位 JD 之间透明的关键词匹配分。")
     public String calculateMatchScore(
-            @ToolParam(description = "Resume text") String resumeText,
-            @ToolParam(description = "Target job description") String jobDescription
+            @ToolParam(description = "简历文本") String resumeText,
+            @ToolParam(description = "目标岗位 JD") String jobDescription
     ) {
         var match = keywordMatcher.match(resumeText, jobDescription);
         var total = Math.max(1, match.keywords().size());

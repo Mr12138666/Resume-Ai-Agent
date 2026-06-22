@@ -109,21 +109,21 @@ public class ResumeRewriteService {
             return chatClientBuilder.build()
                     .prompt()
                     .system("""
-                            You are a resume rewrite agent.
-                            You may call tools to retrieve guidance and calculate match score.
-                            Rewrite only the provided resume text.
-                            Preserve all facts. Do not invent employers, metrics, dates, responsibilities, or technologies.
-                            Return concise professional wording optimized for the target job.
+                            你是一名中文简历改写智能体。
+                            你可以调用工具检索 RAG 建议并计算关键词匹配分。
+                            只允许改写用户提供的简历文本。
+                            必须保留所有事实，不得编造雇主、指标、日期、职责或技术栈。
+                            输出要简洁、专业，并围绕目标岗位优化表达。
                             """)
                     .user("""
-                            Original resume text:
+                            原始简历文本：
                             %s
 
-                            Target job description:
+                            目标岗位 JD：
                             %s
 
-                            Use RAG guidance and match scoring tools before finalizing.
-                            Return rewrittenText and rationale.
+                            请先使用 RAG 建议和匹配评分工具，再给出最终改写。
+                            返回 rewrittenText 和 rationale，内容使用中文。
                             """.formatted(limit(originalText), limit(analysis.getJob().getDescription())))
                     .tools(tools)
                     .call()
@@ -139,11 +139,11 @@ public class ResumeRewriteService {
         var rewritten = """
                 %s
 
-                Optimization note: Align this section more explicitly with the target role by naming relevant tools, scope, and outcomes already supported by your experience.
+                优化提示：请在不新增事实的前提下，更明确地写出与目标岗位相关的工具、职责范围和已有成果。
                 """.formatted(originalText.strip());
         return new RewriteGeneration(
                 rewritten.strip(),
-                "Fallback rewrite used because the model call failed. Guidance considered: " + guidance
+                "模型调用失败，已使用兜底改写逻辑。参考到的检索建议：" + guidance
         );
     }
 
@@ -170,44 +170,44 @@ public class ResumeRewriteService {
         var resume = analysis.getResume();
         var job = analysis.getJob();
         return """
-                # Optimized Resume Section
+                # 优化后的简历段落
 
-                ## Target Role
+                ## 目标岗位
 
-                - Title: %s
-                - Company: %s
+                - 岗位：%s
+                - 公司：%s
 
-                ## Rewritten Text
-
-                %s
-
-                ## Rationale
+                ## 改写后文本
 
                 %s
 
-                ## Original Text
+                ## 改写理由
 
                 %s
 
-                ## Verification
+                ## 原始文本
+
+                %s
+
+                ## 事实校验
 
                 ```json
                 %s
                 ```
 
-                ## Trace
+                ## 追踪信息
 
-                - Resume: %s
-                - Analysis ID: %s
-                - Rewrite ID: %s
+                - 简历：%s
+                - 分析 ID：%s
+                - 改写 ID：%s
                 """.formatted(
-                blank(job.getTitle(), "Untitled role"),
-                blank(job.getCompany(), "Unknown company"),
+                blank(job.getTitle(), "未命名岗位"),
+                blank(job.getCompany(), "未知公司"),
                 blank(draft.getRewrittenText(), ""),
                 blank(draft.getRationale(), ""),
                 blank(draft.getOriginalText(), ""),
                 blank(draft.getVerificationJson(), "{}"),
-                blank(resume.getTitle(), "Untitled resume"),
+                blank(resume.getTitle(), "未命名简历"),
                 analysis.getId(),
                 draft.getId()
         ).strip() + "\n";

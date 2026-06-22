@@ -40,7 +40,7 @@ export default function JobDetailPage({
       setResumes(loadedResumes);
       setSelectedResumeId((current) => current || loadedResumes[0]?.id || "");
     } catch (loadError) {
-      setError(loadError instanceof Error ? loadError.message : "Failed to load job.");
+      setError(loadError instanceof Error ? loadError.message : "岗位详情加载失败。");
     } finally {
       setIsLoading(false);
     }
@@ -56,7 +56,7 @@ export default function JobDetailPage({
     try {
       setJob(await structureJob(jobId));
     } catch (structureError) {
-      setError(structureError instanceof Error ? structureError.message : "Job structuring failed.");
+      setError(structureError instanceof Error ? structureError.message : "岗位结构化失败。");
     } finally {
       setIsStructuring(false);
     }
@@ -64,7 +64,7 @@ export default function JobDetailPage({
 
   async function handleCreateAnalysis() {
     if (!selectedResumeId) {
-      setError("Choose a resume before creating analysis.");
+      setError("请先选择一份简历，再创建匹配分析。");
       return;
     }
 
@@ -78,7 +78,7 @@ export default function JobDetailPage({
         useRag,
       }));
     } catch (analysisError) {
-      setError(analysisError instanceof Error ? analysisError.message : "Analysis creation failed.");
+      setError(analysisError instanceof Error ? analysisError.message : "匹配分析创建失败。");
     } finally {
       setIsAnalyzing(false);
     }
@@ -89,16 +89,16 @@ export default function JobDetailPage({
       <section className="mx-auto max-w-6xl">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <p className="font-mono text-sm uppercase tracking-[0.35em] text-slate-600">Target Job</p>
+            <p className="font-mono text-sm uppercase tracking-[0.35em] text-slate-600">目标岗位</p>
             <h1 className="mt-4 max-w-4xl text-4xl font-black leading-tight md:text-6xl">
-              Requirements, structure, and resume match launchpad.
+              查看岗位要求、结构化结果，并发起简历匹配。
             </h1>
           </div>
           <Link
             className="border-2 border-slate-950 bg-white px-5 py-3 font-mono text-sm font-bold uppercase tracking-wider shadow-[5px_5px_0_#0f172a]"
             href="/dashboard"
           >
-            Dashboard
+            工作台
           </Link>
         </div>
 
@@ -107,17 +107,17 @@ export default function JobDetailPage({
         ) : null}
 
         {isLoading ? (
-          <p className="mt-8 border-2 border-slate-950 bg-white p-6 font-mono">Loading job...</p>
+          <p className="mt-8 border-2 border-slate-950 bg-white p-6 font-mono">正在加载岗位...</p>
         ) : null}
 
         {job ? (
           <div className="mt-8 space-y-8">
             <section className="grid gap-4 md:grid-cols-4">
               {[
-                ["Status", job.status],
-                ["Company", job.company || "Unknown"],
-                ["Created", new Date(job.createdAt).toLocaleDateString()],
-                ["Updated", new Date(job.updatedAt).toLocaleDateString()],
+                ["状态", job.status],
+                ["公司", job.company || "未知"],
+                ["创建时间", new Date(job.createdAt).toLocaleDateString()],
+                ["更新时间", new Date(job.updatedAt).toLocaleDateString()],
               ].map(([label, value]) => (
                 <article key={label} className="border-2 border-slate-950 bg-white p-5 shadow-[5px_5px_0_#0f172a]">
                   <p className="font-mono text-xs uppercase tracking-widest text-slate-600">{label}</p>
@@ -129,10 +129,10 @@ export default function JobDetailPage({
             <section className="border-2 border-slate-950 bg-[#eef4dd] p-6 shadow-[8px_8px_0_#95a36a]">
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
-                  <p className="font-mono text-xs uppercase tracking-widest text-slate-600">Role</p>
-                  <h2 className="mt-2 text-2xl font-black">{job.title || "Untitled role"}</h2>
+                  <p className="font-mono text-xs uppercase tracking-widest text-slate-600">岗位</p>
+                  <h2 className="mt-2 text-2xl font-black">{job.title || "未命名岗位"}</h2>
                   <p className="mt-2 text-sm leading-6 text-slate-700">
-                    Structure this JD before analysis when you want an inspectable requirement JSON artifact.
+                    如果需要查看可追溯的岗位要求 JSON，可以先对 JD 做结构化。
                   </p>
                 </div>
                 <button
@@ -141,16 +141,16 @@ export default function JobDetailPage({
                   onClick={handleStructure}
                   type="button"
                 >
-                  {isStructuring ? "Structuring..." : "Structure JSON"}
+                  {isStructuring ? "结构化中..." : "生成 JSON"}
                 </button>
               </div>
             </section>
 
             <section className="border-2 border-slate-950 bg-white p-6 shadow-[8px_8px_0_#0f172a]">
-              <h2 className="font-mono text-xl font-bold">Create analysis from this JD</h2>
+              <h2 className="font-mono text-xl font-bold">基于该 JD 创建匹配分析</h2>
               <div className="mt-5 grid gap-4 md:grid-cols-[1fr_auto]">
                 <label className="block font-mono text-sm font-bold uppercase tracking-widest">
-                  Resume
+                  简历
                   <select
                     className="mt-3 w-full border-2 border-slate-950 bg-white px-4 py-3 font-serif text-base outline-none focus:bg-[#eef4dd]"
                     value={selectedResumeId}
@@ -163,7 +163,7 @@ export default function JobDetailPage({
                         </option>
                       ))
                     ) : (
-                      <option value="">No resumes available</option>
+                      <option value="">暂无可用简历</option>
                     )}
                   </select>
                 </label>
@@ -175,7 +175,7 @@ export default function JobDetailPage({
                       onChange={(event) => setUseRag(event.target.checked)}
                       type="checkbox"
                     />
-                    Use RAG
+                    使用 RAG
                   </label>
                   <button
                     className="border-2 border-slate-950 bg-slate-950 px-5 py-3 font-mono text-sm font-bold uppercase tracking-wider text-white shadow-[5px_5px_0_#95a36a] disabled:opacity-60"
@@ -183,19 +183,19 @@ export default function JobDetailPage({
                     onClick={handleCreateAnalysis}
                     type="button"
                   >
-                    {isAnalyzing ? "Analyzing..." : "Create analysis"}
+                    {isAnalyzing ? "分析中..." : "创建分析"}
                   </button>
                 </div>
               </div>
               {createdAnalysis ? (
                 <div className="mt-5 border-2 border-slate-950 bg-[#f8f5eb] p-5">
-                  <p className="font-mono text-xs uppercase tracking-widest text-slate-600">Analysis created</p>
-                  <p className="mt-2 text-xl font-black">Overall score {createdAnalysis.overallScore}</p>
+                  <p className="font-mono text-xs uppercase tracking-widest text-slate-600">分析已创建</p>
+                  <p className="mt-2 text-xl font-black">综合得分 {createdAnalysis.overallScore}</p>
                   <Link
                     className="mt-4 inline-block border-2 border-slate-950 bg-white px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider shadow-[4px_4px_0_#0f172a]"
                     href={`/analyses/${createdAnalysis.id}`}
                   >
-                    Open analysis
+                    打开分析报告
                   </Link>
                 </div>
               ) : null}
@@ -203,21 +203,21 @@ export default function JobDetailPage({
 
             <div className="grid gap-6 lg:grid-cols-[1fr_0.9fr]">
               <section className="border-2 border-slate-950 bg-white p-6 shadow-[8px_8px_0_#0f172a]">
-                <h2 className="font-mono text-xl font-bold">Job description</h2>
+                <h2 className="font-mono text-xl font-bold">岗位 JD</h2>
                 <pre className="mt-5 max-h-[36rem] overflow-auto whitespace-pre-wrap border-2 border-slate-950 bg-[#f8f5eb] p-5 text-sm leading-6">
                   {job.description}
                 </pre>
               </section>
 
               <section className="border-2 border-slate-950 bg-slate-950 p-6 text-white shadow-[8px_8px_0_#95a36a]">
-                <h2 className="font-mono text-xl font-bold">Structured JSON</h2>
+                <h2 className="font-mono text-xl font-bold">结构化 JSON</h2>
                 {job.structuredJson ? (
                   <pre className="mt-5 max-h-[36rem] overflow-auto whitespace-pre-wrap border-2 border-white/80 bg-white/10 p-5 text-xs leading-5">
                     {formatJson(job.structuredJson)}
                   </pre>
                 ) : (
                   <p className="mt-5 leading-7 text-white/80">
-                    No structured JD JSON yet. Run structure extraction to inspect parsed requirements.
+                    暂无结构化 JD JSON。点击结构化后即可查看解析出的岗位要求。
                   </p>
                 )}
               </section>

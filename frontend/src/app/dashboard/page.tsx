@@ -54,7 +54,7 @@ export default function DashboardPage() {
       ]);
       setData({ status, resumes, jobs, analyses, rewrites, knowledge });
     } catch (loadError) {
-      setError(loadError instanceof Error ? loadError.message : "Failed to load dashboard.");
+      setError(loadError instanceof Error ? loadError.message : "工作台加载失败。");
     } finally {
       setIsLoading(false);
     }
@@ -76,9 +76,9 @@ export default function DashboardPage() {
       <section className="mx-auto max-w-6xl">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <p className="font-mono text-sm uppercase tracking-[0.35em] text-slate-600">Command Center</p>
+            <p className="font-mono text-sm uppercase tracking-[0.35em] text-slate-600">工作台</p>
             <h1 className="mt-4 max-w-4xl text-4xl font-black leading-tight md:text-6xl">
-              One board for the resume optimization pipeline.
+              一张看板串起简历优化全流程。
             </h1>
           </div>
           <button
@@ -87,22 +87,22 @@ export default function DashboardPage() {
             onClick={loadDashboard}
             type="button"
           >
-            {isLoading ? "Loading..." : "Refresh"}
+            {isLoading ? "加载中..." : "刷新"}
           </button>
         </div>
 
         <div className="mt-6 flex flex-wrap gap-3">
           <Link className="border-2 border-slate-950 bg-slate-950 px-5 py-3 font-mono text-sm font-bold uppercase tracking-wider text-white shadow-[5px_5px_0_#95a36a]" href="/upload">
-            Run workflow
+            开始流程
           </Link>
           <Link className="border-2 border-slate-950 bg-[#f6d875] px-5 py-3 font-mono text-sm font-bold uppercase tracking-wider shadow-[5px_5px_0_#0f172a]" href="/demo">
-            Demo smoke
+            快速演示
           </Link>
           <Link className="border-2 border-slate-950 bg-white px-5 py-3 font-mono text-sm font-bold uppercase tracking-wider shadow-[5px_5px_0_#0f172a]" href="/knowledge">
-            Manage RAG
+            管理 RAG
           </Link>
           <Link className="border-2 border-slate-950 bg-white px-5 py-3 font-mono text-sm font-bold uppercase tracking-wider shadow-[5px_5px_0_#0f172a]" href="/settings">
-            Settings
+            系统配置
           </Link>
         </div>
 
@@ -112,12 +112,12 @@ export default function DashboardPage() {
 
         <div className="mt-8 grid gap-4 md:grid-cols-3 lg:grid-cols-6">
           {[
-            ["Resumes", data.resumes.length],
-            ["Jobs", data.jobs.length],
-            ["Analyses", data.analyses.length],
-            ["Rewrites", data.rewrites.length],
-            ["Knowledge", data.knowledge.length],
-            ["Best score", bestAnalysis?.overallScore ?? 0],
+            ["简历", data.resumes.length],
+            ["岗位", data.jobs.length],
+            ["分析", data.analyses.length],
+            ["改写", data.rewrites.length],
+            ["知识", data.knowledge.length],
+            ["最佳分", bestAnalysis?.overallScore ?? 0],
           ].map(([label, value]) => (
             <article key={label} className="border-2 border-slate-950 bg-white p-5 shadow-[5px_5px_0_#0f172a]">
               <p className="font-mono text-xs uppercase tracking-widest text-slate-600">{label}</p>
@@ -129,9 +129,9 @@ export default function DashboardPage() {
         <section className="mt-8 border-2 border-slate-950 bg-[#eef4dd] p-6 shadow-[8px_8px_0_#95a36a]">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h2 className="font-mono text-xl font-bold">Runtime status</h2>
+              <h2 className="font-mono text-xl font-bold">运行状态</h2>
               <p className="mt-1 text-sm text-slate-700">
-                {data.status ? `Last checked ${new Date(data.status.timestamp).toLocaleString()}` : "Backend status has not loaded yet."}
+                {data.status ? `最近检查：${new Date(data.status.timestamp).toLocaleString()}` : "后端状态尚未加载。"}
               </p>
             </div>
             <span className="border-2 border-slate-950 bg-white px-3 py-1 font-mono text-sm font-bold">
@@ -151,48 +151,48 @@ export default function DashboardPage() {
 
         <div className="mt-8 grid gap-6 lg:grid-cols-2">
           <RecentCard
-            emptyText="No resumes uploaded yet."
+            emptyText="还没有上传简历。"
             items={data.resumes.slice(0, 5).map((resume) => ({
               id: resume.id,
               href: `/resumes/${resume.id}`,
               title: resume.title,
-              meta: `${resume.status} · ${resume.rawTextLength} chars`,
+              meta: `${resume.status} · ${resume.rawTextLength} 字`,
               body: resume.rawTextPreview || resume.originalFilename,
             }))}
-            title="Recent resumes"
+            title="最近简历"
           />
           <RecentCard
-            emptyText="No job descriptions created yet."
+            emptyText="还没有创建岗位描述。"
             items={data.jobs.slice(0, 5).map((job) => ({
               id: job.id,
               href: `/jobs/${job.id}`,
-              title: job.title || "Untitled role",
-              meta: `${job.company || "Unknown company"} · ${job.status}`,
+              title: job.title || "未命名岗位",
+              meta: `${job.company || "未知公司"} · ${job.status}`,
               body: job.description,
             }))}
-            title="Target jobs"
+            title="目标岗位"
           />
           <RecentCard
-            emptyText="No analyses created yet."
+            emptyText="还没有生成匹配分析。"
             items={data.analyses.slice(0, 5).map((analysis) => ({
               id: analysis.id,
               href: `/analyses/${analysis.id}`,
-              title: `Overall ${analysis.overallScore} / Keyword ${analysis.keywordScore}`,
-              meta: `${analysis.status} · missing ${analysis.report.missingKeywords.length}`,
+              title: `综合 ${analysis.overallScore} / 关键词 ${analysis.keywordScore}`,
+              meta: `${analysis.status} · 缺口 ${analysis.report.missingKeywords.length}`,
               body: analysis.report.suggestions.join(" "),
             }))}
-            title="Recent analyses"
+            title="最近分析"
           />
           <RecentCard
-            emptyText="No rewrite drafts yet."
+            emptyText="还没有改写草稿。"
             items={data.rewrites.slice(0, 5).map((rewrite) => ({
               id: rewrite.id,
               href: `/rewrites/${rewrite.id}`,
-              title: rewrite.sectionId || "Rewrite draft",
+              title: rewrite.sectionId || "改写草稿",
               meta: rewrite.status,
               body: rewrite.rewrittenText,
             }))}
-            title="Agent rewrites"
+            title="智能体改写"
           />
         </div>
       </section>
@@ -236,7 +236,7 @@ function RecordCard({
       <h3 className="mt-2 text-lg font-black">{item.title}</h3>
       <p className="mt-2 line-clamp-3 text-sm leading-6 text-slate-700">{item.body}</p>
       {item.href ? (
-        <p className="mt-3 font-mono text-xs font-bold uppercase tracking-widest text-slate-950">Open detail</p>
+        <p className="mt-3 font-mono text-xs font-bold uppercase tracking-widest text-slate-950">查看详情</p>
       ) : null}
     </>
   );

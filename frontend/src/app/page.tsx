@@ -34,31 +34,31 @@ export default function HomePage() {
             className="w-fit border-2 border-slate-950 bg-white px-6 py-3 font-mono font-bold uppercase tracking-wider text-slate-950 shadow-[6px_6px_0_#0f172a]"
             href="/dashboard"
           >
-            Open dashboard
+            打开工作台
           </Link>
           <Link
             className="w-fit border-2 border-slate-950 bg-[#f6d875] px-6 py-3 font-mono font-bold uppercase tracking-wider text-slate-950 shadow-[6px_6px_0_#0f172a]"
             href="/demo"
           >
-            Run demo
+            快速演示
           </Link>
           <Link
             className="w-fit border-2 border-slate-950 bg-slate-950 px-6 py-3 font-mono font-bold uppercase tracking-wider text-white shadow-[6px_6px_0_#95a36a]"
             href="/upload"
           >
-            Start workflow
+            开始优化流程
           </Link>
           <Link
             className="w-fit border-2 border-slate-950 bg-[#eef4dd] px-6 py-3 font-mono font-bold uppercase tracking-wider text-slate-950 shadow-[6px_6px_0_#0f172a]"
             href="/knowledge"
           >
-            Open RAG workbench
+            打开 RAG 知识库
           </Link>
           <Link
             className="w-fit border-2 border-slate-950 bg-white px-6 py-3 font-mono font-bold uppercase tracking-wider text-slate-950 shadow-[6px_6px_0_#0f172a]"
             href="/settings"
           >
-            Settings
+            系统配置
           </Link>
         </div>
       </section>

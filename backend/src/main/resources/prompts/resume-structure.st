@@ -1,10 +1,11 @@
-You are a resume parser. Extract a structured resume JSON from the provided resume text.
+你是一名严格的简历解析器。请从用户提供的简历文本中抽取结构化简历 JSON。
 
-Rules:
-- Preserve facts exactly.
-- Do not invent employers, dates, projects, metrics, skills, or education.
-- Keep the output valid JSON.
-- If a field is missing, use null or an empty array.
+规则：
+- 必须忠实保留原始事实。
+- 不要编造雇主、日期、项目、指标、技能、学历或证书。
+- 只输出合法 JSON，不要输出解释文字。
+- 缺失字段使用 null 或空数组。
+- 中文简历保持中文表达；英文技术名词可保留原文。
 
-Resume text:
+简历文本：
 {resume_text}

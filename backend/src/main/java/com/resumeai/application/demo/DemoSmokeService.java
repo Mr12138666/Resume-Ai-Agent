@@ -44,15 +44,15 @@ public class DemoSmokeService {
     @Transactional
     public DemoSmokeResponse createSmokeRun() {
         var resume = resumeRepository.save(new Resume(
-                "Demo Java Backend Resume",
+                "演示 Java 后端简历",
                 "demo-java-backend-resume.txt",
                 "text/plain",
                 "demo/resumes/demo-java-backend-resume.txt",
                 demoResumeText()
         ));
         var job = jobDescriptionRepository.save(new JobDescription(
-                "Senior Java Backend Engineer",
-                "Demo Cloud",
+                "高级 Java 后端工程师",
+                "演示云科技",
                 demoJobDescription()
         ));
         var analysis = analysisRepository.save(new Analysis(
@@ -69,8 +69,8 @@ public class DemoSmokeService {
                 "demo-experience",
                 originalBullet(),
                 rewrittenBullet(),
-                "Reframed the project with stronger action verbs, explicit Spring Boot/PostgreSQL evidence, measurable latency impact, and ATS-aligned backend keywords while preserving the original facts.",
-                "{\"faithfulness\":\"passed_demo_review\",\"inventedFactsAllowed\":false}"
+                "在保留原始事实的前提下，强化了动作词、Spring Boot/PostgreSQL 技术证据、可追踪记录价值和与后端岗位匹配的 ATS 关键词。",
+                "{\"faithfulness\":\"passed_demo_review\",\"inventedFactsAllowed\":false,\"language\":\"zh-CN\"}"
         ));
         var export = resumeRewriteService.exportMarkdown(rewrite.getId());
         return new DemoSmokeResponse(resume.getId(), job.getId(), analysis.getId(), rewrite.getId(), export);
@@ -83,14 +83,14 @@ public class DemoSmokeService {
                     List.of("java", "spring boot", "postgresql", "redis", "docker"),
                     List.of("kubernetes", "distributed tracing"),
                     List.of(
-                            "Add a short backend-focused summary that mirrors the role's Spring Boot and cloud requirements.",
-                            "Quantify project impact near each backend technology keyword.",
-                            "Mention observability and deployment context where truthful evidence exists."
+                            "补充一段聚焦 Java 后端与 AI 文档平台的中文摘要。",
+                            "在 Spring Boot、PostgreSQL、Redis 等关键词附近补充真实项目影响。",
+                            "如果简历中有证据，可补充可观测性和部署上下文。"
                     ),
-                    List.of("ATS guidance: use exact role keywords only when backed by resume evidence."),
+                    List.of("ATS 建议：只有在简历证据支持时，才使用 JD 中的精确关键词。"),
                     List.of(
-                            new AnalysisReport.EvidenceItem("spring boot", "Built Spring Boot REST services for resume parsing and analysis.", true),
-                            new AnalysisReport.EvidenceItem("postgresql", "Stored analysis and rewrite records in PostgreSQL.", true),
+                            new AnalysisReport.EvidenceItem("spring boot", "构建了用于简历解析和匹配分析的 Spring Boot REST 服务。", true),
+                            new AnalysisReport.EvidenceItem("postgresql", "使用 PostgreSQL 保存分析与改写记录。", true),
                             new AnalysisReport.EvidenceItem("kubernetes", "", false)
                     )
             );
@@ -102,28 +102,28 @@ public class DemoSmokeService {
 
     private String demoResumeText() {
         return """
-                Java backend engineer with experience building Spring Boot APIs, PostgreSQL persistence, Redis caching, Docker deployments, and document parsing workflows.
+                Java 后端工程师，具备 Spring Boot API、PostgreSQL 持久化、Redis 缓存、Docker 部署和文档解析工作流经验。
 
-                Project: Resume AI Agent
-                - Built REST APIs for resume upload, JD matching, and rewrite draft generation.
-                - Integrated PostgreSQL, MinIO, and Redis health checks for a deployable demo workflow.
-                - Reduced manual resume tailoring effort by generating structured suggestions and rewrite drafts.
+                项目：简历优化智能体
+                - 构建简历上传、JD 匹配和改写草稿生成相关 REST API。
+                - 集成 PostgreSQL、MinIO 和 Redis 健康检查，支撑可部署的演示流程。
+                - 通过结构化建议和改写草稿降低手动定制简历的成本。
                 """;
     }
 
     private String demoJobDescription() {
         return """
-                We are hiring a Senior Java Backend Engineer to build Spring Boot services for AI-enabled document workflows.
-                Requirements include Java 21, REST API design, PostgreSQL, Redis, Docker, observability, and experience integrating LLM or RAG systems.
-                Bonus: Kubernetes, distributed tracing, and strong product ownership.
+                我们正在招聘高级 Java 后端工程师，负责构建面向 AI 文档工作流的 Spring Boot 服务。
+                岗位要求包括 Java 21、REST API 设计、PostgreSQL、Redis、Docker、可观测性，以及 LLM 或 RAG 系统集成经验。
+                加分项：Kubernetes、分布式追踪和较强的产品 Owner 意识。
                 """;
     }
 
     private String originalBullet() {
-        return "Built APIs for resume upload and matching with PostgreSQL and Redis.";
+        return "构建简历上传和匹配相关 API，并使用 PostgreSQL 与 Redis。";
     }
 
     private String rewrittenBullet() {
-        return "Built Spring Boot APIs for resume upload, JD matching, and rewrite workflows, using PostgreSQL for traceable analysis records and Redis-backed health checks to support a reliable AI resume optimization demo.";
+        return "构建 Spring Boot API 支撑简历上传、JD 匹配和改写流程，使用 PostgreSQL 保存可追踪分析记录，并通过 Redis 健康检查提升 AI 简历优化演示链路的可靠性。";
     }
 }
