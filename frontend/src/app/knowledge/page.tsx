@@ -116,7 +116,7 @@ export default function KnowledgePage() {
       eyebrow="RAG Knowledge"
       title="给简历智能体一套可引用的规则库。"
     >
-      {error ? <p className="mb-6 border-2 border-[#171713] bg-[#f2b8ad] p-4 font-bold">{error}</p> : null}
+      {error ? <p className="mb-6 border border-black bg-[#dc2626] p-4 font-mono text-sm font-bold uppercase text-white shadow-sw-sm">{error}</p> : null}
 
       <section className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
         <Card tone="paper">
@@ -129,7 +129,7 @@ export default function KnowledgePage() {
             <Field label="标题" value={title} onChange={setTitle} />
             <label className="block font-mono text-xs font-black uppercase tracking-[0.18em]">
               内容
-              <textarea className="panel-scroll mt-2 min-h-80 w-full border-2 border-[#171713] bg-white px-4 py-3 text-base leading-7 outline-none focus:bg-[#fffaf0]" value={content} onChange={(event) => setContent(event.target.value)} />
+              <textarea className="panel-scroll mt-2 min-h-80 w-full rounded-none border border-black bg-[#f0f0e8] px-4 py-3 font-mono text-sm leading-6 outline-none focus:bg-[#e5e5e0] focus:ring-2 focus:ring-[#1d4ed8]" value={content} onChange={(event) => setContent(event.target.value)} />
             </label>
             <Button disabled={isCreating} tone="ink" type="submit">{isCreating ? "创建中" : "创建文档"}</Button>
           </form>
@@ -140,10 +140,10 @@ export default function KnowledgePage() {
           <div className="mt-5 space-y-3">
             {documents.length > 0 ? (
               documents.map((document) => (
-                <article className="border-2 border-[#171713] bg-[#fffaf0] p-4" key={document.id}>
+                <article className="border border-black bg-[#f0f0e8] p-4 shadow-sw-xs" key={document.id}>
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                      <p className="font-mono text-xs font-black uppercase tracking-[0.18em] text-[#6f746d]">{document.documentType} · {document.sourceType || "未知来源"}</p>
+                      <p className="font-mono text-xs font-bold uppercase tracking-wide text-[#1d4ed8]">{document.documentType} · {document.sourceType || "未知来源"}</p>
                       <h3 className="mt-2 text-xl font-black">{document.title}</h3>
                       <p className="mt-1 font-mono text-xs font-black">状态：{document.status}</p>
                     </div>
@@ -151,11 +151,11 @@ export default function KnowledgePage() {
                       {indexingId === document.id ? "索引中" : "索引"}
                     </Button>
                   </div>
-                  <p className="mt-4 text-sm leading-6 text-[#424036]">{clampText(document.content, 260)}</p>
+                  <p className="mt-4 font-mono text-xs uppercase leading-5 text-[#6b7280]">{clampText(document.content, 260)}</p>
                 </article>
               ))
             ) : (
-              <p className="border-2 border-dashed border-[#171713] bg-white/60 p-5 text-sm leading-6 text-[#424036]">{isLoading ? "正在加载知识文档..." : "暂无知识文档。"}</p>
+              <p className="border border-dashed border-black bg-[#e5e5e0] p-5 font-mono text-xs uppercase leading-5 text-[#6b7280]">{isLoading ? "正在加载知识文档..." : "暂无知识文档。"}</p>
             )}
           </div>
         </Card>
@@ -164,20 +164,20 @@ export default function KnowledgePage() {
       <Card className="mt-6" tone="sky">
         <CardHeader eyebrow="Step 3" title="检索 RAG 上下文" description="这里直接调用 PGvector 检索接口，确认知识能否被智能体取回。" />
         <form className="mt-5 flex flex-col gap-4 md:flex-row" onSubmit={handleSearch}>
-          <input className="min-h-14 flex-1 border-2 border-[#171713] bg-white px-4 py-3 outline-none focus:bg-[#fffaf0]" value={query} onChange={(event) => setQuery(event.target.value)} />
+          <input className="min-h-14 flex-1 rounded-none border border-black bg-[#f0f0e8] px-4 py-3 outline-none focus:bg-[#e5e5e0] focus:ring-2 focus:ring-[#1d4ed8]" value={query} onChange={(event) => setQuery(event.target.value)} />
           <Button disabled={isSearching} tone="ink" type="submit">{isSearching ? "检索中" : "检索"}</Button>
         </form>
         <div className="mt-6 grid gap-4 md:grid-cols-2">
           {results.map((result) => (
-            <article className="border-2 border-[#171713] bg-[#fffaf0] p-5" key={`${result.id}-${result.score ?? "fallback"}`}>
+            <article className="border border-black bg-[#f0f0e8] p-5 shadow-sw-xs" key={`${result.id}-${result.score ?? "fallback"}`}>
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <h3 className="text-xl font-black">{result.title || "未命名结果"}</h3>
-                <span className="border-2 border-[#171713] bg-[#d8e89b] px-2 py-1 font-mono text-xs font-black">
+                <span className="border border-black bg-[#15803d] px-2 py-1 font-mono text-xs font-bold text-white">
                   {typeof result.score === "number" ? result.score.toFixed(3) : "n/a"}
                 </span>
               </div>
-              <p className="mt-4 whitespace-pre-wrap text-sm leading-6 text-[#424036]">{result.content}</p>
-              <pre className="panel-scroll mt-4 max-h-40 overflow-auto whitespace-pre-wrap border-2 border-[#171713] bg-[#171713] p-3 text-xs leading-5 text-white">
+              <p className="mt-4 whitespace-pre-wrap font-mono text-xs uppercase leading-5 text-[#6b7280]">{result.content}</p>
+              <pre className="panel-scroll mt-4 max-h-40 overflow-auto whitespace-pre-wrap border border-black bg-black p-3 font-mono text-xs leading-5 text-white">
                 {JSON.stringify(result.metadata, null, 2)}
               </pre>
             </article>
@@ -192,7 +192,7 @@ function Field({ label, onChange, value }: { label: string; onChange: (value: st
   return (
     <label className="block font-mono text-xs font-black uppercase tracking-[0.18em]">
       {label}
-      <input className="mt-2 w-full border-2 border-[#171713] bg-white px-4 py-3 outline-none focus:bg-[#fffaf0]" value={value} onChange={(event) => onChange(event.target.value)} />
+      <input className="mt-2 w-full rounded-none border border-black bg-[#f0f0e8] px-4 py-3 outline-none focus:bg-[#e5e5e0] focus:ring-2 focus:ring-[#1d4ed8]" value={value} onChange={(event) => onChange(event.target.value)} />
     </label>
   );
 }

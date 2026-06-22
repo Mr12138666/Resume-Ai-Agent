@@ -37,7 +37,7 @@ export default function DemoPage() {
       eyebrow="Demo Runner"
       title="用一条样例链路检查平台是否真的跑通。"
     >
-      {error ? <p className="mb-6 border-2 border-[#171713] bg-[#f2b8ad] p-4 font-bold">{error}</p> : null}
+      {error ? <p className="mb-6 border border-black bg-[#dc2626] p-4 font-mono text-sm font-bold uppercase text-white shadow-sw-sm">{error}</p> : null}
 
       <section className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
         <Card tone="lime">
@@ -48,8 +48,8 @@ export default function DemoPage() {
           />
           <div className="mt-5 grid gap-3">
             {["创建样例简历", "创建目标 JD", "生成匹配分析", "生成改写草稿", "导出 Markdown"].map((item, index) => (
-              <div className="border-2 border-[#171713] bg-[#fffaf0] p-4" key={item}>
-                <p className="font-mono text-xs font-black text-[#6f746d]">STEP {index + 1}</p>
+              <div className="border border-black bg-[#f0f0e8] p-4 shadow-sw-xs" key={item}>
+                <p className="font-mono text-xs font-bold uppercase tracking-wide text-[#1d4ed8]">STEP {index + 1}</p>
                 <p className="mt-2 font-black">{item}</p>
               </div>
             ))}
@@ -64,17 +64,17 @@ export default function DemoPage() {
               <DemoLink href={`/jobs/${result.jobId}`} label="岗位" value={result.jobId} />
               <DemoLink href={`/analyses/${result.analysisId}`} label="分析" value={result.analysisId} />
               <DemoLink href={`/rewrites/${result.rewriteId}`} label="改写" value={result.rewriteId} />
-              <div className="border-2 border-white/80 bg-white/10 p-4">
+              <div className="border border-white/80 bg-white/10 p-4">
                 <p className="font-mono text-xs font-black uppercase tracking-[0.18em] text-white/70">Markdown</p>
                 <p className="mt-2 break-all text-sm text-white/75">{result.export.objectKey}</p>
                 <p className="mt-2 font-mono text-xs text-white/60">过期：{formatDateTime(result.export.downloadUrlExpiresAt)}</p>
-                <a className="mt-4 inline-flex border-2 border-white bg-white px-4 py-2 font-mono text-xs font-black uppercase tracking-[0.16em] text-[#171713]" href={result.export.downloadUrl} rel="noreferrer" target="_blank">
+                <a className="mt-4 inline-flex border border-white bg-white px-4 py-2 font-mono text-xs font-bold uppercase tracking-wide text-black" href={result.export.downloadUrl} rel="noreferrer" target="_blank">
                   下载
                 </a>
               </div>
             </div>
           ) : (
-            <p className="mt-5 border-2 border-white/60 bg-white/10 p-5 text-sm leading-7 text-white/75">点击运行演示后，这里会显示生成的记录和下载链接。</p>
+            <p className="mt-5 border border-white/60 bg-white/10 p-5 font-mono text-xs uppercase leading-5 text-white/75">点击运行演示后，这里会显示生成的记录和下载链接。</p>
           )}
         </Card>
       </section>
@@ -84,7 +84,7 @@ export default function DemoPage() {
 
 function DemoLink({ href, label, value }: { href: string; label: string; value: string }) {
   return (
-    <a className="block border-2 border-white/80 bg-white/10 p-4 text-white transition hover:-translate-y-0.5" href={href}>
+    <a className="block border border-white/80 bg-white/10 p-4 text-white transition hover:translate-x-[1px] hover:translate-y-[1px]" href={href}>
       <p className="font-mono text-xs font-black uppercase tracking-[0.18em] text-white/70">{label}</p>
       <p className="mt-2 break-all text-sm font-black">{value}</p>
     </a>

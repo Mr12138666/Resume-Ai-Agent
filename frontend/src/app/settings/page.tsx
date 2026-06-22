@@ -43,7 +43,7 @@ export default function SettingsPage() {
       eyebrow="Settings"
       title="系统配置与运行状态。"
     >
-      {error ? <p className="mb-6 border-2 border-[#171713] bg-[#f2b8ad] p-4 font-bold">{error}</p> : null}
+      {error ? <p className="mb-6 border border-black bg-[#dc2626] p-4 font-mono text-sm font-bold uppercase text-white shadow-sw-sm">{error}</p> : null}
 
       {settings ? (
         <section className="grid gap-6 lg:grid-cols-2">
@@ -108,7 +108,7 @@ export default function SettingsPage() {
           <CardHeader eyebrow="Runtime" title={status.status} description={`最近检查：${formatDateTime(status.timestamp)}`} />
           <div className="mt-5 grid gap-3 md:grid-cols-3">
             {status.components.map((component) => (
-              <article className="border-2 border-white/80 bg-white/10 p-4" key={component.name}>
+              <article className="border border-white/80 bg-white/10 p-4" key={component.name}>
                 <div className="flex items-start justify-between gap-3">
                   <p className="font-mono text-xs font-black uppercase tracking-[0.18em] text-white/70">{component.name}</p>
                   <span className="border border-white/70 px-2 py-1 font-mono text-[10px] font-black">{component.status}</span>
@@ -137,8 +137,8 @@ function SettingsCard({
       <CardHeader eyebrow="Config" title={title} />
       <dl className="mt-5 space-y-3">
         {rows.map(([label, value]) => (
-          <div className="grid gap-2 border-b-2 border-[#171713]/20 pb-3 md:grid-cols-[0.52fr_1fr]" key={label}>
-            <dt className="font-mono text-xs font-black uppercase tracking-[0.16em] text-[#6f746d]">{label}</dt>
+          <div className="grid gap-2 border-b border-black/20 pb-3 md:grid-cols-[0.52fr_1fr]" key={label}>
+            <dt className="font-mono text-xs font-bold uppercase tracking-wide text-[#1d4ed8]">{label}</dt>
             <dd className="break-all font-bold">{value || "未配置"}</dd>
           </div>
         ))}

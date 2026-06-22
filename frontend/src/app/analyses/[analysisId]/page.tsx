@@ -66,15 +66,15 @@ export default function AnalysisDetailPage({ params }: { params: Promise<{ analy
       eyebrow="Analysis Report"
       title="匹配报告不是结论，是改写前的证据清单。"
     >
-      {error ? <p className="mb-6 border-2 border-[#171713] bg-[#f2b8ad] p-4 font-bold">{error}</p> : null}
-      {isLoading ? <p className="border-2 border-[#171713] bg-[#fffaf0] p-6 font-mono font-black">正在加载分析报告...</p> : null}
+      {error ? <p className="mb-6 border border-black bg-[#dc2626] p-4 font-mono text-sm font-bold uppercase text-white shadow-sw-sm">{error}</p> : null}
+      {isLoading ? <p className="border border-black bg-[#f0f0e8] p-6 font-mono font-bold uppercase shadow-sw-sm">正在加载分析报告...</p> : null}
 
       {analysis ? (
         <div className="space-y-6">
           <section className="grid gap-6 lg:grid-cols-[0.85fr_1.15fr]">
             <Card tone="lime">
               <CardHeader
-                action={<span className="border-2 border-[#171713] bg-white px-3 py-1 font-mono text-xs font-black">{analysis.status}</span>}
+                action={<span className="border border-black bg-[#f0f0e8] px-3 py-1 font-mono text-xs font-bold uppercase tracking-wide">{analysis.status}</span>}
                 eyebrow="Score"
                 title="整体匹配"
                 description={`创建时间：${formatDateTime(analysis.createdAt)}。分数来自关键词覆盖、语义相关性和 ATS 可读性。`}
@@ -98,8 +98,8 @@ export default function AnalysisDetailPage({ params }: { params: Promise<{ analy
                 <AnalysisPreviewStrip analysis={analysis} />
               </div>
               {rewrite ? (
-                <div className="mt-5 border-2 border-[#171713] bg-[#d8e89b] p-4">
-                  <p className="font-mono text-xs font-black uppercase tracking-[0.18em] text-[#6f746d]">草稿已生成</p>
+                <div className="mt-5 border border-black bg-[#e5e5e0] p-4 shadow-sw-xs">
+                  <p className="font-mono text-xs font-bold uppercase tracking-wide text-[#1d4ed8]">草稿已生成</p>
                   <p className="mt-2 line-clamp-3 text-sm leading-6">{rewrite.rewrittenText}</p>
                   <ButtonLink className="mt-4" href={`/rewrites/${rewrite.id}`} tone="ink">打开草稿</ButtonLink>
                 </div>
@@ -126,7 +126,7 @@ export default function AnalysisDetailPage({ params }: { params: Promise<{ analy
             <CardHeader eyebrow="Suggestions" title="优化建议" description="建议会尽量保持中文、可执行、面向简历段落修改。" />
             <ol className="mt-5 grid gap-3 md:grid-cols-2">
               {analysis.report.suggestions.map((suggestion, index) => (
-                <li className="border-2 border-[#171713] bg-[#f5f0df] p-4 text-sm leading-7" key={`${suggestion}-${index}`}>
+                <li className="border border-black bg-[#f0f0e8] p-4 font-mono text-xs uppercase leading-5 shadow-sw-xs" key={`${suggestion}-${index}`}>
                   <span className="mr-2 font-mono text-xs font-black">#{index + 1}</span>
                   {suggestion}
                 </li>
@@ -146,10 +146,10 @@ export default function AnalysisDetailPage({ params }: { params: Promise<{ analy
             <div className="mt-5 grid gap-3 md:grid-cols-2">
               {analysis.report.retrievedGuidance.length > 0 ? (
                 analysis.report.retrievedGuidance.map((guidance, index) => (
-                  <p className="border-2 border-white/80 bg-white/10 p-4 text-sm leading-6 text-white/80" key={`${guidance}-${index}`}>{guidance}</p>
+                  <p className="border border-white/80 bg-white/10 p-4 font-mono text-xs uppercase leading-5 text-white/80" key={`${guidance}-${index}`}>{guidance}</p>
                 ))
               ) : (
-                <p className="border-2 border-white/50 bg-white/10 p-5 text-sm leading-6 text-white/75">暂无 RAG 建议。可以先进入知识库创建并索引文档。</p>
+                <p className="border border-white/50 bg-white/10 p-5 font-mono text-xs uppercase leading-5 text-white/75">暂无 RAG 建议。可以先进入知识库创建并索引文档。</p>
               )}
             </div>
           </Card>

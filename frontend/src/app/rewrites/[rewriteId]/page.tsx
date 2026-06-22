@@ -62,8 +62,8 @@ export default function RewriteDetailPage({ params }: { params: Promise<{ rewrit
       eyebrow="Rewrite Draft"
       title="先看差异，再决定是否导出。"
     >
-      {error ? <p className="mb-6 border-2 border-[#171713] bg-[#f2b8ad] p-4 font-bold">{error}</p> : null}
-      {isLoading ? <p className="border-2 border-[#171713] bg-[#fffaf0] p-6 font-mono font-black">正在加载改写草稿...</p> : null}
+      {error ? <p className="mb-6 border border-black bg-[#dc2626] p-4 font-mono text-sm font-bold uppercase text-white shadow-sw-sm">{error}</p> : null}
+      {isLoading ? <p className="border border-black bg-[#f0f0e8] p-6 font-mono font-bold uppercase shadow-sw-sm">正在加载改写草稿...</p> : null}
 
       {rewrite ? (
         <div className="space-y-6">
@@ -86,7 +86,7 @@ export default function RewriteDetailPage({ params }: { params: Promise<{ rewrit
               description="导出会写入 MinIO，并返回一个临时下载链接。"
             />
             {exportResult ? (
-              <div className="mt-5 grid gap-3 border-2 border-[#171713] bg-[#fffaf0] p-5 font-mono text-sm md:grid-cols-2">
+              <div className="mt-5 grid gap-3 border border-black bg-[#f0f0e8] p-5 font-mono text-sm shadow-sw-xs md:grid-cols-2">
                 <Info label="对象 Key" value={exportResult.objectKey} />
                 <Info label="内容类型" value={exportResult.contentType} />
                 <Info label="大小" value={`${exportResult.size} bytes`} />
@@ -94,7 +94,7 @@ export default function RewriteDetailPage({ params }: { params: Promise<{ rewrit
                 <Info label="过期时间" value={formatDateTime(exportResult.downloadUrlExpiresAt)} />
                 <div className="md:col-span-2">
                   <a
-                    className="inline-flex border-2 border-[#171713] bg-[#171713] px-5 py-3 font-mono text-xs font-black uppercase tracking-[0.16em] text-white shadow-[5px_5px_0_#95a36a]"
+                    className="inline-flex border border-black bg-[#1d4ed8] px-5 py-3 font-mono text-xs font-bold uppercase tracking-wide text-white shadow-sw-sm transition hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none"
                     href={exportResult.downloadUrl}
                     rel="noreferrer"
                     target="_blank"
@@ -111,11 +111,11 @@ export default function RewriteDetailPage({ params }: { params: Promise<{ rewrit
           <section className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
             <Card tone="gold">
               <CardHeader eyebrow="Rationale" title="改写理由" description="这里解释为什么这样重写，方便人工确认是否符合真实经历。" />
-              <p className="mt-5 whitespace-pre-wrap text-sm leading-7 text-[#424036]">{rewrite.rationale}</p>
+              <p className="mt-5 whitespace-pre-wrap font-mono text-xs uppercase leading-5 text-[#6b7280]">{rewrite.rationale}</p>
             </Card>
             <Card tone="ink">
               <CardHeader eyebrow="Verification" title="事实校验 JSON" description="模型输出应尽量说明是否引入了无法从原文支撑的新事实。" />
-              <pre className="panel-scroll mt-5 max-h-96 overflow-auto whitespace-pre-wrap border-2 border-white/80 bg-white/10 p-4 text-xs leading-5 text-white">
+              <pre className="panel-scroll mt-5 max-h-96 overflow-auto whitespace-pre-wrap border border-white/80 bg-white/10 p-4 font-mono text-xs leading-5 text-white">
                 {formatJson(rewrite.verificationJson)}
               </pre>
             </Card>
@@ -129,7 +129,7 @@ export default function RewriteDetailPage({ params }: { params: Promise<{ rewrit
 function Info({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <p className="text-xs uppercase tracking-[0.16em] text-[#6f746d]">{label}</p>
+      <p className="text-xs font-bold uppercase tracking-wide text-[#1d4ed8]">{label}</p>
       <p className="mt-1 break-all font-black">{value}</p>
     </div>
   );

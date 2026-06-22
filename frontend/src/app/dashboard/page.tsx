@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { AppShell } from "@/components/app-shell";
 import { Button, ButtonLink } from "@/components/ui/button";
-import { Card, CardHeader, MetricCard } from "@/components/ui/card";
+import { Card, CardHeader } from "@/components/ui/card";
 import { ScoreRing } from "@/components/score-ring";
 import {
   type AnalysisResponse,
@@ -92,107 +92,90 @@ export default function DashboardPage() {
       eyebrow="Dashboard"
       title="你的简历优化控制塔。"
     >
-      {error ? <p className="mb-6 border-2 border-[#171713] bg-[#f2b8ad] p-4 font-bold">{error}</p> : null}
+      {error ? <p className="border border-black bg-[#dc2626] p-4 font-mono text-sm font-bold uppercase text-white shadow-sw-sm">{error}</p> : null}
 
-      <section className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-        <Card tone={readyForTailor ? "lime" : "gold"}>
-          <CardHeader
-            action={<StatusPill label={readyForTailor ? "READY" : "NEEDS SETUP"} />}
-            eyebrow="Master Resume"
-            title={latestResume ? latestResume.title : "还没有主简历"}
-            description={
-              latestResume
-                ? `${latestResume.originalFilename} · ${latestResume.status} · ${latestResume.rawTextLength} 字`
-                : "先上传一份基础简历，后续所有 JD 定制、关键词高亮和智能体改写都会围绕它展开。"
-            }
-          />
-          <div className="mt-6 grid gap-4 md:grid-cols-[1fr_auto]">
-            <div className="border-2 border-[#171713] bg-white/70 p-4">
-              <p className="font-mono text-xs font-black uppercase tracking-[0.18em] text-[#6f746d]">解析预览</p>
-              <p className="mt-3 line-clamp-5 text-sm leading-7 text-[#424036]">{latestResume?.rawTextPreview || "上传后这里会显示 Tika 解析出的简历文本。"}</p>
-            </div>
-            <div className="flex flex-col gap-3">
-              <ButtonLink href="/upload" tone="ink">{latestResume ? "继续定制" : "上传简历"}</ButtonLink>
-              {latestResume ? <ButtonLink href={`/resumes/${latestResume.id}`} tone="paper">查看简历</ButtonLink> : null}
-            </div>
-          </div>
-        </Card>
-
-        <Card tone="ink">
-          <CardHeader
-            eyebrow="System Status"
-            title={data.status?.status ?? "UNKNOWN"}
-            description={data.status ? `最近检查：${formatDateTime(data.status.timestamp)}` : "正在等待后端状态。"}
-          />
-          <div className="mt-5 grid gap-3">
-            {(data.status?.components ?? []).slice(0, 5).map((component) => (
-              <article className="border-2 border-white/80 bg-white/10 p-3" key={component.name}>
-                <div className="flex items-center justify-between gap-3">
-                  <p className="font-mono text-xs font-black uppercase tracking-[0.16em] text-white/70">{component.name}</p>
-                  <span className="border border-white/70 px-2 py-1 font-mono text-[10px] font-black">{component.status}</span>
+      <section className="grid grid-cols-1 gap-[1px] border border-black bg-black md:grid-cols-2 xl:grid-cols-5">
+        <ModuleCard className="min-h-72 xl:aspect-square" href={latestResume ? `/resumes/${latestResume.id}` : "/upload"} tone="primary">
+          <div className="flex h-full flex-col justify-between">
+            <div>
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex h-16 w-16 items-center justify-center border-2 border-black bg-[#1d4ed8] font-mono text-xl font-bold text-white">
+                  M
                 </div>
-                <p className="mt-2 text-xs leading-5 text-white/70">{component.detail}</p>
-              </article>
-            ))}
-          </div>
-        </Card>
-      </section>
-
-      <section className="mt-6 grid gap-4 md:grid-cols-3 lg:grid-cols-6">
-        <MetricCard label="简历" value={data.resumes.length} tone="paper" />
-        <MetricCard label="岗位" value={data.jobs.length} tone="sky" />
-        <MetricCard label="分析" value={data.analyses.length} tone="lime" />
-        <MetricCard label="改写" value={data.rewrites.length} tone="gold" />
-        <MetricCard label="RAG" value={data.knowledge.length} tone="paper" />
-        <MetricCard label="最佳分" value={bestAnalysis?.overallScore ?? 0} tone="lime" />
-      </section>
-
-      <section className="mt-6 grid gap-6 lg:grid-cols-[0.8fr_1.2fr]">
-        <Card tone="paper">
-          <CardHeader
-            eyebrow="Best Match"
-            title={bestAnalysis ? "最佳分析报告" : "等待第一份分析"}
-            description={bestAnalysis ? `缺失关键词 ${bestAnalysis.report.missingKeywords.length} 个，建议 ${bestAnalysis.report.suggestions.length} 条。` : "完成一次 Tailor 流程后，这里会显示最适合继续改写的报告。"}
-          />
-          <div className="mt-5">
-            {bestAnalysis ? (
-              <>
-                <ScoreRing label="综合得分" score={bestAnalysis.overallScore} />
-                <ButtonLink className="mt-5" href={`/analyses/${bestAnalysis.id}`} tone="ink">打开报告</ButtonLink>
-              </>
-            ) : (
-              <ButtonLink href="/upload" tone="gold">创建分析</ButtonLink>
-            )}
-          </div>
-        </Card>
-
-        <Card tone="sky">
-          <CardHeader
-            eyebrow="Tailor Flow"
-            title="复现参考项目的定制简历入口"
-            description="选择主简历，粘贴目标 JD，系统会生成关键词覆盖、证据映射、RAG 建议和改写草稿。"
-          />
-          <div className="mt-5 grid gap-3 md:grid-cols-4">
-            {[
-              ["1", "上传主简历", latestResume ? "已就绪" : "待完成"],
-              ["2", "粘贴 JD", latestJob ? "有历史岗位" : "待输入"],
-              ["3", "生成分析", bestAnalysis ? "已有报告" : "待生成"],
-              ["4", "改写导出", data.rewrites.length > 0 ? "已有草稿" : "待生成"],
-            ].map(([index, title, state]) => (
-              <div className="border-2 border-[#171713] bg-[#fffaf0] p-4" key={index}>
-                <p className="font-mono text-xs font-black text-[#6f746d]">STEP {index}</p>
-                <p className="mt-2 font-black">{title}</p>
-                <p className="mt-2 font-mono text-xs">{state}</p>
+                <StatusPill label={readyForTailor ? "READY" : "SETUP"} />
               </div>
-            ))}
+              <h2 className="mt-8 font-serif text-3xl font-semibold uppercase leading-none tracking-tight">
+                {latestResume ? "Master Resume" : "Initialize Resume"}
+              </h2>
+              <p className="mt-4 line-clamp-5 font-mono text-xs uppercase leading-5 text-[#6b7280]">
+                {latestResume ? `${latestResume.title} // ${latestResume.status} // ${latestResume.rawTextLength} 字` : "上传一份基础简历，作为后续 JD 定制和改写的主档案。"}
+              </p>
+            </div>
+            <span className="mt-6 font-mono text-xs font-bold uppercase tracking-wide text-[#1d4ed8]">
+              {latestResume ? "Open Resume" : "Upload Now"}
+            </span>
           </div>
-          <ButtonLink className="mt-5" href="/upload" tone={readyForTailor ? "ink" : "gold"}>
-            {readyForTailor ? "进入 Tailor" : "先完成配置"}
-          </ButtonLink>
-        </Card>
+        </ModuleCard>
+
+        <ModuleCard className="min-h-72 xl:aspect-square" href="/upload">
+          <div className="flex h-full flex-col justify-between">
+            <div className="flex h-14 w-14 items-center justify-center border-2 border-current text-3xl leading-none">+</div>
+            <div>
+              <h2 className="font-serif text-3xl font-semibold uppercase leading-none tracking-tight">Tailor Resume</h2>
+              <p className="mt-4 font-mono text-xs uppercase leading-5 text-[#6b7280]">粘贴目标 JD，生成关键词覆盖、证据映射、RAG 建议和改写草稿。</p>
+            </div>
+          </div>
+        </ModuleCard>
+
+        <ModuleCard className="min-h-72 xl:aspect-square" href="/settings" tone="dark">
+          <div className="flex h-full flex-col justify-between">
+            <div>
+              <p className="font-mono text-xs font-bold uppercase tracking-wide text-white/60">System</p>
+              <h2 className="mt-4 font-serif text-4xl font-semibold uppercase leading-none">{data.status?.status ?? "Unknown"}</h2>
+              <p className="mt-4 font-mono text-xs uppercase leading-5 text-white/60">
+                {data.status ? formatDateTime(data.status.timestamp) : "等待后端状态"}
+              </p>
+            </div>
+            <div className="space-y-2">
+              {(data.status?.components ?? []).slice(0, 4).map((component) => (
+                <div className="flex items-center justify-between gap-2 border border-white/40 px-2 py-1 font-mono text-[10px] uppercase text-white/75" key={component.name}>
+                  <span>{component.name}</span>
+                  <span>{component.status}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </ModuleCard>
+
+        {[
+          ["Resumes", data.resumes.length, "/dashboard"],
+          ["Jobs", data.jobs.length, latestJob ? `/jobs/${latestJob.id}` : "/upload"],
+          ["Analyses", data.analyses.length, bestAnalysis ? `/analyses/${bestAnalysis.id}` : "/upload"],
+          ["Rewrites", data.rewrites.length, data.rewrites[0] ? `/rewrites/${data.rewrites[0].id}` : "/upload"],
+          ["RAG Docs", data.knowledge.length, "/knowledge"],
+        ].map(([label, value, href]) => (
+          <ModuleCard className="min-h-44 xl:aspect-square" href={String(href)} key={label}>
+            <div className="flex h-full flex-col justify-between">
+              <p className="font-mono text-xs font-bold uppercase tracking-wide text-[#1d4ed8]">{label}</p>
+              <p className="font-mono text-6xl font-bold leading-none">{value}</p>
+            </div>
+          </ModuleCard>
+        ))}
+
+        <ModuleCard className="min-h-72 md:col-span-2 xl:col-span-2" href={bestAnalysis ? `/analyses/${bestAnalysis.id}` : "/upload"}>
+          <div className="grid h-full gap-6 md:grid-cols-[auto_1fr] md:items-center">
+            {bestAnalysis ? <ScoreRing label="Best Match" score={bestAnalysis.overallScore} /> : <div className="flex h-32 w-32 items-center justify-center border border-black bg-[#e5e5e0] font-mono text-xs font-bold uppercase">No Report</div>}
+            <div>
+              <h2 className="font-serif text-3xl font-semibold uppercase leading-none tracking-tight">{bestAnalysis ? "Best Analysis" : "Create First Analysis"}</h2>
+              <p className="mt-4 font-mono text-xs uppercase leading-5 text-[#6b7280]">
+                {bestAnalysis ? `缺失关键词 ${bestAnalysis.report.missingKeywords.length} 个，建议 ${bestAnalysis.report.suggestions.length} 条。` : "完成 Tailor 流程后，这里显示最适合继续改写的报告。"}
+              </p>
+            </div>
+          </div>
+        </ModuleCard>
       </section>
 
-      <section className="mt-6 grid gap-6 lg:grid-cols-2">
+      <section className="grid gap-6 lg:grid-cols-2">
         <RecordList
           emptyText="还没有上传简历。"
           items={data.resumes.slice(0, 5).map((resume) => ({
@@ -239,7 +222,31 @@ export default function DashboardPage() {
 }
 
 function StatusPill({ label }: { label: string }) {
-  return <span className="border-2 border-[#171713] bg-[#fffaf0] px-3 py-1 font-mono text-xs font-black uppercase tracking-[0.16em]">{label}</span>;
+  return <span className="border border-black bg-[#f0f0e8] px-3 py-1 font-mono text-xs font-bold uppercase tracking-wide text-black">{label}</span>;
+}
+
+function ModuleCard({
+  children,
+  className = "",
+  href,
+  tone = "light",
+}: {
+  children: React.ReactNode;
+  className?: string;
+  href: string;
+  tone?: "light" | "primary" | "dark";
+}) {
+  const toneClass = {
+    light: "bg-[#f0f0e8] text-black hover:bg-[#e5e5e0]",
+    primary: "bg-[#f0f0e8] text-black hover:bg-[#1d4ed8] hover:text-white",
+    dark: "bg-black text-white hover:bg-[#1d4ed8]",
+  }[tone];
+
+  return (
+    <Link className={`group block p-6 transition-[transform,box-shadow,background-color,color] duration-150 hover:z-20 hover:-translate-x-[2px] hover:-translate-y-[2px] hover:shadow-sw-default ${toneClass} ${className}`} href={href}>
+      {children}
+    </Link>
+  );
 }
 
 function RecordList({
@@ -257,14 +264,14 @@ function RecordList({
       <div className="mt-5 space-y-3">
         {items.length > 0 ? (
           items.map((item) => (
-            <Link className="block border-2 border-[#171713] bg-[#f5f0df] p-4 transition hover:-translate-y-0.5 hover:shadow-[5px_5px_0_#171713]" href={item.href} key={item.href}>
-              <p className="font-mono text-xs font-black uppercase tracking-[0.16em] text-[#6f746d]">{item.meta}</p>
-              <h3 className="mt-2 text-xl font-black">{item.title}</h3>
-              <p className="mt-2 line-clamp-3 text-sm leading-6 text-[#424036]">{clampText(item.body, 220)}</p>
+            <Link className="block border border-black bg-[#f0f0e8] p-4 transition hover:translate-x-[1px] hover:translate-y-[1px] hover:bg-[#e5e5e0] hover:shadow-none shadow-sw-sm" href={item.href} key={item.href}>
+              <p className="font-mono text-xs font-bold uppercase tracking-wide text-[#1d4ed8]">{item.meta}</p>
+              <h3 className="mt-2 font-serif text-xl font-semibold uppercase leading-tight">{item.title}</h3>
+              <p className="mt-2 line-clamp-3 font-mono text-xs uppercase leading-5 text-[#6b7280]">{clampText(item.body, 220)}</p>
             </Link>
           ))
         ) : (
-          <p className="border-2 border-dashed border-[#171713] bg-white/50 p-5 text-sm leading-6 text-[#424036]">{emptyText}</p>
+          <p className="border border-dashed border-black bg-[#e5e5e0] p-5 font-mono text-xs uppercase leading-5 text-[#6b7280]">{emptyText}</p>
         )}
       </div>
     </Card>

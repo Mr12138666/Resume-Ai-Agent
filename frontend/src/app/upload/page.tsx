@@ -172,7 +172,7 @@ export default function UploadPage() {
       eyebrow="Tailor Resume"
       title="为一个目标岗位定制你的简历。"
     >
-      {error ? <p className="mb-6 border-2 border-[#171713] bg-[#f2b8ad] p-4 font-bold">{error}</p> : null}
+      {error ? <p className="mb-6 border border-black bg-[#dc2626] p-4 font-mono text-sm font-bold uppercase text-white shadow-sw-sm">{error}</p> : null}
 
       <section className="mb-6 grid gap-3 md:grid-cols-4">
         <FlowStep active done={Boolean(resume)} index="01" label="上传主简历" />
@@ -189,18 +189,18 @@ export default function UploadPage() {
             description="支持 PDF、DOCX、TXT。解析后会显示文本预览，也可以进一步调用模型抽取结构化 JSON。"
           />
           <form className="mt-6 space-y-5" onSubmit={handleResumeUpload}>
-            <label className="block font-mono text-xs font-black uppercase tracking-[0.18em]">
+            <label className="block font-mono text-xs font-bold uppercase tracking-wide">
               简历标题
               <input
-                className="mt-2 w-full border-2 border-[#171713] bg-white px-4 py-3 outline-none focus:bg-[#d8e89b]/35"
+                className="mt-2 w-full rounded-none border border-black bg-[#f0f0e8] px-4 py-3 outline-none focus:bg-[#e5e5e0] focus:ring-2 focus:ring-[#1d4ed8]"
                 placeholder="Java 后端工程师主简历"
                 value={resumeTitle}
                 onChange={(event) => setResumeTitle(event.target.value)}
               />
             </label>
-            <label className="block cursor-pointer border-2 border-dashed border-[#171713] bg-[#f5f0df] p-6">
-              <span className="font-mono text-xs font-black uppercase tracking-[0.18em]">拖放/选择文件</span>
-              <span className="mt-3 block text-sm leading-6 text-[#424036]">{file ? `${file.name} · ${Math.ceil(file.size / 1024)} KB` : "选择一份原始简历，建议小于 25MB。"}</span>
+            <label className="block cursor-pointer border border-dashed border-black bg-[#e5e5e0] p-6 transition hover:bg-[#d8d8d2]">
+              <span className="font-mono text-xs font-bold uppercase tracking-wide text-[#1d4ed8]">拖放/选择文件</span>
+              <span className="mt-3 block font-mono text-xs uppercase leading-5 text-[#6b7280]">{file ? `${file.name} · ${Math.ceil(file.size / 1024)} KB` : "选择一份原始简历，建议小于 25MB。"}</span>
               <input
                 accept=".pdf,.doc,.docx,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                 className="sr-only"
@@ -209,7 +209,7 @@ export default function UploadPage() {
               />
             </label>
             <div className="flex flex-wrap gap-3">
-              <Button disabled={isUploading} tone="ink" type="submit">
+              <Button disabled={isUploading} tone="default" type="submit">
                 {isUploading ? "解析中" : "上传并解析"}
               </Button>
               {resume ? (
@@ -217,26 +217,26 @@ export default function UploadPage() {
                   <Button disabled={isStructuringResume} onClick={handleStructureResume} tone="paper" type="button">
                     {isStructuringResume ? "结构化中" : "结构化简历"}
                   </Button>
-                  <ButtonLink href={`/resumes/${resume.id}`} tone="lime">详情</ButtonLink>
+                  <ButtonLink href={`/resumes/${resume.id}`} tone="success">详情</ButtonLink>
                 </>
               ) : null}
             </div>
           </form>
 
-          <div className="mt-6 border-2 border-[#171713] bg-[#f5f0df] p-4">
-            <p className="font-mono text-xs font-black uppercase tracking-[0.18em] text-[#6f746d]">解析预览</p>
-            <p className="mt-3 max-h-72 overflow-auto whitespace-pre-wrap text-sm leading-7 text-[#424036] panel-scroll">
+          <div className="mt-6 border border-black bg-[#e5e5e0] p-4">
+            <p className="font-mono text-xs font-bold uppercase tracking-wide text-[#1d4ed8]">解析预览</p>
+            <p className="panel-scroll mt-3 max-h-72 overflow-auto whitespace-pre-wrap font-mono text-xs uppercase leading-5 text-[#6b7280]">
               {resume?.rawTextPreview || "上传后这里会显示简历文本。"}
             </p>
           </div>
           {resume?.structuredJson ? (
-            <pre className="panel-scroll mt-4 max-h-72 overflow-auto whitespace-pre-wrap border-2 border-[#171713] bg-[#171713] p-4 text-xs leading-5 text-white">
+            <pre className="panel-scroll mt-4 max-h-72 overflow-auto whitespace-pre-wrap border border-black bg-black p-4 font-mono text-xs leading-5 text-white">
               {formatJson(resume.structuredJson)}
             </pre>
           ) : null}
         </Card>
 
-        <Card tone="lime">
+        <Card tone="panel">
           <CardHeader
             eyebrow="Job Description"
             title="粘贴目标岗位"
@@ -244,41 +244,41 @@ export default function UploadPage() {
           />
           <form className="mt-6 space-y-5" onSubmit={handleAnalysis}>
             <div className="grid gap-4 md:grid-cols-2">
-              <label className="block font-mono text-xs font-black uppercase tracking-[0.18em]">
+              <label className="block font-mono text-xs font-bold uppercase tracking-wide">
                 岗位名称
                 <input
-                  className="mt-2 w-full border-2 border-[#171713] bg-white px-4 py-3 outline-none focus:bg-[#fffaf0]"
+                  className="mt-2 w-full rounded-none border border-black bg-[#f0f0e8] px-4 py-3 outline-none focus:bg-[#e5e5e0] focus:ring-2 focus:ring-[#1d4ed8]"
                   placeholder="高级 Java / AI 后端工程师"
                   value={jobTitle}
                   onChange={(event) => setJobTitle(event.target.value)}
                 />
               </label>
-              <label className="block font-mono text-xs font-black uppercase tracking-[0.18em]">
+              <label className="block font-mono text-xs font-bold uppercase tracking-wide">
                 公司
                 <input
-                  className="mt-2 w-full border-2 border-[#171713] bg-white px-4 py-3 outline-none focus:bg-[#fffaf0]"
+                  className="mt-2 w-full rounded-none border border-black bg-[#f0f0e8] px-4 py-3 outline-none focus:bg-[#e5e5e0] focus:ring-2 focus:ring-[#1d4ed8]"
                   placeholder="目标公司"
                   value={company}
                   onChange={(event) => setCompany(event.target.value)}
                 />
               </label>
             </div>
-            <label className="block font-mono text-xs font-black uppercase tracking-[0.18em]">
+            <label className="block font-mono text-xs font-bold uppercase tracking-wide">
               JD 原文
               <textarea
-                className="panel-scroll mt-2 min-h-80 w-full resize-y border-2 border-[#171713] bg-white px-4 py-3 text-base leading-7 outline-none focus:bg-[#fffaf0]"
+                className="panel-scroll mt-2 min-h-80 w-full resize-y rounded-none border border-black bg-[#f0f0e8] px-4 py-3 font-mono text-sm leading-6 outline-none focus:bg-[#e5e5e0] focus:ring-2 focus:ring-[#1d4ed8]"
                 placeholder="粘贴岗位职责、任职要求、加分项..."
                 value={jobDescription}
                 onChange={(event) => setJobDescription(event.target.value)}
               />
             </label>
-            <div className="flex flex-wrap items-center justify-between gap-3 border-2 border-[#171713] bg-white/70 p-4">
-              <label className="flex items-center gap-3 font-mono text-xs font-black uppercase tracking-[0.16em]">
-                <input checked={useRag} className="h-5 w-5 accent-[#171713]" onChange={(event) => setUseRag(event.target.checked)} type="checkbox" />
+            <div className="flex flex-wrap items-center justify-between gap-3 border border-black bg-[#f0f0e8] p-4">
+              <label className="flex items-center gap-3 font-mono text-xs font-bold uppercase tracking-wide">
+                <input checked={useRag} className="h-5 w-5 accent-[#1d4ed8]" onChange={(event) => setUseRag(event.target.checked)} type="checkbox" />
                 使用 RAG 建议
               </label>
               <div className="flex flex-wrap gap-3">
-                <Button disabled={isAnalyzing || !resume} tone="ink" type="submit">
+                <Button disabled={isAnalyzing || !resume} tone="default" type="submit">
                   {isAnalyzing ? "分析中" : "生成匹配预览"}
                 </Button>
                 {job ? (
@@ -290,7 +290,7 @@ export default function UploadPage() {
             </div>
           </form>
           {job?.structuredJson ? (
-            <pre className="panel-scroll mt-4 max-h-72 overflow-auto whitespace-pre-wrap border-2 border-[#171713] bg-[#171713] p-4 text-xs leading-5 text-white">
+            <pre className="panel-scroll mt-4 max-h-72 overflow-auto whitespace-pre-wrap border border-black bg-black p-4 font-mono text-xs leading-5 text-white">
               {formatJson(job.structuredJson)}
             </pre>
           ) : null}
@@ -325,7 +325,7 @@ export default function UploadPage() {
           <Card tone="sky">
             <CardHeader
               action={
-                <Button disabled={isRewriting} onClick={handleRewrite} tone="ink" type="button">
+                <Button disabled={isRewriting} onClick={handleRewrite} tone="default" type="button">
                   {isRewriting ? "改写中" : "生成改写"}
                 </Button>
               }
@@ -360,10 +360,10 @@ export default function UploadPage() {
             <div className="mt-5 space-y-3">
               {analysis.report.retrievedGuidance.length > 0 ? (
                 analysis.report.retrievedGuidance.map((guidance) => (
-                  <p className="border-2 border-white/80 bg-white/10 p-4 text-sm leading-6 text-white/80" key={guidance}>{guidance}</p>
+                  <p className="border border-white/80 bg-white/10 p-4 font-mono text-xs uppercase leading-5 text-white/80" key={guidance}>{guidance}</p>
                 ))
               ) : (
-                <p className="border-2 border-white/50 bg-white/10 p-4 text-sm leading-6 text-white/75">本次没有检索到 RAG 建议。可以先去知识库创建并索引规则文档。</p>
+                <p className="border border-white/50 bg-white/10 p-4 font-mono text-xs uppercase leading-5 text-white/75">本次没有检索到 RAG 建议。可以先去知识库创建并索引规则文档。</p>
               )}
             </div>
           </Card>
@@ -373,9 +373,9 @@ export default function UploadPage() {
       {rewrite ? (
         <section className="mt-6 space-y-6">
           <RewriteDiffPreview rewrite={rewrite} />
-          <Card tone="lime">
+          <Card tone="panel">
             <CardHeader
-              action={<ButtonLink href={`/rewrites/${rewrite.id}`} tone="ink">查看并导出</ButtonLink>}
+              action={<ButtonLink href={`/rewrites/${rewrite.id}`} tone="default">查看并导出</ButtonLink>}
               eyebrow="Confirm"
               title="改写草稿已生成"
               description={rewrite.rationale}
@@ -399,10 +399,10 @@ function FlowStep({
   label: string;
 }) {
   return (
-    <article className={`border-2 border-[#171713] p-4 shadow-[5px_5px_0_#171713] ${done ? "bg-[#d8e89b]" : active ? "bg-[#f3cf5c]" : "bg-[#fffaf0]"}`}>
-      <p className="font-mono text-xs font-black uppercase tracking-[0.18em] text-[#6f746d]">{index}</p>
-      <p className="mt-2 text-lg font-black">{label}</p>
-      <p className="mt-2 font-mono text-xs font-black uppercase tracking-[0.14em]">{done ? "完成" : active ? "当前" : "等待"}</p>
+    <article className={`border border-black p-4 shadow-sw-sm ${done ? "bg-[#15803d] text-white" : active ? "bg-[#1d4ed8] text-white" : "bg-[#f0f0e8] text-black"}`}>
+      <p className="font-mono text-xs font-bold uppercase tracking-wide opacity-70">{index}</p>
+      <p className="mt-2 font-serif text-lg font-semibold uppercase leading-tight">{label}</p>
+      <p className="mt-2 font-mono text-xs font-bold uppercase tracking-wide opacity-70">{done ? "完成" : active ? "当前" : "等待"}</p>
     </article>
   );
 }

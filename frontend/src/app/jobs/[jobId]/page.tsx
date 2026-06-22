@@ -87,8 +87,8 @@ export default function JobDetailPage({ params }: { params: Promise<{ jobId: str
       eyebrow="Job Description"
       title={job?.title || "目标岗位"}
     >
-      {error ? <p className="mb-6 border-2 border-[#171713] bg-[#f2b8ad] p-4 font-bold">{error}</p> : null}
-      {isLoading ? <p className="border-2 border-[#171713] bg-[#fffaf0] p-6 font-mono font-black">正在加载岗位...</p> : null}
+      {error ? <p className="mb-6 border border-black bg-[#dc2626] p-4 font-mono text-sm font-bold uppercase text-white shadow-sw-sm">{error}</p> : null}
+      {isLoading ? <p className="border border-black bg-[#f0f0e8] p-6 font-mono font-bold uppercase shadow-sw-sm">正在加载岗位...</p> : null}
 
       {job ? (
         <div className="space-y-6">
@@ -114,7 +114,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ jobId: str
               <label className="block font-mono text-xs font-black uppercase tracking-[0.18em]">
                 选择简历
                 <select
-                  className="mt-2 w-full border-2 border-[#171713] bg-white px-4 py-3 outline-none focus:bg-[#fffaf0]"
+                  className="mt-2 w-full rounded-none border border-black bg-[#f0f0e8] px-4 py-3 outline-none focus:bg-[#e5e5e0] focus:ring-2 focus:ring-[#1d4ed8]"
                   value={selectedResumeId}
                   onChange={(event) => setSelectedResumeId(event.target.value)}
                 >
@@ -129,7 +129,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ jobId: str
               </label>
               <div className="flex flex-col justify-end gap-3">
                 <label className="flex items-center gap-2 font-mono text-xs font-black uppercase tracking-[0.16em]">
-                  <input checked={useRag} className="h-4 w-4 accent-[#171713]" onChange={(event) => setUseRag(event.target.checked)} type="checkbox" />
+                  <input checked={useRag} className="h-4 w-4 accent-[#1d4ed8]" onChange={(event) => setUseRag(event.target.checked)} type="checkbox" />
                   使用 RAG
                 </label>
                 <Button disabled={isAnalyzing || !selectedResumeId} onClick={handleCreateAnalysis} tone="ink" type="button">
@@ -138,8 +138,8 @@ export default function JobDetailPage({ params }: { params: Promise<{ jobId: str
               </div>
             </div>
             {createdAnalysis ? (
-              <div className="mt-5 border-2 border-[#171713] bg-[#fffaf0] p-5">
-                <p className="font-mono text-xs font-black uppercase tracking-[0.18em] text-[#6f746d]">分析已创建</p>
+              <div className="mt-5 border border-black bg-[#f0f0e8] p-5 shadow-sw-xs">
+                <p className="font-mono text-xs font-bold uppercase tracking-wide text-[#1d4ed8]">分析已创建</p>
                 <p className="mt-2 text-3xl font-black">综合得分 {createdAnalysis.overallScore}</p>
                 <ButtonLink className="mt-4" href={`/analyses/${createdAnalysis.id}`} tone="ink">打开报告</ButtonLink>
               </div>
@@ -149,18 +149,18 @@ export default function JobDetailPage({ params }: { params: Promise<{ jobId: str
           <section className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
             <Card tone="paper">
               <CardHeader eyebrow="JD Text" title="岗位原文" description="建议粘贴完整职责、任职要求和加分项，以便关键词提取更稳定。" />
-              <pre className="panel-scroll mt-5 max-h-[42rem] overflow-auto whitespace-pre-wrap border-2 border-[#171713] bg-[#f5f0df] p-5 text-sm leading-7">
+              <pre className="panel-scroll mt-5 max-h-[42rem] overflow-auto whitespace-pre-wrap border border-black bg-[#e5e5e0] p-5 font-mono text-sm leading-7">
                 {job.description}
               </pre>
             </Card>
             <Card tone="ink">
               <CardHeader eyebrow="Structured JSON" title="岗位结构化结果" description="结构化 JD 会帮助后续分析识别职责、技能和优先级。" />
               {job.structuredJson ? (
-                <pre className="panel-scroll mt-5 max-h-[42rem] overflow-auto whitespace-pre-wrap border-2 border-white/80 bg-white/10 p-5 text-xs leading-5 text-white">
+                <pre className="panel-scroll mt-5 max-h-[42rem] overflow-auto whitespace-pre-wrap border border-white/80 bg-white/10 p-5 font-mono text-xs leading-5 text-white">
                   {formatJson(job.structuredJson)}
                 </pre>
               ) : (
-                <p className="mt-5 border-2 border-white/60 bg-white/10 p-5 text-sm leading-7 text-white/75">暂无结构化 JSON。点击按钮后调用中文 JD 解析提示词。</p>
+                <p className="mt-5 border border-white/60 bg-white/10 p-5 font-mono text-xs uppercase leading-5 text-white/75">暂无结构化 JSON。点击按钮后调用中文 JD 解析提示词。</p>
               )}
             </Card>
           </section>

@@ -54,8 +54,8 @@ export default function ResumeDetailPage({ params }: { params: Promise<{ resumeI
       eyebrow="Resume"
       title={resume?.title ?? "简历详情"}
     >
-      {error ? <p className="mb-6 border-2 border-[#171713] bg-[#f2b8ad] p-4 font-bold">{error}</p> : null}
-      {isLoading ? <p className="border-2 border-[#171713] bg-[#fffaf0] p-6 font-mono font-black">正在加载简历...</p> : null}
+      {error ? <p className="mb-6 border border-black bg-[#dc2626] p-4 font-mono text-sm font-bold uppercase text-white shadow-sw-sm">{error}</p> : null}
+      {isLoading ? <p className="border border-black bg-[#f0f0e8] p-6 font-mono font-bold uppercase shadow-sw-sm">正在加载简历...</p> : null}
 
       {resume ? (
         <div className="space-y-6">
@@ -82,18 +82,18 @@ export default function ResumeDetailPage({ params }: { params: Promise<{ resumeI
           <section className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
             <Card tone="paper">
               <CardHeader eyebrow="Parsed Text" title="解析文本" description="Tika 提取出的正文会作为匹配和改写的基础证据。" />
-              <pre className="panel-scroll mt-5 max-h-[42rem] overflow-auto whitespace-pre-wrap border-2 border-[#171713] bg-[#f5f0df] p-5 text-sm leading-7">
+              <pre className="panel-scroll mt-5 max-h-[42rem] overflow-auto whitespace-pre-wrap border border-black bg-[#e5e5e0] p-5 font-mono text-sm leading-7">
                 {resume.rawTextPreview || "暂无文本预览。"}
               </pre>
             </Card>
             <Card tone="ink">
               <CardHeader eyebrow="Structured JSON" title="结构化抽取" description="AI 结构化结果会用于更精细的章节识别和后续改写。" />
               {resume.structuredJson ? (
-                <pre className="panel-scroll mt-5 max-h-[42rem] overflow-auto whitespace-pre-wrap border-2 border-white/80 bg-white/10 p-5 text-xs leading-5 text-white">
+                <pre className="panel-scroll mt-5 max-h-[42rem] overflow-auto whitespace-pre-wrap border border-white/80 bg-white/10 p-5 font-mono text-xs leading-5 text-white">
                   {formatJson(resume.structuredJson)}
                 </pre>
               ) : (
-                <p className="mt-5 border-2 border-white/60 bg-white/10 p-5 text-sm leading-7 text-white/75">
+                <p className="mt-5 border border-white/60 bg-white/10 p-5 font-mono text-xs uppercase leading-5 text-white/75">
                   暂无结构化 JSON。点击按钮后会调用中文提示词进行结构化解析。
                 </p>
               )}

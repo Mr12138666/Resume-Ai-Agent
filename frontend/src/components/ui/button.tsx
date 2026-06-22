@@ -1,19 +1,22 @@
 import Link from "next/link";
 import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode } from "react";
 
-type Tone = "ink" | "paper" | "lime" | "gold" | "sky" | "danger";
+type Tone = "default" | "ink" | "paper" | "lime" | "gold" | "sky" | "danger" | "success" | "warning";
 
 const toneClasses: Record<Tone, string> = {
-  ink: "border-[#171713] bg-[#171713] text-white shadow-[#d8e89b]",
-  paper: "border-[#171713] bg-[#fffaf0] text-[#171713] shadow-[#171713]",
-  lime: "border-[#171713] bg-[#d8e89b] text-[#171713] shadow-[#171713]",
-  gold: "border-[#171713] bg-[#f3cf5c] text-[#171713] shadow-[#171713]",
-  sky: "border-[#171713] bg-[#b7d8f0] text-[#171713] shadow-[#171713]",
-  danger: "border-[#171713] bg-[#f2b8ad] text-[#171713] shadow-[#171713]",
+  default: "border-black bg-[#1d4ed8] text-white hover:bg-blue-800",
+  ink: "border-black bg-black text-white hover:bg-[#1d4ed8]",
+  paper: "border-black bg-[#f0f0e8] text-black hover:bg-[#e5e5e0]",
+  lime: "border-black bg-[#15803d] text-white hover:bg-green-800",
+  gold: "border-black bg-[#f97316] text-white hover:bg-orange-600",
+  sky: "border-black bg-[#1d4ed8] text-white hover:bg-blue-800",
+  danger: "border-black bg-[#dc2626] text-white hover:bg-red-700",
+  success: "border-black bg-[#15803d] text-white hover:bg-green-800",
+  warning: "border-black bg-[#f97316] text-white hover:bg-orange-600",
 };
 
 const baseClass =
-  "inline-flex items-center justify-center gap-2 border-2 px-5 py-3 font-mono text-xs font-black uppercase tracking-[0.16em] shadow-[5px_5px_0_var(--tw-shadow-color)] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:translate-y-0 disabled:opacity-55";
+  "relative inline-flex h-10 items-center justify-center gap-2 whitespace-nowrap rounded-none border px-6 py-2 font-mono text-sm font-bold uppercase tracking-wide shadow-sw-sm transition-[transform,box-shadow,background-color,color] duration-100 ease-out hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none active:translate-x-[2px] active:translate-y-[2px] disabled:pointer-events-none disabled:opacity-50";
 
 export function Button({
   children,
