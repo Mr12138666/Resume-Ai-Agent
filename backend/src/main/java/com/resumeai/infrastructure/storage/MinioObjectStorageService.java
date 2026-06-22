@@ -4,6 +4,7 @@ import com.resumeai.infrastructure.config.ResumeAiProperties;
 import io.minio.GetPresignedObjectUrlArgs;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
+import io.minio.RemoveObjectArgs;
 import io.minio.http.Method;
 import java.io.InputStream;
 import java.time.Duration;
@@ -32,6 +33,18 @@ public class MinioObjectStorageService implements ObjectStorageService {
             return objectKey;
         } catch (Exception exception) {
             throw new IllegalStateException("Failed to store object: " + objectKey, exception);
+        }
+    }
+
+    @Override
+    public void delete(String objectKey) {
+        try {
+            minioClient.removeObject(RemoveObjectArgs.builder()
+                    .bucket(properties.storage().bucket())
+                    .object(objectKey)
+                    .build());
+        } catch (Exception exception) {
+            throw new IllegalStateException("Failed to delete object: " + objectKey, exception);
         }
     }
 

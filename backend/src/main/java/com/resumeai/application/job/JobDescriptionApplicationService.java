@@ -59,6 +59,13 @@ public class JobDescriptionApplicationService {
         return JobDescriptionResponse.from(job);
     }
 
+    @Transactional
+    public void delete(UUID jobId) {
+        var job = jobDescriptionRepository.findById(jobId)
+                .orElseThrow(() -> new IllegalArgumentException("Job description not found: " + jobId));
+        jobDescriptionRepository.delete(job);
+    }
+
     private String blankToNull(String value) {
         return value == null || value.isBlank() ? null : value.trim();
     }

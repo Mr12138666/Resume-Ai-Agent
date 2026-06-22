@@ -1,13 +1,16 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { use, useEffect, useState } from "react";
 import { AppShell } from "@/components/app-shell";
 import { RewriteDiffPreview } from "@/components/comparison-panels";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Card, CardHeader, MetricCard } from "@/components/ui/card";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   type ExportRewriteResponse,
   type RewriteDraftResponse,
+  deleteRewrite,
   exportRewriteMarkdown,
   exportRewritePdf,
   getRewrite,
@@ -16,11 +19,14 @@ import { formatDate, formatDateTime } from "@/lib/format";
 
 export default function RewriteDetailPage({ params }: { params: Promise<{ rewriteId: string }> }) {
   const { rewriteId } = use(params);
+  const router = useRouter();
   const [rewrite, setRewrite] = useState<RewriteDraftResponse | null>(null);
   const [exportResult, setExportResult] = useState<ExportRewriteResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isExporting, setIsExporting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   useEffect(() => {
     async function loadRewrite() {
@@ -64,6 +70,24 @@ export default function RewriteDetailPage({ params }: { params: Promise<{ rewrit
     }
   }
 
+  async function handleDelete() {
+    if (!rewrite) {
+      return;
+    }
+    setIsDeleting(true);
+    setError(null);
+    try {
+      await deleteRewrite(rewrite.id);
+      setShowDeleteDialog(false);
+      router.push("/dashboard");
+      router.refresh();
+    } catch (deleteError) {
+      setError(deleteError instanceof Error ? deleteError.message : "改写草稿删除失败。");
+    } finally {
+      setIsDeleting(false);
+    }
+  }
+
   return (
     <AppShell
       actions={
@@ -97,6 +121,9 @@ export default function RewriteDetailPage({ params }: { params: Promise<{ rewrit
                   </Button>
                   <Button disabled={isExporting} onClick={handleExportPdf} tone="default" type="button">
                     {isExporting ? "导出中" : "导出 PDF"}
+                  </Button>
+                  <Button disabled={isDeleting || isExporting} onClick={() => setShowDeleteDialog(true)} tone="danger" type="button">
+                    {isDeleting ? "删除中" : "删除草稿"}
                   </Button>
                 </div>
               }
@@ -138,6 +165,16 @@ export default function RewriteDetailPage({ params }: { params: Promise<{ rewrit
             </Card>
           </section>
         </div>
+      ) : null}
+      {rewrite ? (
+        <ConfirmDialog
+          description="将删除这份改写草稿；如果它导出过 Markdown 或 PDF，系统也会尝试清理对应文件。"
+          isOpen={showDeleteDialog}
+          isWorking={isDeleting}
+          onCancel={() => setShowDeleteDialog(false)}
+          onConfirm={() => void handleDelete()}
+          title="删除这份草稿？"
+        />
       ) : null}
     </AppShell>
   );

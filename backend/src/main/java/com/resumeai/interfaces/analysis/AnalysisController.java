@@ -6,6 +6,8 @@ import com.resumeai.application.analysis.CreateAnalysisRequest;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -36,5 +38,11 @@ public class AnalysisController {
     @GetMapping("/{analysisId}")
     public AnalysisResponse get(@PathVariable UUID analysisId) {
         return analysisApplicationService.get(analysisId);
+    }
+
+    @DeleteMapping("/{analysisId}")
+    public ResponseEntity<Void> delete(@PathVariable UUID analysisId) {
+        analysisApplicationService.delete(analysisId);
+        return ResponseEntity.noContent().build();
     }
 }

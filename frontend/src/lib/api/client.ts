@@ -280,6 +280,19 @@ export async function uploadResume(file: File, title?: string): Promise<ResumeRe
   return response.json() as Promise<ResumeResponse>;
 }
 
+export async function deleteResume(resumeId: string): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/resumes/${resumeId}`, {
+    method: "DELETE",
+    headers: {
+      Accept: "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    await throwApiError(response, "简历删除失败");
+  }
+}
+
 export async function createJobDescription(input: {
   title?: string;
   company?: string;
@@ -299,6 +312,19 @@ export async function createJobDescription(input: {
   }
 
   return response.json() as Promise<JobDescriptionResponse>;
+}
+
+export async function deleteJobDescription(jobId: string): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/jobs/${jobId}`, {
+    method: "DELETE",
+    headers: {
+      Accept: "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    await throwApiError(response, "岗位删除失败");
+  }
 }
 
 export async function createAnalysis(input: {
@@ -328,6 +354,19 @@ export async function createAnalysis(input: {
   }
 
   return response.json() as Promise<AnalysisResponse>;
+}
+
+export async function deleteAnalysis(analysisId: string): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/analyses/${analysisId}`, {
+    method: "DELETE",
+    headers: {
+      Accept: "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    await throwApiError(response, "分析报告删除失败");
+  }
 }
 
 export async function structureResume(resumeId: string): Promise<ResumeResponse> {
@@ -382,6 +421,19 @@ export async function createRewrite(input: {
   }
 
   return response.json() as Promise<RewriteDraftResponse>;
+}
+
+export async function deleteRewrite(rewriteId: string): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/rewrites/${rewriteId}`, {
+    method: "DELETE",
+    headers: {
+      Accept: "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    await throwApiError(response, "改写草稿删除失败");
+  }
 }
 
 export async function listKnowledgeDocuments(): Promise<KnowledgeDocumentResponse[]> {

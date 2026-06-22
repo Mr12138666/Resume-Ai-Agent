@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { AppShell } from "@/components/app-shell";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Card, CardHeader } from "@/components/ui/card";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { ScoreRing } from "@/components/score-ring";
 import {
   type AnalysisResponse,
@@ -13,7 +14,11 @@ import {
   type ResumeResponse,
   type RewriteDraftResponse,
   type SystemStatusResponse,
+  deleteAnalysis,
+  deleteJobDescription,
   getSystemStatus,
+  deleteRewrite,
+  deleteResume,
   listAnalyses,
   listJobDescriptions,
   listKnowledgeDocuments,
@@ -31,6 +36,12 @@ type DashboardData = {
   knowledge: KnowledgeDocumentResponse[];
 };
 
+type DeleteTarget =
+  | { kind: "resume"; item: ResumeResponse }
+  | { kind: "job"; item: JobDescriptionResponse }
+  | { kind: "analysis"; item: AnalysisResponse }
+  | { kind: "rewrite"; item: RewriteDraftResponse };
+
 const emptyData: DashboardData = {
   status: null,
   resumes: [],
@@ -44,6 +55,8 @@ export default function DashboardPage() {
   const [data, setData] = useState<DashboardData>(emptyData);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [deletingRecordId, setDeletingRecordId] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<DeleteTarget | null>(null);
 
   async function loadDashboard() {
     setIsLoading(true);
@@ -77,6 +90,96 @@ export default function DashboardPage() {
   );
   const llmComponent = data.status?.components.find((component) => component.name === "llm");
   const readyForTailor = Boolean(latestResume && llmComponent?.status === "CONFIGURED");
+
+  async function confirmDelete() {
+    if (!deleteTarget) {
+      return;
+    }
+    if (deleteTarget.kind === "resume") {
+      await handleDeleteResume(deleteTarget.item);
+    } else if (deleteTarget.kind === "job") {
+      await handleDeleteJob(deleteTarget.item);
+    } else if (deleteTarget.kind === "analysis") {
+      await handleDeleteAnalysis(deleteTarget.item);
+    } else {
+      await handleDeleteRewrite(deleteTarget.item);
+    }
+  }
+
+  async function handleDeleteResume(resume: ResumeResponse) {
+    setDeletingRecordId(resume.id);
+    setError(null);
+    try {
+      await deleteResume(resume.id);
+      setData((current) => ({
+        ...current,
+        resumes: current.resumes.filter((item) => item.id !== resume.id),
+        analyses: current.analyses.filter((analysis) => analysis.resumeId !== resume.id),
+        rewrites: current.rewrites.filter((rewrite) => current.analyses.find((analysis) => analysis.id === rewrite.analysisId)?.resumeId !== resume.id),
+      }));
+    } catch (deleteError) {
+      setError(deleteError instanceof Error ? deleteError.message : "简历删除失败。");
+    } finally {
+      setDeletingRecordId(null);
+      setDeleteTarget(null);
+    }
+  }
+
+  async function handleDeleteJob(job: JobDescriptionResponse) {
+    setDeletingRecordId(job.id);
+    setError(null);
+    try {
+      await deleteJobDescription(job.id);
+      setData((current) => ({
+        ...current,
+        jobs: current.jobs.filter((item) => item.id !== job.id),
+        analyses: current.analyses.filter((analysis) => analysis.jobId !== job.id),
+        rewrites: current.rewrites.filter((rewrite) => current.analyses.find((analysis) => analysis.id === rewrite.analysisId)?.jobId !== job.id),
+      }));
+    } catch (deleteError) {
+      setError(deleteError instanceof Error ? deleteError.message : "岗位删除失败。");
+    } finally {
+      setDeletingRecordId(null);
+      setDeleteTarget(null);
+    }
+  }
+
+  async function handleDeleteAnalysis(analysis: AnalysisResponse) {
+    setDeletingRecordId(analysis.id);
+    setError(null);
+    try {
+      await deleteAnalysis(analysis.id);
+      setData((current) => ({
+        ...current,
+        analyses: current.analyses.filter((item) => item.id !== analysis.id),
+        rewrites: current.rewrites.filter((rewrite) => rewrite.analysisId !== analysis.id),
+      }));
+    } catch (deleteError) {
+      setError(deleteError instanceof Error ? deleteError.message : "分析报告删除失败。");
+    } finally {
+      setDeletingRecordId(null);
+      setDeleteTarget(null);
+    }
+  }
+
+  async function handleDeleteRewrite(rewrite: RewriteDraftResponse) {
+    setDeletingRecordId(rewrite.id);
+    setError(null);
+    try {
+      await deleteRewrite(rewrite.id);
+      setData((current) => ({
+        ...current,
+        rewrites: current.rewrites.filter((item) => item.id !== rewrite.id),
+      }));
+    } catch (deleteError) {
+      setError(deleteError instanceof Error ? deleteError.message : "改写草稿删除失败。");
+    } finally {
+      setDeletingRecordId(null);
+      setDeleteTarget(null);
+    }
+  }
+
+  const deleteCopy = deleteTarget ? describeDeleteTarget(deleteTarget) : null;
 
   return (
     <AppShell
@@ -187,6 +290,20 @@ export default function DashboardPage() {
         <RecordList
           emptyText="还没有上传简历。"
           items={data.resumes.slice(0, 5).map((resume) => ({
+            action: (
+              <Button
+                disabled={deletingRecordId === resume.id}
+                onClick={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  setDeleteTarget({ kind: "resume", item: resume });
+                }}
+                tone="danger"
+                type="button"
+              >
+                {deletingRecordId === resume.id ? "删除中" : "删除"}
+              </Button>
+            ),
             href: `/resumes/${resume.id}`,
             meta: `${resume.status} · ${formatDateTime(resume.createdAt)}`,
             title: resume.title,
@@ -197,6 +314,20 @@ export default function DashboardPage() {
         <RecordList
           emptyText="还没有创建岗位。"
           items={data.jobs.slice(0, 5).map((job) => ({
+            action: (
+              <Button
+                disabled={deletingRecordId === job.id}
+                onClick={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  setDeleteTarget({ kind: "job", item: job });
+                }}
+                tone="danger"
+                type="button"
+              >
+                {deletingRecordId === job.id ? "删除中" : "删除"}
+              </Button>
+            ),
             href: `/jobs/${job.id}`,
             meta: `${job.company || "未知公司"} · ${job.status}`,
             title: job.title || "未命名岗位",
@@ -207,6 +338,20 @@ export default function DashboardPage() {
         <RecordList
           emptyText="还没有分析报告。"
           items={data.analyses.slice(0, 5).map((analysis) => ({
+            action: (
+              <Button
+                disabled={deletingRecordId === analysis.id}
+                onClick={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  setDeleteTarget({ kind: "analysis", item: analysis });
+                }}
+                tone="danger"
+                type="button"
+              >
+                {deletingRecordId === analysis.id ? "删除中" : "删除"}
+              </Button>
+            ),
             href: `/analyses/${analysis.id}`,
             meta: `${analysis.status} · 综合 ${analysis.overallScore}`,
             title: `缺口 ${analysis.report.missingKeywords.length} · 建议 ${analysis.report.suggestions.length}`,
@@ -217,6 +362,20 @@ export default function DashboardPage() {
         <RecordList
           emptyText="还没有改写草稿。"
           items={data.rewrites.slice(0, 5).map((rewrite) => ({
+            action: (
+              <Button
+                disabled={deletingRecordId === rewrite.id}
+                onClick={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  setDeleteTarget({ kind: "rewrite", item: rewrite });
+                }}
+                tone="danger"
+                type="button"
+              >
+                {deletingRecordId === rewrite.id ? "删除中" : "删除"}
+              </Button>
+            ),
             href: `/rewrites/${rewrite.id}`,
             meta: `${rewrite.status} · ${formatDateTime(rewrite.createdAt)}`,
             title: rewrite.sectionId || "改写草稿",
@@ -225,8 +384,43 @@ export default function DashboardPage() {
           title="改写草稿"
         />
       </section>
+      {deleteCopy ? (
+        <ConfirmDialog
+          description={deleteCopy.description}
+          isOpen={Boolean(deleteTarget)}
+          isWorking={Boolean(deletingRecordId)}
+          onCancel={() => setDeleteTarget(null)}
+          onConfirm={() => void confirmDelete()}
+          title={deleteCopy.title}
+        />
+      ) : null}
     </AppShell>
   );
+}
+
+function describeDeleteTarget(target: DeleteTarget) {
+  if (target.kind === "resume") {
+    return {
+      title: "删除这份简历？",
+      description: `将删除“${target.item.title}”及其原始文件；关联的分析报告和改写草稿也会一起删除。`,
+    };
+  }
+  if (target.kind === "job") {
+    return {
+      title: "删除这个岗位？",
+      description: `将删除“${target.item.title || "未命名岗位"}”；基于它生成的分析报告和改写草稿也会一起删除。`,
+    };
+  }
+  if (target.kind === "analysis") {
+    return {
+      title: "删除这份报告？",
+      description: "将删除这份分析报告；基于它生成的改写草稿也会一起删除。",
+    };
+  }
+  return {
+    title: "删除这份草稿？",
+    description: "将删除这份改写草稿；如果它导出过 Markdown 或 PDF，系统也会尝试清理对应文件。",
+  };
 }
 
 function StatusPill({ label }: { label: string }) {
@@ -315,7 +509,7 @@ function RecordList({
   title,
 }: {
   emptyText: string;
-  items: Array<{ body: string; href: string; meta: string; title: string }>;
+  items: Array<{ action?: React.ReactNode; body: string; href: string; meta: string; title: string }>;
   title: string;
 }) {
   return (
@@ -325,8 +519,13 @@ function RecordList({
         {items.length > 0 ? (
           items.map((item) => (
             <Link className="block border border-black bg-[#f0f0e8] p-4 transition hover:translate-x-[1px] hover:translate-y-[1px] hover:bg-[#e5e5e0] hover:shadow-none shadow-sw-sm" href={item.href} key={item.href}>
-              <p className="font-mono text-xs font-bold uppercase tracking-wide text-[#1d4ed8]">{item.meta}</p>
-              <h3 className="mt-2 font-serif text-xl font-semibold uppercase leading-tight">{item.title}</h3>
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <p className="font-mono text-xs font-bold uppercase tracking-wide text-[#1d4ed8]">{item.meta}</p>
+                  <h3 className="mt-2 font-serif text-xl font-semibold uppercase leading-tight">{item.title}</h3>
+                </div>
+                {item.action}
+              </div>
               <p className="mt-2 line-clamp-3 font-mono text-xs uppercase leading-5 text-[#6b7280]">{clampText(item.body, 220)}</p>
             </Link>
           ))

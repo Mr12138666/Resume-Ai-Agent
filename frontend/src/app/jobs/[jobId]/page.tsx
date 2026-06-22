@@ -1,14 +1,17 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { use, useEffect, useState } from "react";
 import { AppShell } from "@/components/app-shell";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Card, CardHeader, MetricCard } from "@/components/ui/card";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   type AnalysisResponse,
   type JobDescriptionResponse,
   type ResumeResponse,
   createAnalysis,
+  deleteJobDescription,
   getJobDescription,
   listResumes,
   structureJob,
@@ -17,6 +20,7 @@ import { formatDate, formatJson } from "@/lib/format";
 
 export default function JobDetailPage({ params }: { params: Promise<{ jobId: string }> }) {
   const { jobId } = use(params);
+  const router = useRouter();
   const [job, setJob] = useState<JobDescriptionResponse | null>(null);
   const [resumes, setResumes] = useState<ResumeResponse[]>([]);
   const [selectedResumeId, setSelectedResumeId] = useState("");
@@ -26,6 +30,8 @@ export default function JobDetailPage({ params }: { params: Promise<{ jobId: str
   const [isLoading, setIsLoading] = useState(true);
   const [isStructuring, setIsStructuring] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   async function loadJob() {
     setIsLoading(true);
@@ -75,6 +81,24 @@ export default function JobDetailPage({ params }: { params: Promise<{ jobId: str
     }
   }
 
+  async function handleDelete() {
+    if (!job) {
+      return;
+    }
+    setIsDeleting(true);
+    setError(null);
+    try {
+      await deleteJobDescription(job.id);
+      setShowDeleteDialog(false);
+      router.push("/dashboard");
+      router.refresh();
+    } catch (deleteError) {
+      setError(deleteError instanceof Error ? deleteError.message : "岗位删除失败。");
+    } finally {
+      setIsDeleting(false);
+    }
+  }
+
   return (
     <AppShell
       actions={
@@ -102,9 +126,14 @@ export default function JobDetailPage({ params }: { params: Promise<{ jobId: str
           <Card tone="lime">
             <CardHeader
               action={
-                <Button disabled={isStructuring} onClick={handleStructure} tone="ink" type="button">
-                  {isStructuring ? "结构化中" : "生成 JD JSON"}
-                </Button>
+                <div className="flex flex-wrap gap-3">
+                  <Button disabled={isStructuring || isDeleting} onClick={handleStructure} tone="ink" type="button">
+                    {isStructuring ? "结构化中" : "生成 JD JSON"}
+                  </Button>
+                  <Button disabled={isDeleting} onClick={() => setShowDeleteDialog(true)} tone="danger" type="button">
+                    {isDeleting ? "删除中" : "删除岗位"}
+                  </Button>
+                </div>
               }
               eyebrow="创建分析"
               title="基于该 JD 创建匹配分析"
@@ -165,6 +194,16 @@ export default function JobDetailPage({ params }: { params: Promise<{ jobId: str
             </Card>
           </section>
         </div>
+      ) : null}
+      {job ? (
+        <ConfirmDialog
+          description={`将删除“${job.title || "未命名岗位"}”；基于它生成的分析报告和改写草稿也会一起删除。`}
+          isOpen={showDeleteDialog}
+          isWorking={isDeleting}
+          onCancel={() => setShowDeleteDialog(false)}
+          onConfirm={() => void handleDelete()}
+          title="删除这个岗位？"
+        />
       ) : null}
     </AppShell>
   );

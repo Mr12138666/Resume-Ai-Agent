@@ -1,18 +1,23 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { use, useEffect, useState } from "react";
 import { AppShell } from "@/components/app-shell";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Card, CardHeader, MetricCard } from "@/components/ui/card";
-import { type ResumeResponse, getResume, structureResume } from "@/lib/api/client";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { type ResumeResponse, deleteResume, getResume, structureResume } from "@/lib/api/client";
 import { formatDate, formatJson } from "@/lib/format";
 
 export default function ResumeDetailPage({ params }: { params: Promise<{ resumeId: string }> }) {
   const { resumeId } = use(params);
+  const router = useRouter();
   const [resume, setResume] = useState<ResumeResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isStructuring, setIsStructuring] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   async function loadResume() {
     setIsLoading(true);
@@ -39,6 +44,24 @@ export default function ResumeDetailPage({ params }: { params: Promise<{ resumeI
       setError(structureError instanceof Error ? structureError.message : "简历结构化失败。");
     } finally {
       setIsStructuring(false);
+    }
+  }
+
+  async function handleDelete() {
+    if (!resume) {
+      return;
+    }
+    setIsDeleting(true);
+    setError(null);
+    try {
+      await deleteResume(resume.id);
+      setShowDeleteDialog(false);
+      router.push("/dashboard");
+      router.refresh();
+    } catch (deleteError) {
+      setError(deleteError instanceof Error ? deleteError.message : "简历删除失败。");
+    } finally {
+      setIsDeleting(false);
     }
   }
 
@@ -69,9 +92,14 @@ export default function ResumeDetailPage({ params }: { params: Promise<{ resumeI
           <Card tone="lime">
             <CardHeader
               action={
-                <Button disabled={isStructuring} onClick={handleStructure} tone="ink" type="button">
-                  {isStructuring ? "结构化中" : "生成 Resume JSON"}
-                </Button>
+                <div className="flex flex-wrap gap-3">
+                  <Button disabled={isStructuring || isDeleting} onClick={handleStructure} tone="ink" type="button">
+                    {isStructuring ? "结构化中" : "生成 Resume JSON"}
+                  </Button>
+                  <Button disabled={isDeleting} onClick={() => setShowDeleteDialog(true)} tone="danger" type="button">
+                    {isDeleting ? "删除中" : "删除简历"}
+                  </Button>
+                </div>
               }
               eyebrow="源文件"
               title={resume.originalFilename}
@@ -100,6 +128,16 @@ export default function ResumeDetailPage({ params }: { params: Promise<{ resumeI
             </Card>
           </section>
         </div>
+      ) : null}
+      {resume ? (
+        <ConfirmDialog
+          description={`将删除“${resume.title}”及其原始文件；关联的分析报告和改写草稿也会一起删除。`}
+          isOpen={showDeleteDialog}
+          isWorking={isDeleting}
+          onCancel={() => setShowDeleteDialog(false)}
+          onConfirm={() => void handleDelete()}
+          title="删除这份简历？"
+        />
       ) : null}
     </AppShell>
   );

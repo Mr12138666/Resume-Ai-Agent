@@ -93,6 +93,13 @@ public class AnalysisApplicationService {
                 .orElseThrow(() -> new IllegalArgumentException("Analysis not found: " + analysisId));
     }
 
+    @Transactional
+    public void delete(UUID analysisId) {
+        var analysis = analysisRepository.findById(analysisId)
+                .orElseThrow(() -> new IllegalArgumentException("Analysis not found: " + analysisId));
+        analysisRepository.delete(analysis);
+    }
+
     private int score(int matched, int total) {
         if (total == 0) {
             return 0;

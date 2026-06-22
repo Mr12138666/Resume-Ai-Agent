@@ -4,6 +4,7 @@ import { type FormEvent, useEffect, useState } from "react";
 import { AppShell } from "@/components/app-shell";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Card, CardHeader } from "@/components/ui/card";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   type KnowledgeDocumentResponse,
   type KnowledgeSearchResult,
@@ -53,6 +54,7 @@ export default function KnowledgePage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [savingId, setSavingId] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<KnowledgeDocumentResponse | null>(null);
   const [editDraft, setEditDraft] = useState({
     documentType: "",
     sourceType: "",
@@ -185,9 +187,8 @@ export default function KnowledgePage() {
     }
   }
 
-  async function handleDelete(document: KnowledgeDocumentResponse) {
-    const confirmed = window.confirm(`确定删除“${document.title}”吗？已写入 PGvector 的索引也会一起删除。`);
-    if (!confirmed) {
+  async function handleDelete(document: KnowledgeDocumentResponse | null) {
+    if (!document) {
       return;
     }
     setDeletingId(document.id);
@@ -198,6 +199,7 @@ export default function KnowledgePage() {
       setDocuments((current) => current.filter((item) => item.id !== document.id));
       setResults((current) => current.filter((result) => result.metadata.knowledgeDocumentId !== document.id));
       setNotice(`“${document.title}”已删除，相关向量索引也已清理。`);
+      setDeleteTarget(null);
       if (editingId === document.id) {
         cancelEditing();
       }
@@ -282,7 +284,7 @@ export default function KnowledgePage() {
                               {indexingId === document.id ? (document.status === "INDEXED" ? "重新索引中" : "索引中") : document.status === "INDEXED" ? "重新索引" : "索引"}
                             </Button>
                             <Button disabled={indexingId === document.id || deletingId === document.id} onClick={() => startEditing(document)} tone="paper" type="button">编辑</Button>
-                            <Button disabled={deletingId === document.id || indexingId === document.id} onClick={() => handleDelete(document)} tone="danger" type="button">
+                            <Button disabled={deletingId === document.id || indexingId === document.id} onClick={() => setDeleteTarget(document)} tone="danger" type="button">
                               {deletingId === document.id ? "删除中" : "删除"}
                             </Button>
                           </div>
@@ -323,6 +325,14 @@ export default function KnowledgePage() {
           ))}
         </div>
       </Card>
+      <ConfirmDialog
+        description={`将删除“${deleteTarget?.title ?? "这份知识文档"}”；已写入 PGvector 的索引分块也会一起清理。`}
+        isOpen={Boolean(deleteTarget)}
+        isWorking={Boolean(deletingId)}
+        onCancel={() => setDeleteTarget(null)}
+        onConfirm={() => void handleDelete(deleteTarget)}
+        title="删除这份知识文档？"
+      />
     </AppShell>
   );
 }

@@ -89,6 +89,15 @@ public class ResumeRewriteService {
                 .orElseThrow(() -> new IllegalArgumentException("Rewrite draft not found: " + rewriteId));
     }
 
+    @Transactional
+    public void delete(UUID rewriteId) {
+        var draft = rewriteDraftRepository.findById(rewriteId)
+                .orElseThrow(() -> new IllegalArgumentException("Rewrite draft not found: " + rewriteId));
+        deleteExportIfExists("exports/rewrites/%s/optimized-section.md".formatted(rewriteId));
+        deleteExportIfExists("exports/rewrites/%s/optimized-section.pdf".formatted(rewriteId));
+        rewriteDraftRepository.delete(draft);
+    }
+
     @Transactional(readOnly = true)
     public ExportRewriteResponse exportMarkdown(UUID rewriteId) {
         var draft = rewriteDraftRepository.findById(rewriteId)
@@ -175,6 +184,14 @@ public class ResumeRewriteService {
         } catch (Exception exception) {
             log.warn("LLM rewrite failed; using fallback rewrite: {}", exception.getMessage());
             return fallbackRewrite(analysis, originalText);
+        }
+    }
+
+    private void deleteExportIfExists(String objectKey) {
+        try {
+            objectStorageService.delete(objectKey);
+        } catch (Exception exception) {
+            log.warn("Failed to delete rewrite export {}: {}", objectKey, exception.getMessage());
         }
     }
 

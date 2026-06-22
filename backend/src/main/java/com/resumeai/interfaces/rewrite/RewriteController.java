@@ -6,6 +6,8 @@ import com.resumeai.application.rewrite.ResumeRewriteService;
 import com.resumeai.application.rewrite.RewriteDraftResponse;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -36,6 +38,12 @@ public class RewriteController {
     @GetMapping("/rewrites/{rewriteId}")
     public RewriteDraftResponse get(@PathVariable UUID rewriteId) {
         return resumeRewriteService.get(rewriteId);
+    }
+
+    @DeleteMapping("/rewrites/{rewriteId}")
+    public ResponseEntity<Void> delete(@PathVariable UUID rewriteId) {
+        resumeRewriteService.delete(rewriteId);
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/rewrites/{rewriteId}/exports/markdown")

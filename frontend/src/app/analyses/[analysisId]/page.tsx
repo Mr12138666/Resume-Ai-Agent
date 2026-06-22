@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { use, useEffect, useState } from "react";
 import { AppShell } from "@/components/app-shell";
 import { AnalysisPreviewStrip } from "@/components/comparison-panels";
@@ -7,21 +8,26 @@ import { EvidenceMatrix, KeywordCloud } from "@/components/keyword-panels";
 import { ScoreRing } from "@/components/score-ring";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Card, CardHeader } from "@/components/ui/card";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   type AnalysisResponse,
   type RewriteDraftResponse,
   createRewrite,
+  deleteAnalysis,
   getAnalysis,
 } from "@/lib/api/client";
 import { formatDateTime } from "@/lib/format";
 
 export default function AnalysisDetailPage({ params }: { params: Promise<{ analysisId: string }> }) {
   const { analysisId } = use(params);
+  const router = useRouter();
   const [analysis, setAnalysis] = useState<AnalysisResponse | null>(null);
   const [rewrite, setRewrite] = useState<RewriteDraftResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isRewriting, setIsRewriting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   async function loadAnalysis() {
     setIsLoading(true);
@@ -54,6 +60,24 @@ export default function AnalysisDetailPage({ params }: { params: Promise<{ analy
     }
   }
 
+  async function handleDelete() {
+    if (!analysis) {
+      return;
+    }
+    setIsDeleting(true);
+    setError(null);
+    try {
+      await deleteAnalysis(analysis.id);
+      setShowDeleteDialog(false);
+      router.push("/dashboard");
+      router.refresh();
+    } catch (deleteError) {
+      setError(deleteError instanceof Error ? deleteError.message : "分析报告删除失败。");
+    } finally {
+      setIsDeleting(false);
+    }
+  }
+
   return (
     <AppShell
       actions={
@@ -74,7 +98,14 @@ export default function AnalysisDetailPage({ params }: { params: Promise<{ analy
           <section className="grid gap-6 lg:grid-cols-[0.85fr_1.15fr]">
             <Card tone="lime">
               <CardHeader
-                action={<span className="border border-black bg-[#f0f0e8] px-3 py-1 font-mono text-xs font-bold uppercase tracking-wide">{analysis.status}</span>}
+                action={
+                  <div className="flex flex-wrap gap-3">
+                    <span className="border border-black bg-[#f0f0e8] px-3 py-1 font-mono text-xs font-bold uppercase tracking-wide">{analysis.status}</span>
+                    <Button disabled={isDeleting} onClick={() => setShowDeleteDialog(true)} tone="danger" type="button">
+                      {isDeleting ? "删除中" : "删除报告"}
+                    </Button>
+                  </div>
+                }
                 eyebrow="评分"
                 title="整体匹配"
                 description={`创建时间：${formatDateTime(analysis.createdAt)}。分数来自关键词覆盖、语义相关性和 ATS 可读性。`}
@@ -154,6 +185,16 @@ export default function AnalysisDetailPage({ params }: { params: Promise<{ analy
             </div>
           </Card>
         </div>
+      ) : null}
+      {analysis ? (
+        <ConfirmDialog
+          description="将删除这份分析报告；基于它生成的改写草稿也会一起删除。"
+          isOpen={showDeleteDialog}
+          isWorking={isDeleting}
+          onCancel={() => setShowDeleteDialog(false)}
+          onConfirm={() => void handleDelete()}
+          title="删除这份报告？"
+        />
       ) : null}
     </AppShell>
   );

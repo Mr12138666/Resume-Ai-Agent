@@ -85,6 +85,16 @@ public class ResumeApplicationService {
         return ResumeResponse.from(resume);
     }
 
+    @Transactional
+    public void delete(UUID resumeId) {
+        var resume = resumeRepository.findById(resumeId)
+                .orElseThrow(() -> new IllegalArgumentException("Resume not found: " + resumeId));
+        if (resume.getObjectKey() != null && !resume.getObjectKey().isBlank()) {
+            objectStorageService.delete(resume.getObjectKey());
+        }
+        resumeRepository.delete(resume);
+    }
+
     private String inferTitle(String originalFilename) {
         var dot = originalFilename.lastIndexOf('.');
         return dot > 0 ? originalFilename.substring(0, dot) : originalFilename;
