@@ -12,6 +12,7 @@ frontend/tsconfig.tsbuildinfo
 # Environment
 .env
 backend/.env
+backend/src/main/resources/application-private.yml
 frontend/.env.local
 frontend/.env
 

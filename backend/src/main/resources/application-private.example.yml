@@ -1,0 +1,41 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://120.53.242.78:15432/robot
+    username: postgres
+    password: replace-with-postgres-password
+  flyway:
+    baseline-on-migrate: true
+    baseline-version: 0
+  data:
+    redis:
+      host: 120.53.242.78
+      port: 16379
+      password: replace-with-redis-password
+      timeout: 1s
+  ai:
+    model:
+      chat: openai
+      embedding: ollama
+    openai:
+      api-key: replace-with-deepseek-api-key
+      base-url: https://api.deepseek.com
+      chat:
+        options:
+          model: deepseek-v4-flash
+    ollama:
+      base-url: http://localhost:11434
+      embedding:
+        model: nomic-embed-text
+
+resume-ai:
+  llm:
+    provider: deepseek
+    default-chat-model: deepseek-v4-flash
+    default-embedding-model: nomic-embed-text
+  redis:
+    enabled: true
+  storage:
+    bucket: resume-ai
+    endpoint: http://120.53.242.78:19000
+    access-key: replace-with-minio-access-key
+    secret-key: replace-with-minio-secret-key

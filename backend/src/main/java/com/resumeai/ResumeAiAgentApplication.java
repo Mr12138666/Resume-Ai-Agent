@@ -1,6 +1,5 @@
 package com.resumeai;
 
-import com.resumeai.infrastructure.config.DotenvLoader;
 import com.resumeai.infrastructure.config.ResumeAiProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -12,7 +11,6 @@ import org.springframework.boot.data.redis.autoconfigure.DataRedisRepositoriesAu
 public class ResumeAiAgentApplication {
 
     public static void main(String[] args) {
-        DotenvLoader.loadIfPresent();
         SpringApplication.run(ResumeAiAgentApplication.class, args);
     }
 }

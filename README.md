@@ -52,9 +52,7 @@ Frontend:
 
 Open `http://localhost:3000`.
 
-The backend script loads root `.env` values into the current process only and does not print secrets. By default it disables Spring Docker Compose so the app uses the configured remote or local services instead of starting another infrastructure stack.
-
-When launching the backend directly from IntelliJ IDEA, the application also searches upward from the backend working directory and loads the first root `.env` it finds. Explicit JVM system properties or IDE environment variables still take precedence.
+The backend loads configuration through Spring Boot `application.yml`. It optionally imports root `.env` and `backend/src/main/resources/application-private.yml`, so IntelliJ IDEA and PowerShell runs use the same config path. Keep real secrets in ignored local files, not in committed YAML.
 
 ## Demo Paths
 

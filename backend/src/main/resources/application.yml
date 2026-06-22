@@ -4,6 +4,12 @@ server:
 spring:
   application:
     name: resume-ai-backend
+  config:
+    import:
+      - optional:file:.env[.properties]
+      - optional:file:../.env[.properties]
+      - optional:file:backend/src/main/resources/application-private.yml
+      - optional:file:src/main/resources/application-private.yml
   docker:
     compose:
       enabled: ${SPRING_DOCKER_COMPOSE_ENABLED:false}
