@@ -1,0 +1,80 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: resume-ai-backend
+  docker:
+    compose:
+      enabled: ${SPRING_DOCKER_COMPOSE_ENABLED:false}
+  datasource:
+    url: ${POSTGRES_URL:jdbc:postgresql://localhost:5432/resume_ai}
+    username: ${POSTGRES_USER:resume_ai}
+    password: ${POSTGRES_PASSWORD:resume_ai}
+  jpa:
+    defer-datasource-initialization: false
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  flyway:
+    enabled: true
+    baseline-on-migrate: ${FLYWAY_BASELINE_ON_MIGRATE:false}
+    baseline-version: ${FLYWAY_BASELINE_VERSION:0}
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      timeout: ${REDIS_TIMEOUT:1s}
+  ai:
+    model:
+      chat: ${SPRING_AI_CHAT_MODEL:ollama}
+      embedding: ${SPRING_AI_EMBEDDING_MODEL:ollama}
+    ollama:
+      base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
+      chat:
+        model: ${OLLAMA_CHAT_MODEL:llama3.1}
+        temperature: 0.2
+      embedding:
+        model: ${OLLAMA_EMBEDDING_MODEL:nomic-embed-text}
+    openai:
+      api-key: ${OPENAI_API_KEY:}
+      base-url: ${OPENAI_BASE_URL:https://api.openai.com}
+      chat:
+        options:
+          model: ${OPENAI_CHAT_MODEL:gpt-4o-mini}
+          temperature: 0.2
+      embedding:
+        options:
+          model: ${OPENAI_EMBEDDING_MODEL:text-embedding-3-small}
+    vectorstore:
+      pgvector:
+        index-type: HNSW
+        distance-type: COSINE_DISTANCE
+        dimensions: ${RAG_EMBEDDING_DIMENSIONS:768}
+        initialize-schema: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+
+resume-ai:
+  llm:
+    provider: ${RESUME_AI_LLM_PROVIDER:ollama}
+    default-chat-model: ${RESUME_AI_CHAT_MODEL:llama3.1}
+    default-embedding-model: ${RESUME_AI_EMBEDDING_MODEL:nomic-embed-text}
+  rag:
+    embedding-dimensions: ${RAG_EMBEDDING_DIMENSIONS:768}
+    top-k: ${RAG_TOP_K:6}
+    similarity-threshold: ${RAG_SIMILARITY_THRESHOLD:0.72}
+  redis:
+    enabled: ${RESUME_AI_REDIS_ENABLED:true}
+    host: ${REDIS_HOST:localhost}
+    port: ${REDIS_PORT:6379}
+  storage:
+    bucket: ${MINIO_BUCKET:resume-ai}
+    endpoint: ${MINIO_ENDPOINT:http://localhost:9000}
+    access-key: ${MINIO_ACCESS_KEY:minioadmin}
+    secret-key: ${MINIO_SECRET_KEY:minioadmin}

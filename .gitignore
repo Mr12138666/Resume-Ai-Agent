@@ -1,0 +1,33 @@
+# Java / Maven
+backend/target/
+backend/classpath.txt
+.mvn/wrapper/maven-wrapper.jar
+
+# Node / Next.js
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/tsconfig.tsbuildinfo
+
+# Environment
+.env
+backend/.env
+frontend/.env.local
+frontend/.env
+
+# IDE / OS
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+
+# Copied reference repositories
+参考/
+参考/**/.git/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
