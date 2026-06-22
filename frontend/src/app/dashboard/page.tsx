@@ -85,92 +85,100 @@ export default function DashboardPage() {
           <Button disabled={isLoading} onClick={loadDashboard} tone="paper" type="button">
             {isLoading ? "刷新中" : "刷新"}
           </Button>
-          <ButtonLink href="/upload" tone="gold">新建 Tailor</ButtonLink>
+          <ButtonLink href="/upload" tone="gold">新建定制</ButtonLink>
         </>
       }
       description="参考 Resume-Matcher 的工作台结构：先确认主简历和模型状态，再进入定制流程，并在同一页追踪最近生成的分析、改写与 RAG 资产。"
-      eyebrow="Dashboard"
+      eyebrow="工作台"
       title="你的简历优化控制塔。"
     >
       {error ? <p className="border border-black bg-[#dc2626] p-4 font-mono text-sm font-bold uppercase text-white shadow-sw-sm">{error}</p> : null}
 
-      <section className="grid grid-cols-1 gap-[1px] border border-black bg-black md:grid-cols-2 xl:grid-cols-5">
-        <ModuleCard className="min-h-72 xl:aspect-square" href={latestResume ? `/resumes/${latestResume.id}` : "/upload"} tone="primary">
+      <section className="grid grid-cols-1 gap-[1px] border border-black bg-black md:grid-cols-2 xl:grid-cols-12 xl:auto-rows-[6.75rem]">
+        <ModuleCard className="min-h-72 xl:col-span-3 xl:row-span-2 xl:min-h-0" href={latestResume ? `/resumes/${latestResume.id}` : "/upload"} tone="primary">
           <div className="flex h-full flex-col justify-between">
             <div>
               <div className="flex items-start justify-between gap-4">
                 <div className="flex h-16 w-16 items-center justify-center border-2 border-black bg-[#1d4ed8] font-mono text-xl font-bold text-white">
-                  M
+                  简
                 </div>
-                <StatusPill label={readyForTailor ? "READY" : "SETUP"} />
+                <StatusPill label={readyForTailor ? "就绪" : "待配置"} />
               </div>
               <h2 className="mt-8 font-serif text-3xl font-semibold uppercase leading-none tracking-tight">
-                {latestResume ? "Master Resume" : "Initialize Resume"}
+                {latestResume ? "主简历" : "初始化简历"}
               </h2>
               <p className="mt-4 line-clamp-5 font-mono text-xs uppercase leading-5 text-[#6b7280]">
                 {latestResume ? `${latestResume.title} // ${latestResume.status} // ${latestResume.rawTextLength} 字` : "上传一份基础简历，作为后续 JD 定制和改写的主档案。"}
               </p>
             </div>
             <span className="mt-6 font-mono text-xs font-bold uppercase tracking-wide text-[#1d4ed8]">
-              {latestResume ? "Open Resume" : "Upload Now"}
+              {latestResume ? "打开简历" : "立即上传"}
             </span>
           </div>
         </ModuleCard>
 
-        <ModuleCard className="min-h-72 xl:aspect-square" href="/upload">
+        <ModuleCard className="min-h-72 xl:col-span-3 xl:row-span-2 xl:min-h-0" href="/upload">
           <div className="flex h-full flex-col justify-between">
-            <div className="flex h-14 w-14 items-center justify-center border-2 border-current text-3xl leading-none">+</div>
+              <div className="flex h-12 w-12 items-center justify-center border-2 border-current text-3xl leading-none">+</div>
             <div>
-              <h2 className="font-serif text-3xl font-semibold uppercase leading-none tracking-tight">Tailor Resume</h2>
-              <p className="mt-4 font-mono text-xs uppercase leading-5 text-[#6b7280]">粘贴目标 JD，生成关键词覆盖、证据映射、RAG 建议和改写草稿。</p>
+              <h2 className="font-serif text-3xl font-semibold uppercase leading-none tracking-tight">定制简历</h2>
+              <p className="mt-3 font-mono text-xs uppercase leading-5 text-[#6b7280]">粘贴目标 JD，生成关键词覆盖、证据映射、RAG 建议和改写草稿。</p>
             </div>
           </div>
         </ModuleCard>
 
-        <ModuleCard className="min-h-72 xl:aspect-square" href="/settings" tone="dark">
+        <ModuleCard className="min-h-72 xl:col-span-3 xl:row-span-2 xl:min-h-0" href="/settings" tone="dark">
           <div className="flex h-full flex-col justify-between">
             <div>
-              <p className="font-mono text-xs font-bold uppercase tracking-wide text-white/60">System</p>
-              <h2 className="mt-4 font-serif text-4xl font-semibold uppercase leading-none">{data.status?.status ?? "Unknown"}</h2>
-              <p className="mt-4 font-mono text-xs uppercase leading-5 text-white/60">
+              <p className="font-mono text-xs font-bold uppercase tracking-wide text-white/60">系统状态</p>
+              <h2 className="mt-3 font-serif text-4xl font-semibold uppercase leading-none">{data.status?.status ?? "未知"}</h2>
+              <p className="mt-3 font-mono text-xs uppercase leading-5 text-white/60">
                 {data.status ? formatDateTime(data.status.timestamp) : "等待后端状态"}
               </p>
             </div>
             <div className="space-y-2">
               {(data.status?.components ?? []).slice(0, 4).map((component) => (
                 <div className="flex items-center justify-between gap-2 border border-white/40 px-2 py-1 font-mono text-[10px] uppercase text-white/75" key={component.name}>
-                  <span>{component.name}</span>
-                  <span>{component.status}</span>
+                  <span>{formatComponentName(component.name)}</span>
+                  <span>{formatStatus(component.status)}</span>
                 </div>
               ))}
             </div>
           </div>
         </ModuleCard>
 
-        {[
-          ["Resumes", data.resumes.length, "/dashboard"],
-          ["Jobs", data.jobs.length, latestJob ? `/jobs/${latestJob.id}` : "/upload"],
-          ["Analyses", data.analyses.length, bestAnalysis ? `/analyses/${bestAnalysis.id}` : "/upload"],
-          ["Rewrites", data.rewrites.length, data.rewrites[0] ? `/rewrites/${data.rewrites[0].id}` : "/upload"],
-          ["RAG Docs", data.knowledge.length, "/knowledge"],
-        ].map(([label, value, href]) => (
-          <ModuleCard className="min-h-44 xl:aspect-square" href={String(href)} key={label}>
-            <div className="flex h-full flex-col justify-between">
-              <p className="font-mono text-xs font-bold uppercase tracking-wide text-[#1d4ed8]">{label}</p>
-              <p className="font-mono text-6xl font-bold leading-none">{value}</p>
-            </div>
-          </ModuleCard>
-        ))}
+        <StatsCluster
+          className="min-h-72 md:col-span-2 xl:col-span-3 xl:row-span-2 xl:min-h-0"
+          stats={[
+            ["简历", data.resumes.length, "/dashboard"],
+            ["岗位", data.jobs.length, latestJob ? `/jobs/${latestJob.id}` : "/upload"],
+            ["分析", data.analyses.length, bestAnalysis ? `/analyses/${bestAnalysis.id}` : "/upload"],
+            ["改写", data.rewrites.length, data.rewrites[0] ? `/rewrites/${data.rewrites[0].id}` : "/upload"],
+            ["RAG 文档", data.knowledge.length, "/knowledge"],
+          ]}
+        />
 
-        <ModuleCard className="min-h-72 md:col-span-2 xl:col-span-2" href={bestAnalysis ? `/analyses/${bestAnalysis.id}` : "/upload"}>
-          <div className="grid h-full gap-6 md:grid-cols-[auto_1fr] md:items-center">
-            {bestAnalysis ? <ScoreRing label="Best Match" score={bestAnalysis.overallScore} /> : <div className="flex h-32 w-32 items-center justify-center border border-black bg-[#e5e5e0] font-mono text-xs font-bold uppercase">No Report</div>}
+        <ModuleCard className="min-h-72 md:col-span-2 xl:col-span-8 xl:row-span-2 xl:min-h-0" href={bestAnalysis ? `/analyses/${bestAnalysis.id}` : "/upload"} compact>
+          <div className="grid h-full gap-8 md:grid-cols-[auto_1fr] md:items-center">
+            {bestAnalysis ? <ScoreRing label="最佳匹配" score={bestAnalysis.overallScore} /> : <div className="flex h-32 w-32 items-center justify-center border border-black bg-[#e5e5e0] font-mono text-xs font-bold uppercase">暂无报告</div>}
             <div>
-              <h2 className="font-serif text-3xl font-semibold uppercase leading-none tracking-tight">{bestAnalysis ? "Best Analysis" : "Create First Analysis"}</h2>
+              <h2 className="font-serif text-3xl font-semibold uppercase leading-none tracking-tight">{bestAnalysis ? "最佳分析" : "创建第一份分析"}</h2>
               <p className="mt-4 font-mono text-xs uppercase leading-5 text-[#6b7280]">
-                {bestAnalysis ? `缺失关键词 ${bestAnalysis.report.missingKeywords.length} 个，建议 ${bestAnalysis.report.suggestions.length} 条。` : "完成 Tailor 流程后，这里显示最适合继续改写的报告。"}
+                {bestAnalysis ? `缺失关键词 ${bestAnalysis.report.missingKeywords.length} 个，建议 ${bestAnalysis.report.suggestions.length} 条。` : "完成简历定制流程后，这里显示最适合继续改写的报告。"}
               </p>
             </div>
+          </div>
+        </ModuleCard>
+
+        <ModuleCard className="min-h-72 md:col-span-2 xl:col-span-4 xl:row-span-2 xl:min-h-0" href="/knowledge" tone="primary" compact>
+          <div className="flex h-full flex-col justify-between">
+            <div>
+              <p className="font-mono text-xs font-bold uppercase tracking-wide text-[#1d4ed8] group-hover:text-white/70">知识库</p>
+              <h2 className="mt-4 font-serif text-3xl font-semibold uppercase leading-none tracking-tight">让改写有依据</h2>
+            </div>
+            <p className="font-mono text-xs uppercase leading-5 text-[#6b7280] group-hover:text-white/80">
+              把简历规则、岗位偏好和 ATS 建议放进 RAG，后续改写就能稳定参考同一套标准。
+            </p>
           </div>
         </ModuleCard>
       </section>
@@ -225,14 +233,39 @@ function StatusPill({ label }: { label: string }) {
   return <span className="border border-black bg-[#f0f0e8] px-3 py-1 font-mono text-xs font-bold uppercase tracking-wide text-black">{label}</span>;
 }
 
+function StatsCluster({
+  className = "",
+  stats,
+}: {
+  className?: string;
+  stats: Array<[string, number, string]>;
+}) {
+  return (
+    <div className={`grid grid-cols-2 gap-[1px] bg-black ${className}`}>
+      {stats.map(([label, value, href], index) => (
+        <Link
+          className={`flex min-h-0 flex-col justify-between bg-[#f0f0e8] p-4 transition-[transform,box-shadow,background-color,color] duration-150 hover:z-20 hover:-translate-x-[2px] hover:-translate-y-[2px] hover:bg-[#e5e5e0] hover:shadow-sw-default ${index === stats.length - 1 ? "col-span-2" : ""}`}
+          href={href}
+          key={label}
+        >
+          <p className="font-mono text-xs font-bold uppercase tracking-wide text-[#1d4ed8]">{label}</p>
+          <p className="font-mono text-3xl font-bold leading-none">{value}</p>
+        </Link>
+      ))}
+    </div>
+  );
+}
+
 function ModuleCard({
   children,
   className = "",
+  compact = false,
   href,
   tone = "light",
 }: {
   children: React.ReactNode;
   className?: string;
+  compact?: boolean;
   href: string;
   tone?: "light" | "primary" | "dark";
 }) {
@@ -243,10 +276,37 @@ function ModuleCard({
   }[tone];
 
   return (
-    <Link className={`group block p-6 transition-[transform,box-shadow,background-color,color] duration-150 hover:z-20 hover:-translate-x-[2px] hover:-translate-y-[2px] hover:shadow-sw-default ${toneClass} ${className}`} href={href}>
+    <Link className={`group block ${compact ? "p-5" : "p-6"} transition-[transform,box-shadow,background-color,color] duration-150 hover:z-20 hover:-translate-x-[2px] hover:-translate-y-[2px] hover:shadow-sw-default ${toneClass} ${className}`} href={href}>
       {children}
     </Link>
   );
+}
+
+function formatComponentName(name: string) {
+  const names: Record<string, string> = {
+    database: "数据库",
+    embedding: "向量模型",
+    llm: "大模型",
+    minio: "对象存储",
+    redis: "缓存",
+    storage: "对象存储",
+  };
+  return names[name.toLowerCase()] ?? name;
+}
+
+function formatStatus(status: string) {
+  const statuses: Record<string, string> = {
+    CONFIGURED: "已配置",
+    DEGRADED: "降级",
+    DOWN: "异常",
+    ERROR: "错误",
+    HEALTHY: "正常",
+    NOT_CONFIGURED: "未配置",
+    READY: "就绪",
+    UNKNOWN: "未知",
+    UP: "正常",
+  };
+  return statuses[status.toUpperCase()] ?? status;
 }
 
 function RecordList({
@@ -260,7 +320,7 @@ function RecordList({
 }) {
   return (
     <Card tone="paper">
-      <CardHeader eyebrow="Records" title={title} />
+      <CardHeader eyebrow="记录" title={title} />
       <div className="mt-5 space-y-3">
         {items.length > 0 ? (
           items.map((item) => (

@@ -59,7 +59,7 @@ export default function RewriteDetailPage({ params }: { params: Promise<{ rewrit
         </>
       }
       description="参考项目里的 diff preview 是确认改写质量的关键。这里把原文、改写、理由、事实校验和 Markdown 导出放在同一页。"
-      eyebrow="Rewrite Draft"
+      eyebrow="改写草稿"
       title="先看差异，再决定是否导出。"
     >
       {error ? <p className="mb-6 border border-black bg-[#dc2626] p-4 font-mono text-sm font-bold uppercase text-white shadow-sw-sm">{error}</p> : null}
@@ -81,7 +81,7 @@ export default function RewriteDetailPage({ params }: { params: Promise<{ rewrit
                   {isExporting ? "导出中" : "导出 Markdown"}
                 </Button>
               }
-              eyebrow="Export"
+              eyebrow="导出"
               title="导出优化段落"
               description="导出会写入 MinIO，并返回一个临时下载链接。"
             />
@@ -110,11 +110,11 @@ export default function RewriteDetailPage({ params }: { params: Promise<{ rewrit
 
           <section className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
             <Card tone="gold">
-              <CardHeader eyebrow="Rationale" title="改写理由" description="这里解释为什么这样重写，方便人工确认是否符合真实经历。" />
+              <CardHeader eyebrow="理由" title="改写理由" description="这里解释为什么这样重写，方便人工确认是否符合真实经历。" />
               <p className="mt-5 whitespace-pre-wrap font-mono text-xs uppercase leading-5 text-[#6b7280]">{rewrite.rationale}</p>
             </Card>
             <Card tone="ink">
-              <CardHeader eyebrow="Verification" title="事实校验 JSON" description="模型输出应尽量说明是否引入了无法从原文支撑的新事实。" />
+              <CardHeader eyebrow="事实校验" title="事实校验 JSON" description="模型输出应尽量说明是否引入了无法从原文支撑的新事实。" />
               <pre className="panel-scroll mt-5 max-h-96 overflow-auto whitespace-pre-wrap border border-white/80 bg-white/10 p-4 font-mono text-xs leading-5 text-white">
                 {formatJson(rewrite.verificationJson)}
               </pre>

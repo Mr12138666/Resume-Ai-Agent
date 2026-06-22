@@ -40,7 +40,7 @@ export default function SettingsPage() {
         </>
       }
       description="参考项目会明确提示 LLM 和运行状态；这里展示 DeepSeek/OpenAI 兼容配置、RAG、MinIO、Redis、上传限制和后端组件状态，同时不暴露任何密钥。"
-      eyebrow="Settings"
+      eyebrow="系统设置"
       title="系统配置与运行状态。"
     >
       {error ? <p className="mb-6 border border-black bg-[#dc2626] p-4 font-mono text-sm font-bold uppercase text-white shadow-sw-sm">{error}</p> : null}
@@ -105,7 +105,7 @@ export default function SettingsPage() {
 
       {status ? (
         <Card className="mt-6" tone="ink">
-          <CardHeader eyebrow="Runtime" title={status.status} description={`最近检查：${formatDateTime(status.timestamp)}`} />
+          <CardHeader eyebrow="运行状态" title={status.status} description={`最近检查：${formatDateTime(status.timestamp)}`} />
           <div className="mt-5 grid gap-3 md:grid-cols-3">
             {status.components.map((component) => (
               <article className="border border-white/80 bg-white/10 p-4" key={component.name}>
@@ -134,7 +134,7 @@ function SettingsCard({
 }) {
   return (
     <Card tone={tone}>
-      <CardHeader eyebrow="Config" title={title} />
+      <CardHeader eyebrow="配置" title={title} />
       <dl className="mt-5 space-y-3">
         {rows.map(([label, value]) => (
           <div className="grid gap-2 border-b border-black/20 pb-3 md:grid-cols-[0.52fr_1fr]" key={label}>

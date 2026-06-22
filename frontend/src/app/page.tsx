@@ -8,11 +8,11 @@ export default function HomePage() {
       actions={
         <>
           <ButtonLink href="/dashboard" tone="default">进入工作台</ButtonLink>
-          <ButtonLink href="/upload" tone="paper">开始 Tailor</ButtonLink>
+          <ButtonLink href="/upload" tone="paper">开始定制</ButtonLink>
         </>
       }
       description="尽可能复现 Resume-Matcher 的主流程体验：主简历、目标 JD、关键词命中、差异预览、智能体改写与导出，同时接入当前 Spring Boot、PGvector、MinIO、DeepSeek 后端。"
-      eyebrow="Resume AI Agent"
+      eyebrow="简历优化智能体"
       title="把简历优化做成一条可追踪的求职作战流水线。"
     >
       <section className="grid gap-5 md:grid-cols-3">

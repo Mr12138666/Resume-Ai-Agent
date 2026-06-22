@@ -80,11 +80,11 @@ export default function JobDetailPage({ params }: { params: Promise<{ jobId: str
       actions={
         <>
           <ButtonLink href="/dashboard" tone="paper">工作台</ButtonLink>
-          <ButtonLink href="/upload" tone="gold">新建 Tailor</ButtonLink>
+          <ButtonLink href="/upload" tone="gold">新建定制</ButtonLink>
         </>
       }
       description="岗位详情页用于查看 JD 原文、生成结构化 Job Requirement JSON，并快速选择简历创建匹配报告。"
-      eyebrow="Job Description"
+      eyebrow="岗位描述"
       title={job?.title || "目标岗位"}
     >
       {error ? <p className="mb-6 border border-black bg-[#dc2626] p-4 font-mono text-sm font-bold uppercase text-white shadow-sw-sm">{error}</p> : null}
@@ -106,7 +106,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ jobId: str
                   {isStructuring ? "结构化中" : "生成 JD JSON"}
                 </Button>
               }
-              eyebrow="Create Analysis"
+              eyebrow="创建分析"
               title="基于该 JD 创建匹配分析"
               description="这条支线保留参考项目从岗位进入定制流程的能力。"
             />
@@ -148,13 +148,13 @@ export default function JobDetailPage({ params }: { params: Promise<{ jobId: str
 
           <section className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
             <Card tone="paper">
-              <CardHeader eyebrow="JD Text" title="岗位原文" description="建议粘贴完整职责、任职要求和加分项，以便关键词提取更稳定。" />
+              <CardHeader eyebrow="JD 原文" title="岗位原文" description="建议粘贴完整职责、任职要求和加分项，以便关键词提取更稳定。" />
               <pre className="panel-scroll mt-5 max-h-[42rem] overflow-auto whitespace-pre-wrap border border-black bg-[#e5e5e0] p-5 font-mono text-sm leading-7">
                 {job.description}
               </pre>
             </Card>
             <Card tone="ink">
-              <CardHeader eyebrow="Structured JSON" title="岗位结构化结果" description="结构化 JD 会帮助后续分析识别职责、技能和优先级。" />
+              <CardHeader eyebrow="结构化 JSON" title="岗位结构化结果" description="结构化 JD 会帮助后续分析识别职责、技能和优先级。" />
               {job.structuredJson ? (
                 <pre className="panel-scroll mt-5 max-h-[42rem] overflow-auto whitespace-pre-wrap border border-white/80 bg-white/10 p-5 font-mono text-xs leading-5 text-white">
                   {formatJson(job.structuredJson)}

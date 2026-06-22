@@ -59,11 +59,11 @@ export default function AnalysisDetailPage({ params }: { params: Promise<{ analy
       actions={
         <>
           <ButtonLink href="/dashboard" tone="paper">工作台</ButtonLink>
-          <ButtonLink href="/upload" tone="gold">继续 Tailor</ButtonLink>
+          <ButtonLink href="/upload" tone="gold">继续定制</ButtonLink>
         </>
       }
       description="按照参考项目的报告视角，把分数、关键词缺口、证据链、RAG 建议和智能体改写动作放在同一张检查单里。"
-      eyebrow="Analysis Report"
+      eyebrow="分析报告"
       title="匹配报告不是结论，是改写前的证据清单。"
     >
       {error ? <p className="mb-6 border border-black bg-[#dc2626] p-4 font-mono text-sm font-bold uppercase text-white shadow-sw-sm">{error}</p> : null}
@@ -75,7 +75,7 @@ export default function AnalysisDetailPage({ params }: { params: Promise<{ analy
             <Card tone="lime">
               <CardHeader
                 action={<span className="border border-black bg-[#f0f0e8] px-3 py-1 font-mono text-xs font-bold uppercase tracking-wide">{analysis.status}</span>}
-                eyebrow="Score"
+                eyebrow="评分"
                 title="整体匹配"
                 description={`创建时间：${formatDateTime(analysis.createdAt)}。分数来自关键词覆盖、语义相关性和 ATS 可读性。`}
               />
@@ -90,7 +90,7 @@ export default function AnalysisDetailPage({ params }: { params: Promise<{ analy
                     {isRewriting ? "改写中" : "创建改写"}
                   </Button>
                 }
-                eyebrow="Action"
+                eyebrow="下一步"
                 title="下一步：生成可确认的改写草稿"
                 description="智能体会使用分析结果、缺失关键词和 RAG 建议生成中文段落改写，并附带事实校验 JSON。"
               />
@@ -109,13 +109,13 @@ export default function AnalysisDetailPage({ params }: { params: Promise<{ analy
 
           <section className="grid gap-6 lg:grid-cols-2">
             <Card tone="paper">
-              <CardHeader eyebrow="Matched" title="已匹配关键词" description="这些词在简历文本中有证据或高度相关表达。" />
+              <CardHeader eyebrow="已匹配" title="已匹配关键词" description="这些词在简历文本中有证据或高度相关表达。" />
               <div className="mt-5">
                 <KeywordCloud keywords={analysis.report.matchedKeywords} tone="matched" />
               </div>
             </Card>
             <Card tone="gold">
-              <CardHeader eyebrow="Missing" title="缺失关键词" description="优先判断是否有真实经历可补充，没有证据时只做表达重构，不编造。" />
+              <CardHeader eyebrow="待补齐" title="缺失关键词" description="优先判断是否有真实经历可补充，没有证据时只做表达重构，不编造。" />
               <div className="mt-5">
                 <KeywordCloud keywords={analysis.report.missingKeywords} tone="missing" />
               </div>
@@ -123,7 +123,7 @@ export default function AnalysisDetailPage({ params }: { params: Promise<{ analy
           </section>
 
           <Card tone="paper">
-            <CardHeader eyebrow="Suggestions" title="优化建议" description="建议会尽量保持中文、可执行、面向简历段落修改。" />
+            <CardHeader eyebrow="建议" title="优化建议" description="建议会尽量保持中文、可执行、面向简历段落修改。" />
             <ol className="mt-5 grid gap-3 md:grid-cols-2">
               {analysis.report.suggestions.map((suggestion, index) => (
                 <li className="border border-black bg-[#f0f0e8] p-4 font-mono text-xs uppercase leading-5 shadow-sw-xs" key={`${suggestion}-${index}`}>
@@ -135,7 +135,7 @@ export default function AnalysisDetailPage({ params }: { params: Promise<{ analy
           </Card>
 
           <Card tone="sky">
-            <CardHeader eyebrow="Evidence Map" title="证据映射" description="参考项目强调可预览差异，我们这里先把每个关键词和证据关系展开。" />
+            <CardHeader eyebrow="证据" title="证据映射" description="参考项目强调可预览差异，我们这里先把每个关键词和证据关系展开。" />
             <div className="mt-5">
               <EvidenceMatrix evidence={analysis.report.evidenceMap} />
             </div>

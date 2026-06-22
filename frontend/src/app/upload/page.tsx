@@ -168,8 +168,8 @@ export default function UploadPage() {
           <ButtonLink href="/knowledge" tone="lime">RAG 知识库</ButtonLink>
         </>
       }
-      description="尽量复现参考项目 Tailor 页面：上传主简历、粘贴目标 JD、选择 RAG、生成预览分析，再通过 diff 风格确认智能体改写。"
-      eyebrow="Tailor Resume"
+      description="上传主简历、粘贴目标 JD、选择 RAG、生成预览分析，再通过差异预览确认智能体改写。"
+      eyebrow="简历定制"
       title="为一个目标岗位定制你的简历。"
     >
       {error ? <p className="mb-6 border border-black bg-[#dc2626] p-4 font-mono text-sm font-bold uppercase text-white shadow-sw-sm">{error}</p> : null}
@@ -184,7 +184,7 @@ export default function UploadPage() {
       <section className="grid gap-6 lg:grid-cols-[0.92fr_1.08fr]">
         <Card tone="paper">
           <CardHeader
-            eyebrow="Master Resume"
+            eyebrow="主简历"
             title="上传或替换主简历"
             description="支持 PDF、DOCX、TXT。解析后会显示文本预览，也可以进一步调用模型抽取结构化 JSON。"
           />
@@ -238,9 +238,9 @@ export default function UploadPage() {
 
         <Card tone="panel">
           <CardHeader
-            eyebrow="Job Description"
+            eyebrow="岗位描述"
             title="粘贴目标岗位"
-            description="这里相当于参考项目的 Tailor 输入区，提交后会创建岗位记录并生成匹配报告。"
+            description="这里是岗位输入区，提交后会创建岗位记录并生成匹配报告。"
           />
           <form className="mt-6 space-y-5" onSubmit={handleAnalysis}>
             <div className="grid gap-4 md:grid-cols-2">
@@ -310,7 +310,7 @@ export default function UploadPage() {
           <Card tone="paper">
             <CardHeader
               action={<ButtonLink href={`/analyses/${analysis.id}`} tone="ink">完整报告</ButtonLink>}
-              eyebrow="Analysis"
+              eyebrow="匹配分析"
               title="匹配预览已生成"
               description="这一步对应参考项目里的预览检查：先看分数、缺口、证据，再决定是否生成改写。"
             />
@@ -329,7 +329,7 @@ export default function UploadPage() {
                   {isRewriting ? "改写中" : "生成改写"}
                 </Button>
               }
-              eyebrow="Keywords"
+              eyebrow="关键词"
               title="关键词覆盖与缺口"
               description="绿色是简历已有证据，红色是建议补齐或改写时强化的岗位关键词。"
             />
@@ -350,13 +350,13 @@ export default function UploadPage() {
       {analysis ? (
         <section className="mt-6 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
           <Card tone="paper">
-            <CardHeader eyebrow="Evidence Map" title="证据映射" description="每个关键词都应该能追溯到简历证据，缺证据时不要硬编经历。" />
+            <CardHeader eyebrow="证据" title="证据映射" description="每个关键词都应该能追溯到简历证据，缺证据时不要硬编经历。" />
             <div className="mt-5">
               <EvidenceMatrix evidence={analysis.report.evidenceMap} />
             </div>
           </Card>
           <Card tone="ink">
-            <CardHeader eyebrow="RAG Guidance" title="检索建议" description="来自 PGvector 的简历优化规则会作为模型改写的参考上下文。" />
+            <CardHeader eyebrow="RAG 建议" title="检索建议" description="来自 PGvector 的简历优化规则会作为模型改写的参考上下文。" />
             <div className="mt-5 space-y-3">
               {analysis.report.retrievedGuidance.length > 0 ? (
                 analysis.report.retrievedGuidance.map((guidance) => (
@@ -376,7 +376,7 @@ export default function UploadPage() {
           <Card tone="panel">
             <CardHeader
               action={<ButtonLink href={`/rewrites/${rewrite.id}`} tone="default">查看并导出</ButtonLink>}
-              eyebrow="Confirm"
+              eyebrow="确认"
               title="改写草稿已生成"
               description={rewrite.rationale}
             />

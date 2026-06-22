@@ -34,7 +34,7 @@ export default function DemoPage() {
         </>
       }
       description="一键生成演示简历、目标 JD、匹配分析、改写草稿和 Markdown 导出，用于快速验收整条链路。"
-      eyebrow="Demo Runner"
+      eyebrow="演示启动器"
       title="用一条样例链路检查平台是否真的跑通。"
     >
       {error ? <p className="mb-6 border border-black bg-[#dc2626] p-4 font-mono text-sm font-bold uppercase text-white shadow-sw-sm">{error}</p> : null}
@@ -42,7 +42,7 @@ export default function DemoPage() {
       <section className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
         <Card tone="lime">
           <CardHeader
-            eyebrow="Smoke Test"
+            eyebrow="链路检查"
             title="快速演示会做什么"
             description="后端会创建样例简历和 JD，生成分析报告与改写草稿，并将 Markdown 文件导出到 MinIO。"
           />
@@ -57,7 +57,7 @@ export default function DemoPage() {
         </Card>
 
         <Card tone="ink">
-          <CardHeader eyebrow="Result" title={result ? "演示已完成" : "等待运行"} description="运行成功后，可直接打开每个生成实体进行展示。" />
+          <CardHeader eyebrow="运行结果" title={result ? "演示已完成" : "等待运行"} description="运行成功后，可直接打开每个生成实体进行展示。" />
           {result ? (
             <div className="mt-5 grid gap-3">
               <DemoLink href={`/resumes/${result.resumeId}`} label="简历" value={result.resumeId} />

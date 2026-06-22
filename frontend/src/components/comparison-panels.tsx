@@ -66,7 +66,7 @@ export function RewriteDiffPreview({ rewrite }: { rewrite: RewriteDraftResponse 
   return (
     <section className="overflow-hidden border border-black bg-[#f0f0e8] shadow-sw-card">
       <div className="border-b border-black bg-black px-5 py-4 text-white">
-        <h2 className="font-mono text-lg font-bold uppercase tracking-wide">Diff Preview</h2>
+        <h2 className="font-mono text-lg font-bold uppercase tracking-wide">改写差异预览</h2>
         <p className="mt-2 text-sm leading-6 text-white/75">左侧是原文，右侧是智能体根据岗位匹配结果生成的中文改写草稿。</p>
       </div>
       <div className="grid lg:grid-cols-2">

@@ -109,18 +109,18 @@ export default function KnowledgePage() {
       actions={
         <>
           <Button disabled={isLoading} onClick={refreshDocuments} tone="paper" type="button">{isLoading ? "加载中" : "刷新"}</Button>
-          <ButtonLink href="/upload" tone="gold">回到 Tailor</ButtonLink>
+          <ButtonLink href="/upload" tone="gold">回到定制</ButtonLink>
         </>
       }
       description="参考项目强调 Prompt 与配置能力；这里把 RAG 知识做成可创建、可索引、可检索的工具台，为分析和改写提供中文规则上下文。"
-      eyebrow="RAG Knowledge"
+      eyebrow="RAG 知识库"
       title="给简历智能体一套可引用的规则库。"
     >
       {error ? <p className="mb-6 border border-black bg-[#dc2626] p-4 font-mono text-sm font-bold uppercase text-white shadow-sw-sm">{error}</p> : null}
 
       <section className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
         <Card tone="paper">
-          <CardHeader eyebrow="Step 1" title="创建知识文档" description="保存简历规则、岗位画像、ATS 经验或面试定位笔记。" />
+          <CardHeader eyebrow="步骤 1" title="创建知识文档" description="保存简历规则、岗位画像、ATS 经验或面试定位笔记。" />
           <form className="mt-6 space-y-5" onSubmit={handleCreate}>
             <div className="grid gap-4 md:grid-cols-2">
               <Field label="文档类型" value={documentType} onChange={setDocumentType} />
@@ -136,7 +136,7 @@ export default function KnowledgePage() {
         </Card>
 
         <Card tone="lime">
-          <CardHeader eyebrow="Step 2" title="索引到 PGvector" description="已索引文档会成为分析报告和改写提示词可检索的 RAG 上下文。" />
+          <CardHeader eyebrow="步骤 2" title="索引到 PGvector" description="已索引文档会成为分析报告和改写提示词可检索的 RAG 上下文。" />
           <div className="mt-5 space-y-3">
             {documents.length > 0 ? (
               documents.map((document) => (
@@ -162,7 +162,7 @@ export default function KnowledgePage() {
       </section>
 
       <Card className="mt-6" tone="sky">
-        <CardHeader eyebrow="Step 3" title="检索 RAG 上下文" description="这里直接调用 PGvector 检索接口，确认知识能否被智能体取回。" />
+        <CardHeader eyebrow="步骤 3" title="检索 RAG 上下文" description="这里直接调用 PGvector 检索接口，确认知识能否被智能体取回。" />
         <form className="mt-5 flex flex-col gap-4 md:flex-row" onSubmit={handleSearch}>
           <input className="min-h-14 flex-1 rounded-none border border-black bg-[#f0f0e8] px-4 py-3 outline-none focus:bg-[#e5e5e0] focus:ring-2 focus:ring-[#1d4ed8]" value={query} onChange={(event) => setQuery(event.target.value)} />
           <Button disabled={isSearching} tone="ink" type="submit">{isSearching ? "检索中" : "检索"}</Button>

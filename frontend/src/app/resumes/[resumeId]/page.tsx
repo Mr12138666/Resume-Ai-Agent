@@ -47,11 +47,11 @@ export default function ResumeDetailPage({ params }: { params: Promise<{ resumeI
       actions={
         <>
           <ButtonLink href="/dashboard" tone="paper">工作台</ButtonLink>
-          <ButtonLink href="/upload" tone="gold">用于 Tailor</ButtonLink>
+          <ButtonLink href="/upload" tone="gold">用于定制</ButtonLink>
         </>
       }
       description="主简历详情页保留参考项目里的“原始简历底座”概念：解析文本、结构化 JSON、后续定制都从这里出发。"
-      eyebrow="Resume"
+      eyebrow="简历"
       title={resume?.title ?? "简历详情"}
     >
       {error ? <p className="mb-6 border border-black bg-[#dc2626] p-4 font-mono text-sm font-bold uppercase text-white shadow-sw-sm">{error}</p> : null}
@@ -73,7 +73,7 @@ export default function ResumeDetailPage({ params }: { params: Promise<{ resumeI
                   {isStructuring ? "结构化中" : "生成 Resume JSON"}
                 </Button>
               }
-              eyebrow="Source File"
+              eyebrow="源文件"
               title={resume.originalFilename}
               description={`${resume.contentType} · 文件已保存到对象存储，文本已写入数据库。`}
             />
@@ -81,13 +81,13 @@ export default function ResumeDetailPage({ params }: { params: Promise<{ resumeI
 
           <section className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
             <Card tone="paper">
-              <CardHeader eyebrow="Parsed Text" title="解析文本" description="Tika 提取出的正文会作为匹配和改写的基础证据。" />
+              <CardHeader eyebrow="解析文本" title="解析文本" description="Tika 提取出的正文会作为匹配和改写的基础证据。" />
               <pre className="panel-scroll mt-5 max-h-[42rem] overflow-auto whitespace-pre-wrap border border-black bg-[#e5e5e0] p-5 font-mono text-sm leading-7">
                 {resume.rawTextPreview || "暂无文本预览。"}
               </pre>
             </Card>
             <Card tone="ink">
-              <CardHeader eyebrow="Structured JSON" title="结构化抽取" description="AI 结构化结果会用于更精细的章节识别和后续改写。" />
+              <CardHeader eyebrow="结构化 JSON" title="结构化抽取" description="AI 结构化结果会用于更精细的章节识别和后续改写。" />
               {resume.structuredJson ? (
                 <pre className="panel-scroll mt-5 max-h-[42rem] overflow-auto whitespace-pre-wrap border border-white/80 bg-white/10 p-5 font-mono text-xs leading-5 text-white">
                   {formatJson(resume.structuredJson)}
