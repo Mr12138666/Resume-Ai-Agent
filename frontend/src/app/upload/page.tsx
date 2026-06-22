@@ -1,6 +1,7 @@
 "use client";
 
-import { type FormEvent, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { Suspense, type FormEvent, useEffect, useMemo, useState } from "react";
 import { AppShell } from "@/components/app-shell";
 import { JDResumeComparison, AnalysisPreviewStrip, RewriteDiffPreview } from "@/components/comparison-panels";
 import { EvidenceMatrix, KeywordCloud } from "@/components/keyword-panels";
@@ -15,6 +16,7 @@ import {
   createAnalysis,
   createJobDescription,
   createRewrite,
+  getResume,
   structureJob,
   structureResume,
   uploadResume,
@@ -23,6 +25,16 @@ import { deriveJobKeywords, uniqueKeywords } from "@/lib/keywords";
 import { formatJson } from "@/lib/format";
 
 export default function UploadPage() {
+  return (
+    <Suspense fallback={<UploadPageFallback />}>
+      <UploadWorkflow />
+    </Suspense>
+  );
+}
+
+function UploadWorkflow() {
+  const searchParams = useSearchParams();
+  const selectedResumeId = searchParams.get("resumeId");
   const [resumeTitle, setResumeTitle] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [jobTitle, setJobTitle] = useState("");
@@ -39,6 +51,47 @@ export default function UploadPage() {
   const [isRewriting, setIsRewriting] = useState(false);
   const [isStructuringResume, setIsStructuringResume] = useState(false);
   const [isStructuringJob, setIsStructuringJob] = useState(false);
+  const [isLoadingExistingResume, setIsLoadingExistingResume] = useState(false);
+
+  useEffect(() => {
+    if (!selectedResumeId) {
+      return;
+    }
+
+    let ignore = false;
+    const resumeIdToLoad = selectedResumeId;
+
+    async function loadExistingResume() {
+      setIsLoadingExistingResume(true);
+      setError(null);
+      try {
+        const existingResume = await getResume(resumeIdToLoad);
+        if (ignore) {
+          return;
+        }
+        setResume(existingResume);
+        setResumeTitle(existingResume.title);
+        setFile(null);
+        setJob(null);
+        setAnalysis(null);
+        setRewrite(null);
+      } catch (loadError) {
+        if (!ignore) {
+          setError(loadError instanceof Error ? loadError.message : "已解析简历加载失败，请返回简历详情页重试。");
+        }
+      } finally {
+        if (!ignore) {
+          setIsLoadingExistingResume(false);
+        }
+      }
+    }
+
+    void loadExistingResume();
+
+    return () => {
+      ignore = true;
+    };
+  }, [selectedResumeId]);
 
   const comparisonKeywords = useMemo(() => {
     if (analysis) {
@@ -185,9 +238,23 @@ export default function UploadPage() {
         <Card tone="paper">
           <CardHeader
             eyebrow="主简历"
-            title="上传或替换主简历"
-            description="支持 PDF、DOCX、TXT。解析后会显示文本预览，也可以进一步调用模型抽取结构化 JSON。"
+            title={resume ? "已带入主简历" : "上传或替换主简历"}
+            description={resume ? "已加载数据库中的解析文本，可直接粘贴目标 JD 生成匹配分析；也可以重新上传文件替换主简历。" : "支持 PDF、DOCX、TXT。解析后会显示文本预览，也可以进一步调用模型抽取结构化 JSON。"}
           />
+          {isLoadingExistingResume ? (
+            <p className="mt-5 border border-black bg-[#facc15] p-4 font-mono text-xs font-bold uppercase tracking-wide text-black shadow-sw-sm">
+              正在带入已解析简历...
+            </p>
+          ) : null}
+          {resume ? (
+            <div className="mt-5 border border-black bg-[#dcfce7] p-4 shadow-sw-xs">
+              <p className="font-mono text-xs font-bold uppercase tracking-wide text-[#15803d]">已选择主简历</p>
+              <p className="mt-2 font-serif text-xl font-semibold uppercase leading-tight">{resume.title}</p>
+              <p className="mt-2 font-mono text-xs uppercase leading-5 text-[#166534]">
+                {resume.originalFilename} · {resume.status} · {resume.rawTextLength} 字
+              </p>
+            </div>
+          ) : null}
           <form className="mt-6 space-y-5" onSubmit={handleResumeUpload}>
             <label className="block font-mono text-xs font-bold uppercase tracking-wide">
               简历标题
@@ -383,6 +450,21 @@ export default function UploadPage() {
           </Card>
         </section>
       ) : null}
+    </AppShell>
+  );
+}
+
+function UploadPageFallback() {
+  return (
+    <AppShell
+      actions={<ButtonLink href="/dashboard" tone="paper">回到工作台</ButtonLink>}
+      description="正在读取定制入口参数，稍后会加载已解析简历或显示上传表单。"
+      eyebrow="简历定制"
+      title="正在准备定制工作台。"
+    >
+      <p className="border border-black bg-[#f0f0e8] p-6 font-mono font-bold uppercase shadow-sw-sm">
+        正在加载定制页面...
+      </p>
     </AppShell>
   );
 }

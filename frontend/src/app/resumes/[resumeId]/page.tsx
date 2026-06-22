@@ -70,7 +70,7 @@ export default function ResumeDetailPage({ params }: { params: Promise<{ resumeI
       actions={
         <>
           <ButtonLink href="/dashboard" tone="paper">工作台</ButtonLink>
-          <ButtonLink href="/upload" tone="gold">用于定制</ButtonLink>
+          <ButtonLink href={`/upload?resumeId=${resumeId}`} tone="gold">用于定制</ButtonLink>
         </>
       }
       description="主简历详情页保留参考项目里的“原始简历底座”概念：解析文本、结构化 JSON、后续定制都从这里出发。"
