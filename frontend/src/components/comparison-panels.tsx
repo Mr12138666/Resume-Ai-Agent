@@ -97,7 +97,6 @@ export function EditableRewriteDiffPreview({
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(rewrite.rewrittenText);
   const [isSaving, setIsSaving] = useState(false);
-  const [previewTab, setPreviewTab] = useState<"edit" | "preview">("edit");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -126,7 +125,9 @@ export function EditableRewriteDiffPreview({
     setEditText(newText);
     requestAnimationFrame(() => {
       el.focus();
-      const pos = before.length + (selected ? start + before.length + selected.length : start + before.length);
+      const pos = selected
+        ? start + before.length + selected.length + after.length
+        : start + before.length;
       el.setSelectionRange(pos, pos);
     });
   }
@@ -136,7 +137,6 @@ export function EditableRewriteDiffPreview({
     try {
       await onSave(editText);
       setIsEditing(false);
-      setPreviewTab("edit");
     } finally {
       setIsSaving(false);
     }
@@ -145,7 +145,6 @@ export function EditableRewriteDiffPreview({
   function handleCancel() {
     setEditText(rewrite.rewrittenText);
     setIsEditing(false);
-    setPreviewTab("edit");
   }
 
   return (
@@ -156,7 +155,7 @@ export function EditableRewriteDiffPreview({
               <h2 className="font-mono text-lg font-bold uppercase tracking-wide">改写差异预览</h2>
               <p className="mt-2 text-sm leading-6 text-white/75">
                 {isEditing
-                    ? "使用 Markdown 格式编辑右侧内容，左侧差异将实时更新。"
+                    ? "左侧编辑 Markdown 内容，右侧实时预览渲染效果。"
                     : "左右两侧保留原始换行和排版；红色标记被删除或替换的原文，绿色标记新增或强化后的表达。"}
               </p>
             </div>
@@ -179,61 +178,42 @@ export function EditableRewriteDiffPreview({
           </div>
         </div>
         <div className="grid lg:grid-cols-2">
-          <article className="border-b border-black lg:border-b-0 lg:border-r">
-            <div className="border-b border-black bg-[#dc2626] px-5 py-3 font-mono text-sm font-bold uppercase tracking-wide text-white">原文</div>
-            <pre className="whitespace-pre-wrap p-5 font-mono text-sm leading-7">{diff.left}</pre>
-          </article>
-          <article>
-            {isEditing ? (
-                <>
-                  <div className="flex border-b border-black">
-                    <button
-                        className={`px-5 py-3 font-mono text-sm font-bold uppercase tracking-wide transition-colors ${
-                            previewTab === "edit"
-                                ? "bg-[#15803d] text-white"
-                                : "bg-[#e5e5e0] text-black hover:bg-[#d4d4cf]"
-                        }`}
-                        onClick={() => setPreviewTab("edit")}
-                        type="button"
-                    >
-                      编辑
-                    </button>
-                    <button
-                        className={`px-5 py-3 font-mono text-sm font-bold uppercase tracking-wide transition-colors ${
-                            previewTab === "preview"
-                                ? "bg-[#15803d] text-white"
-                                : "bg-[#e5e5e0] text-black hover:bg-[#d4d4cf]"
-                        }`}
-                        onClick={() => setPreviewTab("preview")}
-                        type="button"
-                    >
-                      预览
-                    </button>
-                  </div>
-                  {previewTab === "edit" ? (
-                      <>
-                        <MarkdownToolbar onInsert={handleInsert} />
-                        <textarea
-                            ref={textareaRef}
-                            className="w-full resize-none whitespace-pre-wrap border-0 bg-[#f0f0e8] p-5 font-mono text-sm leading-7 text-black focus:outline-none focus:ring-2 focus:ring-[#1d4ed8] focus:ring-inset"
-                            value={editText}
-                            onChange={(e) => setEditText(e.target.value)}
-                        />
-                      </>
-                  ) : (
-                      <div
-                          className="min-h-48 p-5 font-sans text-sm leading-7 [&_h1]:mb-3 [&_h1]:text-2xl [&_h1]:font-bold [&_h2]:mb-2 [&_h2]:text-xl [&_h2]:font-bold [&_h3]:mb-2 [&_h3]:text-lg [&_h3]:font-bold [&_p]:mb-2 [&_ul]:mb-2 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:mb-2 [&_ol]:list-decimal [&_ol]:pl-6 [&_li]:mb-1 [&_blockquote]:mb-2 [&_blockquote]:border-l-4 [&_blockquote]:border-[#1d4ed8] [&_blockquote]:bg-[#e5e5e0] [&_blockquote]:p-3 [&_blockquote]:italic [&_code]:rounded [&_code]:bg-[#e5e5e0] [&_code]:px-1 [&_code]:font-mono [&_code]:text-xs [&_pre]:mb-2 [&_pre]:overflow-x-auto [&_pre]:border [&_pre]:border-black [&_pre]:bg-[#e5e5e0] [&_pre]:p-4 [&_pre]:font-mono [&_pre]:text-xs [&_pre]:leading-5 [&_hr]:my-4 [&_hr]:border-t [&_hr]:border-black [&_a]:text-[#1d4ed8] [&_a]:underline [&_a]:hover:opacity-80"
-                          dangerouslySetInnerHTML={{ __html: renderMarkdownToHtml(editText) }}
-                      />
-                  )}
-                </>
-            ) : (
-                <>
-                  <div className="border-b border-black bg-[#15803d] px-5 py-3 font-mono text-sm font-bold uppercase tracking-wide text-white">改写后</div>
-                  <pre className="whitespace-pre-wrap p-5 font-mono text-sm leading-7">{diff.right}</pre>
-                </>
-            )}
-          </article>
+          {isEditing ? (
+            <>
+              <article className="flex flex-col border-b border-black lg:border-b-0 lg:border-r">
+                <div className="flex items-center justify-between border-b border-black bg-[#1d4ed8] px-5 py-3 font-mono text-sm font-bold uppercase tracking-wide text-white">
+                  编辑区
+                </div>
+                <MarkdownToolbar onInsert={handleInsert} />
+                <textarea
+                    ref={textareaRef}
+                    className="min-h-80 w-full resize-none whitespace-pre-wrap border-0 bg-[#f0f0e8] p-5 font-mono text-sm leading-7 text-black focus:outline-none focus:ring-2 focus:ring-[#1d4ed8] focus:ring-inset"
+                    value={editText}
+                    onChange={(e) => setEditText(e.target.value)}
+                />
+              </article>
+              <article>
+                <div className="border-b border-black bg-[#15803d] px-5 py-3 font-mono text-sm font-bold uppercase tracking-wide text-white">
+                  实时预览
+                </div>
+                <div
+                    className="min-h-80 p-5 font-sans text-sm leading-7 [&_h1]:mb-3 [&_h1]:text-2xl [&_h1]:font-bold [&_h2]:mb-2 [&_h2]:text-xl [&_h2]:font-bold [&_h3]:mb-2 [&_h3]:text-lg [&_h3]:font-bold [&_p]:mb-2 [&_ul]:mb-2 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:mb-2 [&_ol]:list-decimal [&_ol]:pl-6 [&_li]:mb-1 [&_blockquote]:mb-2 [&_blockquote]:border-l-4 [&_blockquote]:border-[#1d4ed8] [&_blockquote]:bg-[#e5e5e0] [&_blockquote]:p-3 [&_blockquote]:italic [&_code]:rounded [&_code]:bg-[#e5e5e0] [&_code]:px-1 [&_code]:font-mono [&_code]:text-xs [&_pre]:mb-2 [&_pre]:overflow-x-auto [&_pre]:border [&_pre]:border-black [&_pre]:bg-[#e5e5e0] [&_pre]:p-4 [&_pre]:font-mono [&_pre]:text-xs [&_pre]:leading-5 [&_hr]:my-4 [&_hr]:border-t [&_hr]:border-black [&_a]:text-[#1d4ed8] [&_a]:underline [&_a]:hover:opacity-80"
+                    dangerouslySetInnerHTML={{ __html: renderMarkdownToHtml(editText) }}
+                />
+              </article>
+            </>
+          ) : (
+            <>
+              <article className="border-b border-black lg:border-b-0 lg:border-r">
+                <div className="border-b border-black bg-[#dc2626] px-5 py-3 font-mono text-sm font-bold uppercase tracking-wide text-white">原文</div>
+                <pre className="whitespace-pre-wrap p-5 font-mono text-sm leading-7">{diff.left}</pre>
+              </article>
+              <article>
+                <div className="border-b border-black bg-[#15803d] px-5 py-3 font-mono text-sm font-bold uppercase tracking-wide text-white">改写后</div>
+                <pre className="whitespace-pre-wrap p-5 font-mono text-sm leading-7">{diff.right}</pre>
+              </article>
+            </>
+          )}
         </div>
       </section>
   );
