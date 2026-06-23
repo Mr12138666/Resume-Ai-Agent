@@ -413,6 +413,23 @@ export async function deleteRewrite(rewriteId: string): Promise<void> {
   }
 }
 
+export async function updateRewrite(rewriteId: string, rewrittenText: string): Promise<RewriteDraftResponse> {
+  const response = await fetch(`${API_BASE_URL}/rewrites/${rewriteId}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify({ rewrittenText }),
+  });
+
+  if (!response.ok) {
+    await throwApiError(response, "改写草稿更新失败");
+  }
+
+  return response.json() as Promise<RewriteDraftResponse>;
+}
+
 export async function listKnowledgeDocuments(): Promise<KnowledgeDocumentResponse[]> {
   return apiGet<KnowledgeDocumentResponse[]>("/knowledge/documents");
 }

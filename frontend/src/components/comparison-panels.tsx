@@ -1,5 +1,7 @@
 import type { AnalysisResponse, RewriteDraftResponse } from "@/lib/api/client";
 import { highlightText } from "@/lib/keywords";
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
 
 export function JDResumeComparison({
   jobDescription,
@@ -79,6 +81,93 @@ export function RewriteDiffPreview({ rewrite }: { rewrite: RewriteDraftResponse 
         <article>
           <div className="border-b border-black bg-[#15803d] px-5 py-3 font-mono text-sm font-bold uppercase tracking-wide text-white">改写后</div>
           <pre className="whitespace-pre-wrap p-5 font-mono text-sm leading-7">{diff.right}</pre>
+        </article>
+      </div>
+    </section>
+  );
+}
+
+export function EditableRewriteDiffPreview({
+  rewrite,
+  onSave,
+}: {
+  rewrite: RewriteDraftResponse;
+  onSave: (newRewrittenText: string) => Promise<void>;
+}) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editText, setEditText] = useState(rewrite.rewrittenText);
+  const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    setEditText(rewrite.rewrittenText);
+  }, [rewrite.rewrittenText]);
+
+  const displayText = isEditing ? editText : rewrite.rewrittenText;
+  const diff = buildSideBySideDiff(rewrite.originalText, displayText);
+
+  async function handleSave() {
+    setIsSaving(true);
+    try {
+      await onSave(editText);
+      setIsEditing(false);
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  function handleCancel() {
+    setEditText(rewrite.rewrittenText);
+    setIsEditing(false);
+  }
+
+  return (
+    <section className="overflow-hidden border border-black bg-[#f0f0e8] shadow-sw-card">
+      <div className="border-b border-black bg-black px-5 py-4 text-white">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h2 className="font-mono text-lg font-bold uppercase tracking-wide">改写差异预览</h2>
+            <p className="mt-2 text-sm leading-6 text-white/75">
+              {isEditing
+                ? "编辑右侧改写内容，左侧差异将实时更新。"
+                : "左右两侧保留原始换行和排版；红色标记被删除或替换的原文，绿色标记新增或强化后的表达。"}
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {isEditing ? (
+              <>
+                <Button disabled={isSaving} onClick={handleSave} tone="lime" type="button">
+                  {isSaving ? "保存中..." : "保存修改"}
+                </Button>
+                <Button disabled={isSaving} onClick={handleCancel} tone="paper" type="button">
+                  取消
+                </Button>
+              </>
+            ) : (
+              <Button onClick={() => setIsEditing(true)} tone="default" type="button">
+                手动编辑
+              </Button>
+            )}
+          </div>
+        </div>
+      </div>
+      <div className="grid lg:grid-cols-2">
+        <article className="border-b border-black lg:border-b-0 lg:border-r">
+          <div className="border-b border-black bg-[#dc2626] px-5 py-3 font-mono text-sm font-bold uppercase tracking-wide text-white">原文</div>
+          <pre className="whitespace-pre-wrap p-5 font-mono text-sm leading-7">{diff.left}</pre>
+        </article>
+        <article>
+          <div className="border-b border-black bg-[#15803d] px-5 py-3 font-mono text-sm font-bold uppercase tracking-wide text-white">
+            {isEditing ? "编辑中" : "改写后"}
+          </div>
+          {isEditing ? (
+            <textarea
+              className="panel-scroll h-96 w-full resize-y whitespace-pre-wrap border-0 bg-[#f0f0e8] p-5 font-mono text-sm leading-7 text-black focus:outline-none focus:ring-2 focus:ring-[#1d4ed8] focus:ring-inset"
+              value={editText}
+              onChange={(e) => setEditText(e.target.value)}
+            />
+          ) : (
+            <pre className="whitespace-pre-wrap p-5 font-mono text-sm leading-7">{diff.right}</pre>
+          )}
         </article>
       </div>
     </section>

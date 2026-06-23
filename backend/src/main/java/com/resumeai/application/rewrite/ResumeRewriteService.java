@@ -98,6 +98,14 @@ public class ResumeRewriteService {
         rewriteDraftRepository.delete(draft);
     }
 
+    @Transactional
+    public RewriteDraftResponse update(UUID rewriteId, UpdateRewriteRequest request) {
+        var draft = rewriteDraftRepository.findById(rewriteId)
+                .orElseThrow(() -> new IllegalArgumentException("Rewrite draft not found: " + rewriteId));
+        draft.updateRewrittenText(request.rewrittenText().trim());
+        return RewriteDraftResponse.from(rewriteDraftRepository.save(draft));
+    }
+
     @Transactional(readOnly = true)
     public ExportRewriteResponse exportMarkdown(UUID rewriteId) {
         var draft = rewriteDraftRepository.findById(rewriteId)

@@ -70,6 +70,11 @@ public class RewriteDraft {
         this.status = RewriteDraftStatus.DRAFT;
     }
 
+    public void updateRewrittenText(String rewrittenText) {
+        this.rewrittenText = rewrittenText;
+        this.status = RewriteDraftStatus.EDITED;
+    }
+
     public UUID getId() {
         return id;
     }

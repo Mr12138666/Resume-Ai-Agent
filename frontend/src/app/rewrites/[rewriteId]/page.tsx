@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { use, useEffect, useState } from "react";
 import { AppShell } from "@/components/app-shell";
-import { RewriteDiffPreview } from "@/components/comparison-panels";
+import { EditableRewriteDiffPreview } from "@/components/comparison-panels";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Card, CardHeader, MetricCard } from "@/components/ui/card";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -14,6 +14,7 @@ import {
   exportRewriteMarkdown,
   exportRewritePdf,
   getRewrite,
+  updateRewrite,
 } from "@/lib/api/client";
 import { formatDate, formatDateTime } from "@/lib/format";
 
@@ -88,6 +89,11 @@ export default function RewriteDetailPage({ params }: { params: Promise<{ rewrit
     }
   }
 
+  async function handleSaveEdit(newRewrittenText: string) {
+    const updated = await updateRewrite(rewriteId, newRewrittenText);
+    setRewrite(updated);
+  }
+
   return (
     <AppShell
       actions={
@@ -152,7 +158,7 @@ export default function RewriteDetailPage({ params }: { params: Promise<{ rewrit
             ) : null}
           </Card>
 
-          <RewriteDiffPreview rewrite={rewrite} />
+          <EditableRewriteDiffPreview rewrite={rewrite} onSave={handleSaveEdit} />
 
           <section className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
             <Card tone="gold">
