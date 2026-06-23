@@ -333,16 +333,31 @@ public class ResumeRewriteService {
     private PDFont loadChineseFont(PDDocument document) throws Exception {
         var candidates = List.of(
                 "C:/Windows/Fonts/simhei.ttf",
+                "C:/Windows/Fonts/msyh.ttf",
+                "C:/Windows/Fonts/msyhbd.ttf",
                 "C:/Windows/Fonts/msyh.ttc",
+                "C:/Windows/Fonts/msyhbd.ttc",
                 "C:/Windows/Fonts/simsun.ttc",
+                "C:/Windows/Fonts/simsun.ttf",
+                "C:/Windows/Fonts/simkai.ttf",
+                "C:/Windows/Fonts/yahei.ttf",
+                "C:/Windows/Fonts/yaheib.ttf",
                 "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
                 "/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc",
                 "/usr/share/fonts/truetype/wqy/wqy-microhei.ttc"
         );
         for (var path : candidates) {
             var file = new File(path);
-            if (file.isFile()) {
+            if (!file.isFile()) {
+                continue;
+            }
+            try {
+                if (path.endsWith(".ttc")) {
+                    return PDType0Font.load(document, file);
+                }
                 return PDType0Font.load(document, file);
+            } catch (Exception ignored) {
+                // 字体文件存在但加载失败，尝试下一个
             }
         }
         throw new IllegalStateException("未找到可用中文字体，无法生成中文 PDF。");
