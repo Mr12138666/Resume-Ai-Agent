@@ -391,11 +391,6 @@ function UploadWorkflow() {
 
           <Card tone="sky">
             <CardHeader
-              action={
-                <Button disabled={isRewriting} onClick={handleRewrite} tone="default" type="button">
-                  {isRewriting ? "改写中" : "生成改写"}
-                </Button>
-              }
               eyebrow="关键词"
               title="关键词覆盖与缺口"
               description="绿色是简历已有证据，红色是建议补齐或改写时强化的岗位关键词。"
@@ -434,6 +429,16 @@ function UploadWorkflow() {
               )}
             </div>
           </Card>
+        </section>
+      ) : null}
+
+      {analysis ? (
+        <section className="mt-6">
+          <div className="flex justify-center">
+            <Button disabled={isRewriting} onClick={handleRewrite} tone="default" type="button">
+              {isRewriting ? "改写中" : "生成改写"}
+            </Button>
+          </div>
         </section>
       ) : null}
 
