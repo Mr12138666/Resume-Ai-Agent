@@ -29,9 +29,7 @@ export default function RewriteDetailPage({ params }: { params: Promise<{ rewrit
   const [isExporting, setIsExporting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [regenerateMessage, setRegenerateMessage] = useState("");
   const [isRegenerating, setIsRegenerating] = useState(false);
-  const [showRegeneratePanel, setShowRegeneratePanel] = useState(false);
 
   useEffect(() => {
     async function loadRewrite() {
@@ -98,17 +96,12 @@ export default function RewriteDetailPage({ params }: { params: Promise<{ rewrit
     setRewrite(updated);
   }
 
-  async function handleRegenerate() {
-    if (!regenerateMessage.trim()) {
-      return;
-    }
+  async function handleRegenerate(userMessage: string) {
     setIsRegenerating(true);
     setError(null);
     try {
-      const updated = await regenerateRewrite(rewriteId, regenerateMessage.trim());
+      const updated = await regenerateRewrite(rewriteId, userMessage);
       setRewrite(updated);
-      setRegenerateMessage("");
-      setShowRegeneratePanel(false);
     } catch (regenerateError) {
       setError(regenerateError instanceof Error ? regenerateError.message : "改写重生成失败。");
     } finally {
@@ -180,39 +173,13 @@ export default function RewriteDetailPage({ params }: { params: Promise<{ rewrit
             ) : null}
           </Card>
 
-          <EditableRewriteDiffPreview rewrite={rewrite} onSave={handleSaveEdit} />
-
-          <Card tone="ink">
-            <CardHeader
-              action={
-                <div className="flex flex-wrap gap-2">
-                  <Button onClick={() => setShowRegeneratePanel(!showRegeneratePanel)} tone="paper" type="button">
-                    {showRegeneratePanel ? "收起" : "对话重写"}
-                  </Button>
-                </div>
-              }
-              eyebrow="不满意？"
-              title="通过对话让 AI 重新改写"
-              description="如果 AI 改写结果没有达到预期，可以输入修改要求让 AI 在原基础上重新改写。"
-            />
-            {showRegeneratePanel ? (
-              <div className="mt-5 border border-white/60 bg-white/5 p-5">
-                <ConversationHistory history={rewrite.conversationHistory} />
-                <textarea
-                  className="mt-4 w-full resize-none border border-white/60 bg-white/10 p-4 font-mono text-sm leading-6 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-white"
-                  placeholder="请输入你的修改要求，例如：请把第一段写得更简洁、突出项目成果..."
-                  rows={4}
-                  value={regenerateMessage}
-                  onChange={(e) => setRegenerateMessage(e.target.value)}
-                />
-                <div className="mt-4 flex justify-end gap-3">
-                  <Button disabled={isRegenerating || !regenerateMessage.trim()} onClick={handleRegenerate} tone="default" type="button">
-                    {isRegenerating ? "重写中..." : "提交要求，重新改写"}
-                  </Button>
-                </div>
-              </div>
-            ) : null}
-          </Card>
+          <EditableRewriteDiffPreview
+            rewrite={rewrite}
+            onSave={handleSaveEdit}
+            onRegenerate={handleRegenerate}
+            conversationHistory={rewrite.conversationHistory}
+            isRegenerating={isRegenerating}
+          />
 
           <section className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
             <Card tone="gold">
@@ -299,41 +266,6 @@ function Info({ label, value }: { label: string; value: string }) {
     <div>
       <p className="text-xs font-bold uppercase tracking-wide text-[#1d4ed8]">{label}</p>
       <p className="mt-1 break-all font-black">{value}</p>
-    </div>
-  );
-}
-
-function ConversationHistory({ history }: { history: string | null | undefined }) {
-  if (!history || history === "[]") {
-    return null;
-  }
-  let messages: Array<{ role: string; content: string }> = [];
-  try {
-    messages = JSON.parse(history) as Array<{ role: string; content: string }>;
-  } catch {
-    return null;
-  }
-  if (messages.length === 0) {
-    return null;
-  }
-  return (
-    <div className="space-y-3">
-      <p className="font-mono text-xs font-bold uppercase tracking-wide text-white/60">对话记录</p>
-      <div className="max-h-48 space-y-2 overflow-y-auto">
-        {messages.map((msg, index) => (
-          <div
-            className={`rounded border p-3 font-mono text-xs leading-5 ${
-              msg.role === "user"
-                ? "border-[#1d4ed8]/60 bg-[#1d4ed8]/10 text-white/90"
-                : "border-white/40 bg-white/10 text-white/75"
-            }`}
-            key={index}
-          >
-            <span className="mr-2 font-bold uppercase tracking-wide">{msg.role === "user" ? "你" : "AI"}</span>
-            {msg.content}
-          </div>
-        ))}
-      </div>
     </div>
   );
 }

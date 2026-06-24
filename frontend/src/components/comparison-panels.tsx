@@ -90,13 +90,21 @@ export function RewriteDiffPreview({ rewrite }: { rewrite: RewriteDraftResponse 
 export function EditableRewriteDiffPreview({
                                              rewrite,
                                              onSave,
+                                             onRegenerate,
+                                             conversationHistory,
+                                             isRegenerating,
                                            }: {
   rewrite: RewriteDraftResponse;
   onSave: (newRewrittenText: string) => Promise<void>;
+  onRegenerate?: (message: string) => Promise<void>;
+  conversationHistory?: string | null;
+  isRegenerating?: boolean;
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(rewrite.rewrittenText);
   const [isSaving, setIsSaving] = useState(false);
+  const [showRegenPanel, setShowRegenPanel] = useState(false);
+  const [regenMessage, setRegenMessage] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -147,11 +155,18 @@ export function EditableRewriteDiffPreview({
     setIsEditing(false);
   }
 
+  async function handleRegenSubmit() {
+    if (!regenMessage.trim() || !onRegenerate) return;
+    await onRegenerate(regenMessage.trim());
+    setRegenMessage("");
+    setShowRegenPanel(false);
+  }
+
   return (
       <section className="overflow-hidden border border-black bg-[#f0f0e8] shadow-sw-card">
         <div className="border-b border-black bg-black px-5 py-4 text-white">
           <div className="flex flex-wrap items-start justify-between gap-4">
-            <div>
+              <div>
               <h2 className="font-mono text-lg font-bold uppercase tracking-wide">改写差异预览</h2>
               <p className="mt-2 text-sm leading-6 text-white/75">
                 {isEditing
@@ -170,13 +185,38 @@ export function EditableRewriteDiffPreview({
                     </Button>
                   </>
               ) : (
-                  <Button onClick={() => setIsEditing(true)} tone="default" type="button">
-                    手动编辑
-                  </Button>
+                  <>
+                    <Button onClick={() => setIsEditing(true)} tone="default" type="button">
+                      手动编辑
+                    </Button>
+                    {onRegenerate ? (
+                      <Button onClick={() => setShowRegenPanel(!showRegenPanel)} tone="paper" type="button">
+                        {showRegenPanel ? "收起" : "对话重写"}
+                      </Button>
+                    ) : null}
+                  </>
               )}
             </div>
           </div>
         </div>
+        {/* 对话重写面板：非编辑模式下且展开时显示在预览区上方 */}
+        {!isEditing && showRegenPanel && onRegenerate ? (
+          <div className="border-b border-black bg-black/5 p-5">
+            <ConversationHistory history={conversationHistory} />
+            <textarea
+              className="mt-4 w-full resize-none border border-black bg-white p-4 font-mono text-sm leading-6 focus:outline-none focus:ring-2 focus:ring-[#1d4ed8]"
+              placeholder="请输入你的修改要求，例如：请把第一段写得更简洁、突出项目成果..."
+              rows={4}
+              value={regenMessage}
+              onChange={(e) => setRegenMessage(e.target.value)}
+            />
+            <div className="mt-4 flex justify-end gap-3">
+              <Button disabled={isRegenerating || !regenMessage.trim()} onClick={handleRegenSubmit} tone="default" type="button">
+                {isRegenerating ? "重写中..." : "提交要求，重新改写"}
+              </Button>
+            </div>
+          </div>
+        ) : null}
         <div className="grid lg:grid-cols-2">
           {isEditing ? (
             <>
@@ -416,4 +456,39 @@ function renderDiffParts(parts: DiffPart[], tone: "removed" | "added") {
       </mark>
     );
   });
+}
+
+function ConversationHistory({ history }: { history: string | null | undefined }) {
+  if (!history || history === "[]") {
+    return null;
+  }
+  let messages: Array<{ role: string; content: string }> = [];
+  try {
+    messages = JSON.parse(history) as Array<{ role: string; content: string }>;
+  } catch {
+    return null;
+  }
+  if (messages.length === 0) {
+    return null;
+  }
+  return (
+    <div className="space-y-3">
+      <p className="font-mono text-xs font-bold uppercase tracking-wide text-[#6b7280]">对话记录</p>
+      <div className="max-h-48 space-y-2 overflow-y-auto">
+        {messages.map((msg, index) => (
+          <div
+            className={`rounded border p-3 font-mono text-xs leading-5 ${
+              msg.role === "user"
+                ? "border-[#1d4ed8]/60 bg-[#1d4ed8]/10"
+                : "border-black/20 bg-white/60"
+            }`}
+            key={index}
+          >
+            <span className="mr-2 font-bold uppercase tracking-wide">{msg.role === "user" ? "你" : "AI"}</span>
+            {msg.content}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }
