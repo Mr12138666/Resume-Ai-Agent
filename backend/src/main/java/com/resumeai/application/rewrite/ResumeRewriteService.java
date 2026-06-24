@@ -13,8 +13,11 @@ import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.regex.Pattern;
+
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
@@ -317,7 +320,7 @@ public class ResumeRewriteService {
             writer.writeParagraph("岗位：" + blank(job.getTitle(), "未命名岗位"));
             writer.writeParagraph("公司：" + blank(job.getCompany(), "未知公司"));
             writer.writeHeading("改写后文本");
-            writer.writeParagraph(blank(draft.getRewrittenText(), ""));
+            writer.writeMarkdown(blank(draft.getRewrittenText(), ""));
             writer.writeHeading("改写理由");
             writer.writeParagraph(blank(draft.getRationale(), ""));
             writer.writeHeading("事实校验");
@@ -412,6 +415,144 @@ public class ResumeRewriteService {
             y -= 6;
         }
 
+        void writeMarkdown(String markdown) throws Exception {
+            var lines = markdown.split("\\R", -1);
+            var inCode = false;
+            var codeBuf = new ArrayList<String>();
+
+            for (var i = 0; i < lines.length; i++) {
+                var raw = lines[i];
+
+                // 代码块边界
+                if (raw.trim().startsWith("```")) {
+                    if (inCode) {
+                        writeCodeBlock(String.join("\n", codeBuf));
+                        codeBuf.clear();
+                        inCode = false;
+                    } else {
+                        inCode = true;
+                    }
+                    continue;
+                }
+                if (inCode) {
+                    codeBuf.add(raw);
+                    continue;
+                }
+
+                // 空行
+                if (raw.isBlank()) {
+                    y -= 2;
+                    continue;
+                }
+
+                var trimmed = raw.strip();
+
+                // 标题 (长前缀优先匹配)
+                if (trimmed.startsWith("### ")) {
+                    y -= 2;
+                    writeWrapped(stripInlineMarkdown(trimmed.substring(4)), HEADING_SIZE - 1, 18f);
+                    y -= 2;
+                    continue;
+                }
+                if (trimmed.startsWith("## ")) {
+                    y -= 2;
+                    writeWrapped(stripInlineMarkdown(trimmed.substring(3)), HEADING_SIZE, 20f);
+                    y -= 2;
+                    continue;
+                }
+                if (trimmed.startsWith("# ")) {
+                    y -= 2;
+                    writeWrapped(stripInlineMarkdown(trimmed.substring(2)), HEADING_SIZE + 2, 22f);
+                    y -= 2;
+                    continue;
+                }
+
+                // 分隔线
+                if (trimmed.matches("^-{3,}$")) {
+                    y -= 4;
+                    continue;
+                }
+
+                // 引用
+                if (trimmed.startsWith("> ")) {
+                    writeWrapped("| " + stripInlineMarkdown(trimmed.substring(2)), FONT_SIZE, LINE_HEIGHT);
+                    y -= 2;
+                    continue;
+                }
+
+                // 无序列表（兼容 - 和 • 两种前缀）
+                if (trimmed.startsWith("- ") || trimmed.startsWith("• ")) {
+                    writeWrapped("-  " + stripInlineMarkdown(trimmed.substring(2)), FONT_SIZE, LINE_HEIGHT);
+                    y -= 2;
+                    continue;
+                }
+
+                // 有序列表
+                var ol = Pattern.compile("^(\\d+)\\. (.+)").matcher(trimmed);
+                if (ol.matches()) {
+                    writeWrapped(ol.group(1) + ".  " + stripInlineMarkdown(ol.group(2)), FONT_SIZE, LINE_HEIGHT);
+                    y -= 2;
+                    continue;
+                }
+
+                // 普通段落
+                writeWrapped(stripInlineMarkdown(raw), FONT_SIZE, LINE_HEIGHT);
+                y -= 6;
+            }
+
+            // 清理未闭合的代码块
+            if (!codeBuf.isEmpty()) {
+                writeCodeBlock(String.join("\n", codeBuf));
+            }
+        }
+
+        void writeCodeBlock(String code) throws Exception {
+            y -= 4;
+            for (var line : code.split("\\R", -1)) {
+                if (y < MARGIN) {
+                    newPage();
+                }
+                writeWrapped("    " + line, FONT_SIZE - 1, LINE_HEIGHT - 2);
+            }
+            y -= 4;
+        }
+
+        static String stripInlineMarkdown(String text) {
+            return sanitizeForPdf(text)
+                    .replaceAll("\\*\\*(.+?)\\*\\*", "$1")
+                    .replaceAll("\\*(.+?)\\*", "$1")
+                    .replaceAll("`([^`]+)`", "$1")
+                    .replaceAll("\\[([^\\]]+)\\]\\([^)]+\\)", "$1");
+        }
+
+        static String sanitizeForPdf(String text) {
+            // 中文字体通常缺少的 Unicode 符号 → ASCII 安全字符
+            return text
+                    .replace("•", "-")
+                    .replace("★", "*")
+                    .replace("☆", "*")
+                    .replace("✔", "[x]")
+                    .replace("✓", "[x]")
+                    .replace("✗", "[x]")
+                    .replace("✘", "[x]")
+                    .replace("→", "->")
+                    .replace("←", "<-")
+                    .replace("↑", "^")
+                    .replace("↓", "v")
+                    .replace("⇒", "=>")
+                    .replace("⇐", "<=")
+                    .replace("│", "|")
+                    .replace("①", "1.")
+                    .replace("②", "2.")
+                    .replace("③", "3.")
+                    .replace("④", "4.")
+                    .replace("⑤", "5.")
+                    .replace("⑥", "6.")
+                    .replace("⑦", "7.")
+                    .replace("⑧", "8.")
+                    .replace("⑨", "9.")
+                    .replace("⑩", "10.");
+        }
         void close() throws Exception {
             if (stream != null) {
                 stream.close();
