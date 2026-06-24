@@ -1,0 +1,28 @@
+数据工程师 - 实时分析平台
+
+公司
+StreamVerse
+
+关于岗位
+我们正在为事件驱动应用构建实时分析基础设施。每天处理数十亿事件，需要可靠、可扩展的数据流水线来支撑仪表盘、推荐系统和机器学习训练数据。数据质量和流水线可观测性是我们工程文化的核心。
+
+职责
+- 使用 Spark、Flink、Kafka 和 Airflow 设计、构建和维护批量和流式数据流水线。
+- 在 ClickHouse 和 PostgreSQL 中开发和优化分析查询的数据模型。
+- 为生产流水线实施监控、告警和数据质量检查。
+- 与分析工程师协作，定义数据表结构、SLA 预期和转换逻辑。
+- 使用 AWS（EMR、S3、Redshift）和 Terraform 管理数据处理的基础设施。
+- 参与生产数据流水线事故的轮值值守。
+
+任职要求
+- 丰富的 Spark（PySpark 或 Scala）和流式框架（Flink、Kafka Streams 或同类）经验。
+- 精通 SQL 和维度建模（Kimball、星型模型、缓慢变化维度）。
+- 有在生产环境中运行 Airflow 或同类工作流编排工具的经验。
+- 熟悉 AWS、GCP 或 Azure 上的云数据服务。
+- 有容器化（Docker）和基础设施即代码（Terraform 或 Pulumi）经验。
+
+加分项
+- 有 dbt 数据转换和文档化经验。
+- 了解列式存储如 ClickHouse 或 Redshift。
+- 了解数据治理、元数据管理（DataHub、Amundsen）和数据血缘追踪。
+- 具备 ETL 脚本之外的 Python 或 Scala 开发能力。

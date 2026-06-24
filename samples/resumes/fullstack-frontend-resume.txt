@@ -1,0 +1,36 @@
+王丽娜
+全栈工程师（前端方向）
+邮箱：lina.wang@example.com
+地点：北京
+
+个人总结
+3 年前端/全栈开发经验，熟悉 React、TypeScript、Node.js，擅长响应式 Web 应用开发。深入掌握状态管理、组件设计、REST API 集成和前端测试。对数据可视化、开发者工具以及产品驱动开发有浓厚兴趣。
+
+技能
+React, Next.js, TypeScript, JavaScript (ES2020+), HTML5/CSS3, Tailwind CSS, Redux, Zustand, React Query, Node.js, Express, PostgreSQL, Vitest, Playwright, Storybook, GitHub Actions, Docker 基础
+
+工作经历
+前端工程师，Kite Interactive
+2023-2026
+- 使用 React 18、TypeScript 和 Zustand 开发并维护了一款 SaaS 数据分析仪表盘，基于 ECharts 和 D3.js 支持 10 种以上交互式图表类型。
+- 基于 React、Tailwind CSS 和 Storybook 构建了含 20+ 可复用组件的自定义设计系统，UI 开发效率提升 30%。
+- 实现了基于 URL 持久化状态和防抖 API 调用的客户端搜索与过滤功能，大数据集浏览性能提升 40%。
+- 使用 Playwright 为核心用户流程添加端到端测试，生产环境回归缺陷减少 25%。
+- 集成基于 WebSocket 的实时通知和动态消息流，支持多用户协作功能。
+
+项目经验
+开源贡献 - React Data Table
+- 为流行的开源 React 数据表格库贡献了虚拟滚动和列大小调整功能。
+- 使用 Vitest 和 user-event 库编写单元测试，贡献模块分支覆盖率达到 90%。
+
+项目经验
+简历构建工具（个人项目）
+- 使用 Next.js App Router 构建了带实时预览的多步简历构建器，用 Zustand 管理表单状态，通过 Puppeteer 导出 PDF。
+- 支持 Markdown 编辑、段落拖拽排序和主题切换。
+
+教育背景
+电子科技大学 软件工程 学士
+2023
+
+求职意向
+希望从事前端或全栈开发岗位，聚焦 React、TypeScript、数据驱动界面和开发者体验方向。

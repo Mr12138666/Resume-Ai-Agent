@@ -1,25 +1,25 @@
-Senior Java Backend Engineer - AI Document Platform
+高级 Java 后端工程师 - AI 文档平台
 
-Company
+公司
 Nova Cloud
 
-About the role
-We are building an AI-enabled document workflow platform for resume analysis, enterprise knowledge extraction, and structured content generation. The backend team owns ingestion, parsing, storage, analysis orchestration, and reliable integrations with LLM providers.
+关于岗位
+我们正在构建一个 AI 赋能的文档工作流平台，用于简历分析、企业知识提取和结构化内容生成。后端团队负责文档接入、解析、存储、分析编排以及与 LLM 提供商的可靠集成。
 
-Responsibilities
-- Build Java 21 and Spring Boot services for document upload, parsing, analysis, and export workflows.
-- Design REST APIs and PostgreSQL schemas for traceable processing records and generated artifacts.
-- Integrate Redis, object storage, and containerized deployment practices into reliable backend services.
-- Work with LLM prompts, RAG retrieval, vector databases, and tool-calling workflows to improve AI output quality.
-- Collaborate with frontend engineers to deliver clear analysis reports, evidence maps, and rewrite experiences.
-- Add observability, error handling, validation, and tests for production-facing backend features.
+职责
+- 使用 Java 21 和 Spring Boot 构建文档上传、解析、分析和导出的服务。
+- 设计 REST API 和 PostgreSQL 表结构，支撑可追溯的处理记录和生成产物。
+- 集成 Redis、对象存储和容器化部署实践，构建可靠的后端服务。
+- 处理 LLM 提示词、RAG 检索、向量数据库和工具调用工作流，提升 AI 输出质量。
+- 与前端工程师协作，交付清晰的分析报告、证据映射和改写体验。
+- 为面向生产环境的后端功能添加可观测性、错误处理、校验和测试。
 
-Required qualifications
-- Strong Java and Spring Boot experience.
-- Experience with PostgreSQL, SQL schema design, and migration tooling such as Flyway.
-- Experience with Redis, Docker, REST API design, and backend service reliability.
-- Familiarity with LLM application development, prompt engineering, RAG, or vector databases.
-- Ability to explain technical tradeoffs and keep AI-generated output grounded in source evidence.
+任职要求
+- 扎实的 Java 和 Spring Boot 开发经验。
+- 熟悉 PostgreSQL、SQL 表结构设计和 Flyway 等迁移工具。
+- 有 Redis、Docker、REST API 设计和后端服务可靠性方面的经验。
+- 熟悉 LLM 应用开发、提示词工程、RAG 或向量数据库。
+- 能够解释技术权衡，并确保 AI 生成内容基于源证据。
 
-Nice to have
-- PGvector, MinIO, Apache Tika, Spring AI, Kubernetes, distributed tracing, or document parsing experience.
+加分项
+- 有 PGvector、MinIO、Apache Tika、Spring AI、Kubernetes、分布式追踪或文档解析经验。

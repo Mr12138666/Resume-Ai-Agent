@@ -1,32 +1,32 @@
 Alex Chen
-Java Backend Engineer
-Email: alex.chen@example.com
-Location: Shanghai, China
+Java 后端工程师
+邮箱：alex.chen@example.com
+地点：上海
 
-Summary
-Java backend engineer with 4 years of experience building Spring Boot services, PostgreSQL data models, Redis-backed caching, Docker deployments, and document processing workflows. Interested in AI-enabled productivity products and reliable backend systems.
+个人总结
+4 年 Java 后端开发经验，专注于 Spring Boot 服务搭建、PostgreSQL 数据建模、Redis 缓存、Docker 部署以及文档处理工作流。对 AI 赋能的生产力工具和可靠的后端系统有浓厚兴趣。
 
-Skills
-Java 17/21, Spring Boot, Spring MVC, Spring Data JPA, PostgreSQL, Redis, MinIO, Docker, REST API design, Flyway, Apache Tika, basic prompt engineering, GitHub Actions
+技能
+Java 17/21, Spring Boot, Spring MVC, Spring Data JPA, PostgreSQL, Redis, MinIO, Docker, REST API 设计, Flyway, Apache Tika, 提示词工程基础, GitHub Actions
 
-Experience
-Backend Engineer, Nova Workflow Lab
+工作经历
+后端工程师，Nova Workflow Lab
 2022-2026
-- Built Spring Boot REST APIs for uploading, parsing, and storing PDF/DOCX/TXT business documents with Apache Tika and MinIO.
-- Designed PostgreSQL schemas and Flyway migrations for traceable document records, processing status, and generated output artifacts.
-- Added Redis-backed cache and health checks for frequently accessed metadata endpoints, reducing repeated database reads in the dashboard workflow.
-- Integrated an OpenAI-compatible LLM provider to generate structured JSON summaries from parsed text and added fallback behavior when model calls failed.
-- Improved API reliability by adding centralized exception handling, input validation, and deterministic status responses for frontend polling.
+- 使用 Spring Boot 构建了上传、解析和存储 PDF/DOCX/TXT 业务文档的 REST API，集成 Apache Tika 和 MinIO。
+- 设计了支持全链路追溯的 PostgreSQL 数据库表结构与 Flyway 迁移脚本，涵盖文档记录、处理状态和生成产物。
+- 为高频访问的元数据接口添加 Redis 缓存和健康检查，减少了仪表盘工作流中的重复数据库查询。
+- 集成 OpenAI 兼容的 LLM 服务，从解析文本生成结构化 JSON 摘要，并在模型调用失败时实现了降级策略。
+- 通过统一异常处理、输入参数校验和确定性状态响应提升了 API 可靠性，支撑前端轮询。
 
-Project
-Resume AI Agent
-- Implemented resume upload, JD matching, and rewrite draft APIs with Java 21, Spring Boot, PostgreSQL, MinIO, Redis, and Spring AI.
-- Built a keyword evidence matcher that maps job requirements to resume text and returns matched keywords, missing keywords, scores, and suggestions.
-- Connected a PGvector-backed RAG knowledge base for resume optimization guidance and exposed indexing/search endpoints for independent testing.
-- Created an agent-style rewrite flow that uses tool calling to retrieve guidance and verify that rewritten bullets do not invent facts.
+项目经验
+简历 AI 智能体
+- 使用 Java 21、Spring Boot、PostgreSQL、MinIO、Redis 和 Spring AI 实现了简历上传、JD 匹配和改写草稿 API。
+- 构建了关键词证据匹配器，将职位要求映射到简历文本，返回匹配关键词、缺失关键词、评分和改进建议。
+- 连接基于 PGvector 的 RAG 知识库用于简历优化指导，并暴露索引/搜索接口供独立测试。
+- 实现了智能体风格的改写流程，通过工具调用检索优化指南并校验改写内容不虚构事实。
 
-Education
-B.S. Software Engineering
+教育背景
+软件工程 学士
 
-Notes
-Looking for a Java backend or AI application engineering role focused on Spring Boot services, document workflows, RAG, and practical LLM product features.
+求职意向
+期望从事 Java 后端或 AI 应用工程岗位，聚焦 Spring Boot 服务、文档处理工作流、RAG 以及实用的 LLM 产品功能方向。

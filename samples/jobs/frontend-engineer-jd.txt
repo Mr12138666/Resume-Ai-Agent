@@ -1,0 +1,28 @@
+高级前端工程师 - AI 生产力平台
+
+公司
+InnoMind AI
+
+关于岗位
+我们正在打造一个 AI 驱动的生产力平台，帮助知识工作者生成、编辑和组织内容。前端团队负责构建基于现代 React 和 TypeScript 的用户端应用，提供响应式、无障碍且愉悦的使用体验。
+
+职责
+- 使用 React 18+、TypeScript 和 Next.js 构建和维护复杂 UI，遵循组件化架构。
+- 与设计师和产品经理协作，从 Figma 原型实现像素级精确的界面。
+- 优化前端性能，包括打包体积、渲染策略和 API 数据获取模式。
+- 集成 REST 和 WebSocket API，支持实时协作和 AI 流式响应。
+- 使用 Vitest、React Testing Library 和 Playwright 编写单元测试、集成测试和端到端测试。
+- 参与代码审查、组件库维护和前端架构决策。
+
+任职要求
+- 丰富的 React、TypeScript 和现代前端工具链（Vite、Next.js、Tailwind CSS）经验。
+- 扎实的状态管理模式理解（Redux、Zustand 或 React Query）。
+- 有 REST API 集成和客户端数据获取策略的经验。
+- 熟悉前端测试框架和 CI 集成。
+- 良好的无障碍（a11y）和响应式设计原则理解。
+
+加分项
+- 有 WebSocket、SSE 或浏览器流式响应经验。
+- 熟悉 LLM 应用前端、流式文本渲染或 AI 聊天界面。
+- 有开源贡献或个人项目作品集。
+- 有 Node.js 或 Python 后端开发经验。

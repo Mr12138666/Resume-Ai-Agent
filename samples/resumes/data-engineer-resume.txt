@@ -1,0 +1,35 @@
+赵明
+数据工程师
+邮箱：ming.zhao@example.com
+地点：杭州
+
+个人总结
+5 年数据工程经验，专注于 ETL 流水线、数据仓库和实时处理系统的设计与搭建。熟练掌握 Spark、Flink、Kafka 及云原生数据平台。对数据质量保障、流水线可观测性以及支撑下游分析和机器学习工作流充满热情。
+
+技能
+Apache Spark, Apache Flink, Apache Kafka, Airflow, dbt, PostgreSQL, ClickHouse, MongoDB, Hadoop (HDFS, Hive), Python, Scala, SQL, AWS (S3, EMR, Redshift), Terraform, Docker, Kubernetes, Prometheus, Grafana
+
+工作经历
+高级数据工程师，Horizon Data
+2022-2026
+- 设计并维护了基于 Spark Structured Streaming 和 Kafka 的批量与流式混合处理流水线，日处理事件数据超 100TB，SLA 达 99.9%。
+- 基于 AWS Redshift 和 dbt 构建了增量模型驱动的集中式数据仓库，为 20+ 分析团队提供亚秒级聚合查询性能。
+- 搭建了基于 Great Expectations 和 Airflow 的数据质量框架，自动检测数据异常并通过 Slack 告警，数据事件减少 60%。
+- 将遗留 Hive 批处理作业迁移至 Spark SQL on EMR，处理耗时降低 70%，基础设施成本减少 35%。
+- 使用 Prometheus 和 Grafana 构建实时仪表盘和监控，跟踪流水线延迟、吞吐量和错误率。
+
+数据工程师，CloudWave Technologies
+2020-2022
+- 编写 Airflow DAG 实现每日 ETL，从 MySQL、MongoDB 和 REST API 抽取数据导入 ClickHouse 分析层。
+- 设计了用于用户行为分析的规范化星型模型，支持漏斗分析和留存队列分析。
+- 与机器学习工程师合作，在 Spark 中构建特征工程流水线，为推荐模型每日生成训练数据集。
+
+教育背景
+浙江大学 计算机科学 硕士
+2022
+
+浙江大学 数学 学士
+2020
+
+求职意向
+期望从事数据工程或基础设施岗位，关注高吞吐流水线、实时处理和平台可靠性方向。
