@@ -3,6 +3,7 @@ package com.resumeai.application.rewrite;
 import com.resumeai.agent.ResumeOptimizationTools;
 import com.resumeai.domain.analysis.Analysis;
 import com.resumeai.domain.rewrite.RewriteDraft;
+import com.resumeai.domain.rewrite.RewriteDraftStatus;
 import com.resumeai.infrastructure.persistence.AnalysisRepository;
 import com.resumeai.infrastructure.persistence.RewriteDraftRepository;
 import com.resumeai.infrastructure.storage.ObjectStorageService;
@@ -111,18 +112,55 @@ public class ResumeRewriteService {
     }
 
     @Transactional
-    public RewriteDraftResponse regenerate(UUID rewriteId, RegenerateRewriteRequest request) {
+    public RewriteCandidateResponse regenerate(UUID rewriteId, RegenerateRewriteRequest request) {
         var draft = rewriteDraftRepository.findById(rewriteId)
                 .orElseThrow(() -> new IllegalArgumentException("Rewrite draft not found: " + rewriteId));
         var analysis = draft.getAnalysis();
         var originalText = draft.getOriginalText();
-        var userMessage = request.userMessage();
+        var userMessage = request == null ? null : request.userMessage();
         if (userMessage == null || userMessage.isBlank()) {
             userMessage = "请重新改写，提供更优版本。";
         }
         var generated = generateRewriteWithContext(analysis, originalText, draft, userMessage);
-        draft.regenerate(generated.rewrittenText(), generated.rationale(), verificationJson(generated, originalText));
-        draft.appendConversation(userMessage, generated.rationale());
+        var candidateConversation = appendConversationJson(draft.getConversationHistory(), userMessage, generated.rationale());
+        return new RewriteCandidateResponse(
+                draft.getId(),
+                userMessage,
+                generated.rewrittenText(),
+                generated.rationale(),
+                verificationJson(generated, originalText),
+                originalText,
+                candidateConversation,
+                draft.getRegeneratedCount() + 1,
+                draft.getStatus().name(),
+                summarizeRewriteSuggestions(analysis, generated.rewrittenText(), userMessage)
+        );
+    }
+
+    @Transactional
+    public RewriteDraftResponse accept(UUID rewriteId, ApplyRewriteCandidateRequest request) {
+        var draft = rewriteDraftRepository.findById(rewriteId)
+                .orElseThrow(() -> new IllegalArgumentException("Rewrite draft not found: " + rewriteId));
+        if (request == null || request.rewrittenText() == null || request.rewrittenText().isBlank()) {
+            throw new IllegalArgumentException("Rewritten text is required.");
+        }
+        draft.updateRewrittenText(request.rewrittenText().trim());
+        draft.setStatus(RewriteDraftStatus.ACCEPTED);
+        return RewriteDraftResponse.from(rewriteDraftRepository.save(draft));
+    }
+
+    @Transactional
+    public RewriteDraftResponse reject(UUID rewriteId, RejectRewriteCandidateRequest request) {
+        var draft = rewriteDraftRepository.findById(rewriteId)
+                .orElseThrow(() -> new IllegalArgumentException("Rewrite draft not found: " + rewriteId));
+        draft.setStatus(RewriteDraftStatus.REJECTED);
+        if (request != null && request.reason() != null && !request.reason().isBlank()) {
+            draft.replaceConversationHistory(appendConversationJson(
+                    draft.getConversationHistory(),
+                    "拒绝候选：%s".formatted(request.reason().trim()),
+                    "已记录拒绝理由，草稿保留原始状态。"
+            ));
+        }
         return RewriteDraftResponse.from(rewriteDraftRepository.save(draft));
     }
 
@@ -286,19 +324,7 @@ public class ResumeRewriteService {
     private RewriteGeneration generateRewriteWithContext(Analysis analysis, String originalText, RewriteDraft draft, String userMessage) {
         try {
             var historyContext = new StringBuilder();
-            var historyJson = draft.getConversationHistory();
-            if (historyJson != null && !"[]".equals(historyJson)) {
-                historyContext.append("\n此前对话历史：\n");
-                try {
-                    var arr = objectMapper.readTree(historyJson);
-                    for (var i = 0; i < arr.size(); i++) {
-                        var entry = arr.get(i);
-                        var role = entry.get("role").asText();
-                        var content = entry.get("content").asText();
-                        historyContext.append("[").append(role).append("] ").append(content).append("\n");
-                    }
-                } catch (Exception ignored) {}
-            }
+            historyContext.append(conversationContext(draft.getConversationHistory()));
             return chatClientBuilder.build()
                     .prompt()
                     .system("""
@@ -341,6 +367,65 @@ public class ResumeRewriteService {
             log.warn("LLM regenerate failed; keeping previous draft: {}", exception.getMessage());
             return new RewriteGeneration(draft.getRewrittenText(), draft.getRationale(), draft.getVerificationJson());
         }
+    }
+
+    private String conversationContext(String historyJson) {
+        var historyContext = new StringBuilder();
+        if (historyJson == null || historyJson.isBlank() || "[]".equals(historyJson)) {
+            return "";
+        }
+        historyContext.append("\n此前对话历史：\n");
+        try {
+            var arr = objectMapper.readTree(historyJson);
+            if (!arr.isArray()) {
+                return "";
+            }
+            for (var i = 0; i < arr.size(); i++) {
+                var entry = arr.get(i);
+                var role = entry.get("role").asText();
+                var content = entry.get("content").asText();
+                historyContext.append("[").append(role).append("] ").append(content).append("\n");
+            }
+        } catch (Exception ignored) {
+            return "";
+        }
+        return historyContext.toString();
+    }
+
+    private String appendConversationJson(String historyJson, String userMessage, String assistantMessage) {
+        try {
+            var arr = objectMapper.createArrayNode();
+            if (historyJson != null && !historyJson.isBlank()) {
+                var parsed = objectMapper.readTree(historyJson);
+                if (parsed.isArray()) {
+                    arr.addAll((com.fasterxml.jackson.databind.node.ArrayNode) parsed);
+                }
+            }
+            var user = objectMapper.createObjectNode();
+            user.put("role", "user");
+            user.put("content", userMessage);
+            arr.add(user);
+            var assistant = objectMapper.createObjectNode();
+            assistant.put("role", "assistant");
+            assistant.put("content", assistantMessage);
+            arr.add(assistant);
+            return objectMapper.writeValueAsString(arr);
+        } catch (Exception exception) {
+            return historyJson == null || historyJson.isBlank() ? "[]" : historyJson;
+        }
+    }
+
+    private List<String> summarizeRewriteSuggestions(Analysis analysis, String rewrittenText, String userMessage) {
+        var suggestions = new ArrayList<String>();
+        suggestions.add("候选版本由原始简历、目标 JD 和用户新要求共同驱动。");
+        suggestions.add("仍需人工确认数字、公司、项目与职责是否都能被原始简历支持。");
+        if (userMessage != null && !userMessage.isBlank()) {
+            suggestions.add("已优先回应用户新要求：" + userMessage.strip());
+        }
+        if (analysis.getReportJson() != null && !analysis.getReportJson().isBlank()) {
+            suggestions.add("可结合分析报告中的缺失关键词继续微调。");
+        }
+        return suggestions;
     }
 
     private String limit(String text) {

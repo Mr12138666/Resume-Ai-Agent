@@ -1,6 +1,9 @@
 package com.resumeai.domain.rewrite;
 
 import com.resumeai.domain.analysis.Analysis;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -92,20 +95,30 @@ public class RewriteDraft {
         this.status = RewriteDraftStatus.DRAFT;
     }
 
+    public void setStatus(RewriteDraftStatus status) {
+        this.status = status;
+    }
+
+    public void replaceConversationHistory(String conversationHistory) {
+        this.conversationHistory = conversationHistory == null || conversationHistory.isBlank()
+                ? "[]"
+                : conversationHistory;
+    }
+
     public void appendConversation(String userMessage, String assistantMessage) {
         var history = this.conversationHistory == null ? "[]" : this.conversationHistory;
         try {
-            var arr = new com.fasterxml.jackson.databind.ObjectMapper().readTree(history);
-            if (!arr.isArray()) { arr = new com.fasterxml.jackson.databind.node.ArrayNode(null); }
-            var entry = new com.fasterxml.jackson.databind.ObjectMapper().createObjectNode();
+            var mapper = new ObjectMapper();
+            ArrayNode arr = history.isBlank() ? mapper.createArrayNode() : (ArrayNode) mapper.readTree(history);
+            ObjectNode entry = mapper.createObjectNode();
             entry.put("role", "user");
             entry.put("content", userMessage);
-            ((com.fasterxml.jackson.databind.node.ArrayNode) arr).add(entry);
-            var response = new com.fasterxml.jackson.databind.ObjectMapper().createObjectNode();
+            arr.add(entry);
+            ObjectNode response = mapper.createObjectNode();
             response.put("role", "assistant");
             response.put("content", assistantMessage);
-            ((com.fasterxml.jackson.databind.node.ArrayNode) arr).add(response);
-            this.conversationHistory = new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(arr);
+            arr.add(response);
+            this.conversationHistory = mapper.writeValueAsString(arr);
         } catch (Exception ignored) {
             this.conversationHistory = history;
         }

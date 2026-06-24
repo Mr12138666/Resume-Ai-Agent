@@ -66,6 +66,19 @@ export type RewriteDraftResponse = {
   updatedAt: string;
 };
 
+export type RewriteCandidateResponse = {
+  rewriteId: string;
+  userMessage: string;
+  rewrittenText: string;
+  rationale: string;
+  verificationJson: string;
+  originalText: string;
+  conversationHistory: string;
+  regeneratedCount: number;
+  status: string;
+  suggestions: string[];
+};
+
 export type ExportRewriteResponse = {
   rewriteId: string;
   format: string;
@@ -434,7 +447,7 @@ export async function updateRewrite(rewriteId: string, rewrittenText: string): P
   return response.json() as Promise<RewriteDraftResponse>;
 }
 
-export async function regenerateRewrite(rewriteId: string, userMessage: string): Promise<RewriteDraftResponse> {
+export async function regenerateRewrite(rewriteId: string, userMessage: string): Promise<RewriteCandidateResponse> {
   const response = await fetch(`${API_BASE_URL}/rewrites/${rewriteId}/regenerate`, {
     method: "POST",
     headers: {
@@ -446,6 +459,40 @@ export async function regenerateRewrite(rewriteId: string, userMessage: string):
 
   if (!response.ok) {
     await throwApiError(response, "改写重生成失败");
+  }
+
+  return response.json() as Promise<RewriteCandidateResponse>;
+}
+
+export async function acceptRewriteCandidate(rewriteId: string, rewrittenText: string): Promise<RewriteDraftResponse> {
+  const response = await fetch(`${API_BASE_URL}/rewrites/${rewriteId}/accept`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify({ rewrittenText }),
+  });
+
+  if (!response.ok) {
+    await throwApiError(response, "候选改写确认失败");
+  }
+
+  return response.json() as Promise<RewriteDraftResponse>;
+}
+
+export async function rejectRewriteCandidate(rewriteId: string, reason?: string): Promise<RewriteDraftResponse> {
+  const response = await fetch(`${API_BASE_URL}/rewrites/${rewriteId}/reject`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify({ reason }),
+  });
+
+  if (!response.ok) {
+    await throwApiError(response, "候选改写拒绝失败");
   }
 
   return response.json() as Promise<RewriteDraftResponse>;

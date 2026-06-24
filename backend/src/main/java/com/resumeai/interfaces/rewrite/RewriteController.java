@@ -1,10 +1,13 @@
 package com.resumeai.interfaces.rewrite;
 
 import com.resumeai.application.rewrite.CreateRewriteRequest;
+import com.resumeai.application.rewrite.ApplyRewriteCandidateRequest;
 import com.resumeai.application.rewrite.ExportRewriteResponse;
 import com.resumeai.application.rewrite.RegenerateRewriteRequest;
+import com.resumeai.application.rewrite.RejectRewriteCandidateRequest;
 import com.resumeai.application.rewrite.UpdateRewriteRequest;
 import com.resumeai.application.rewrite.ResumeRewriteService;
+import com.resumeai.application.rewrite.RewriteCandidateResponse;
 import com.resumeai.application.rewrite.RewriteDraftResponse;
 
 import java.util.List;
@@ -56,8 +59,18 @@ public class RewriteController {
     }
 
     @PostMapping("/rewrites/{rewriteId}/regenerate")
-    public RewriteDraftResponse regenerate(@PathVariable UUID rewriteId, @RequestBody RegenerateRewriteRequest request) {
+    public RewriteCandidateResponse regenerate(@PathVariable UUID rewriteId, @RequestBody RegenerateRewriteRequest request) {
         return resumeRewriteService.regenerate(rewriteId, request);
+    }
+
+    @PostMapping("/rewrites/{rewriteId}/accept")
+    public RewriteDraftResponse accept(@PathVariable UUID rewriteId, @RequestBody ApplyRewriteCandidateRequest request) {
+        return resumeRewriteService.accept(rewriteId, request);
+    }
+
+    @PostMapping("/rewrites/{rewriteId}/reject")
+    public RewriteDraftResponse reject(@PathVariable UUID rewriteId, @RequestBody(required = false) RejectRewriteCandidateRequest request) {
+        return resumeRewriteService.reject(rewriteId, request);
     }
 
     @PostMapping("/rewrites/{rewriteId}/exports/markdown")
