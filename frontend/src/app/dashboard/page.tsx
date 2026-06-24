@@ -253,10 +253,10 @@ export default function DashboardPage() {
         <StatsCluster
           className="min-h-72 md:col-span-2 xl:col-span-3 xl:row-span-2 xl:min-h-0"
           stats={[
-            ["简历", data.resumes.length, "/dashboard"],
-            ["岗位", data.jobs.length, latestJob ? `/jobs/${latestJob.id}` : "/upload"],
-            ["分析", data.analyses.length, bestAnalysis ? `/analyses/${bestAnalysis.id}` : "/upload"],
-            ["改写", data.rewrites.length, data.rewrites[0] ? `/rewrites/${data.rewrites[0].id}` : "/upload"],
+            ["简历", data.resumes.length, "#resumes"],
+            ["岗位", data.jobs.length, "#jobs"],
+            ["分析", data.analyses.length, "#analyses"],
+            ["改写", data.rewrites.length, "#rewrites"],
             ["RAG 文档", data.knowledge.length, "/knowledge"],
           ]}
         />
@@ -288,6 +288,7 @@ export default function DashboardPage() {
 
       <section className="grid gap-6 lg:grid-cols-2">
         <RecordList
+          id="resumes"
           emptyText="还没有上传简历。"
           items={data.resumes.slice(0, 5).map((resume) => ({
             action: (
@@ -312,6 +313,7 @@ export default function DashboardPage() {
           title="最近简历"
         />
         <RecordList
+          id="jobs"
           emptyText="还没有创建岗位。"
           items={data.jobs.slice(0, 5).map((job) => ({
             action: (
@@ -336,6 +338,7 @@ export default function DashboardPage() {
           title="目标岗位"
         />
         <RecordList
+          id="analyses"
           emptyText="还没有分析报告。"
           items={data.analyses.slice(0, 5).map((analysis) => ({
             action: (
@@ -360,6 +363,7 @@ export default function DashboardPage() {
           title="分析报告"
         />
         <RecordList
+          id="rewrites"
           emptyText="还没有改写草稿。"
           items={data.rewrites.slice(0, 5).map((rewrite) => ({
             action: (
@@ -505,16 +509,19 @@ function formatStatus(status: string) {
 
 function RecordList({
   emptyText,
+  id,
   items,
   title,
 }: {
   emptyText: string;
+  id?: string;
   items: Array<{ action?: React.ReactNode; body: string; href: string; meta: string; title: string }>;
   title: string;
 }) {
   return (
-    <Card tone="paper">
-      <CardHeader eyebrow="记录" title={title} />
+    <div id={id}>
+      <Card tone="paper">
+        <CardHeader eyebrow="记录" title={title} />
       <div className="mt-5 space-y-3">
         {items.length > 0 ? (
           items.map((item) => (
@@ -534,5 +541,6 @@ function RecordList({
         )}
       </div>
     </Card>
+    </div>
   );
 }
