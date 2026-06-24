@@ -28,6 +28,8 @@ export default function AnalysisDetailPage({ params }: { params: Promise<{ analy
   const [isRewriting, setIsRewriting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [customPrompt, setCustomPrompt] = useState("");
+  const [showPromptInput, setShowPromptInput] = useState(false);
 
   async function loadAnalysis() {
     setIsLoading(true);
@@ -52,7 +54,12 @@ export default function AnalysisDetailPage({ params }: { params: Promise<{ analy
     setIsRewriting(true);
     setError(null);
     try {
-      setRewrite(await createRewrite({ analysisId: analysis.id, sectionId: "analysis-report" }));
+      setRewrite(await createRewrite({
+        analysisId: analysis.id,
+        sectionId: "analysis-report",
+        customPrompt: customPrompt.trim() || undefined,
+      }));
+      setShowPromptInput(false);
     } catch (rewriteError) {
       setError(rewriteError instanceof Error ? rewriteError.message : "改写生成失败。");
     } finally {
@@ -117,14 +124,35 @@ export default function AnalysisDetailPage({ params }: { params: Promise<{ analy
             <Card tone="paper">
               <CardHeader
                 action={
-                  <Button disabled={isRewriting} onClick={handleRewrite} tone="ink" type="button">
-                    {isRewriting ? "改写中" : "创建改写"}
-                  </Button>
+                  <div className="flex flex-wrap gap-2">
+                    <Button onClick={() => setShowPromptInput(!showPromptInput)} tone="paper" type="button">
+                      {showPromptInput ? "收起" : "自定义提示词"}
+                    </Button>
+                    <Button disabled={isRewriting} onClick={handleRewrite} tone="ink" type="button">
+                      {isRewriting ? "改写中" : "创建改写"}
+                    </Button>
+                  </div>
                 }
                 eyebrow="下一步"
                 title="下一步：生成可确认的改写草稿"
                 description="智能体会使用分析结果、缺失关键词和 RAG 建议生成中文段落改写，并附带事实校验 JSON。"
               />
+              {showPromptInput ? (
+                <div className="mt-5 border border-black bg-[#e5e5e0] p-4 shadow-sw-xs">
+                  <label className="font-mono text-xs font-bold uppercase tracking-wide text-[#1d4ed8]" htmlFor="custom-prompt">
+                    自定义改写提示词
+                  </label>
+                  <textarea
+                    className="mt-2 w-full resize-none border border-black bg-white p-3 font-mono text-sm leading-6 focus:outline-none focus:ring-2 focus:ring-[#1d4ed8]"
+                    id="custom-prompt"
+                    placeholder="例如：请突出我的团队管理经验和项目交付成果..."
+                    rows={3}
+                    value={customPrompt}
+                    onChange={(e) => setCustomPrompt(e.target.value)}
+                  />
+                  <p className="mt-1 font-mono text-[10px] uppercase leading-4 text-[#6b7280]">此提示词将附加到 AI 改写指令中，用于指导改写方向。</p>
+                </div>
+              ) : null}
               <div className="mt-5">
                 <AnalysisPreviewStrip analysis={analysis} />
               </div>

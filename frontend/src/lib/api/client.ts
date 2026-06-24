@@ -59,6 +59,8 @@ export type RewriteDraftResponse = {
   rewrittenText: string;
   rationale: string;
   verificationJson: string;
+  conversationHistory: string;
+  regeneratedCount: number;
   status: string;
   createdAt: string;
   updatedAt: string;
@@ -380,6 +382,7 @@ export async function createRewrite(input: {
   analysisId: string;
   sectionText?: string;
   sectionId?: string;
+  customPrompt?: string;
 }): Promise<RewriteDraftResponse> {
   const response = await fetch(`${API_BASE_URL}/analyses/${input.analysisId}/rewrites`, {
     method: "POST",
@@ -390,6 +393,7 @@ export async function createRewrite(input: {
     body: JSON.stringify({
       sectionText: input.sectionText,
       sectionId: input.sectionId,
+      customPrompt: input.customPrompt,
     }),
   });
 
@@ -425,6 +429,23 @@ export async function updateRewrite(rewriteId: string, rewrittenText: string): P
 
   if (!response.ok) {
     await throwApiError(response, "改写草稿更新失败");
+  }
+
+  return response.json() as Promise<RewriteDraftResponse>;
+}
+
+export async function regenerateRewrite(rewriteId: string, userMessage: string): Promise<RewriteDraftResponse> {
+  const response = await fetch(`${API_BASE_URL}/rewrites/${rewriteId}/regenerate`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify({ userMessage }),
+  });
+
+  if (!response.ok) {
+    await throwApiError(response, "改写重生成失败");
   }
 
   return response.json() as Promise<RewriteDraftResponse>;

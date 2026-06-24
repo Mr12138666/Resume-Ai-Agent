@@ -1,6 +1,11 @@
 package com.resumeai.interfaces.rewrite;
 
-import com.resumeai.application.rewrite.*;
+import com.resumeai.application.rewrite.CreateRewriteRequest;
+import com.resumeai.application.rewrite.ExportRewriteResponse;
+import com.resumeai.application.rewrite.RegenerateRewriteRequest;
+import com.resumeai.application.rewrite.UpdateRewriteRequest;
+import com.resumeai.application.rewrite.ResumeRewriteService;
+import com.resumeai.application.rewrite.RewriteDraftResponse;
 
 import java.util.List;
 import java.util.UUID;
@@ -48,6 +53,11 @@ public class RewriteController {
     @PutMapping("/rewrites/{rewriteId}")
     public RewriteDraftResponse update(@PathVariable UUID rewriteId, @RequestBody UpdateRewriteRequest request) {
         return resumeRewriteService.update(rewriteId, request);
+    }
+
+    @PostMapping("/rewrites/{rewriteId}/regenerate")
+    public RewriteDraftResponse regenerate(@PathVariable UUID rewriteId, @RequestBody RegenerateRewriteRequest request) {
+        return resumeRewriteService.regenerate(rewriteId, request);
     }
 
     @PostMapping("/rewrites/{rewriteId}/exports/markdown")

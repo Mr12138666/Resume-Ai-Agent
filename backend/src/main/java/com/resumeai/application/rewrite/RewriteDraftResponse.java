@@ -12,6 +12,8 @@ public record RewriteDraftResponse(
         String rewrittenText,
         String rationale,
         String verificationJson,
+        String conversationHistory,
+        int regeneratedCount,
         String status,
         OffsetDateTime createdAt,
         OffsetDateTime updatedAt
@@ -25,6 +27,8 @@ public record RewriteDraftResponse(
                 draft.getRewrittenText(),
                 draft.getRationale(),
                 draft.getVerificationJson(),
+                draft.getConversationHistory(),
+                draft.getRegeneratedCount(),
                 draft.getStatus().name(),
                 draft.getCreatedAt(),
                 draft.getUpdatedAt()

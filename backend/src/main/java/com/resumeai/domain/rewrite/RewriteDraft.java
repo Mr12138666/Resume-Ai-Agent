@@ -44,6 +44,13 @@ public class RewriteDraft {
     @Column(name = "verification_json", columnDefinition = "jsonb")
     private String verificationJson;
 
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "conversation_history", columnDefinition = "jsonb")
+    private String conversationHistory;
+
+    @Column(name = "regenerated_count", nullable = false)
+    private int regeneratedCount;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 40)
     private RewriteDraftStatus status;
@@ -67,12 +74,49 @@ public class RewriteDraft {
         this.rewrittenText = rewrittenText;
         this.rationale = rationale;
         this.verificationJson = verificationJson;
+        this.conversationHistory = "[]";
+        this.regeneratedCount = 0;
         this.status = RewriteDraftStatus.DRAFT;
     }
 
     public void updateRewrittenText(String rewrittenText) {
         this.rewrittenText = rewrittenText;
         this.status = RewriteDraftStatus.EDITED;
+    }
+
+    public void regenerate(String newRewrittenText, String newRationale, String newVerificationJson) {
+        this.rewrittenText = newRewrittenText;
+        this.rationale = newRationale;
+        this.verificationJson = newVerificationJson;
+        this.regeneratedCount += 1;
+        this.status = RewriteDraftStatus.DRAFT;
+    }
+
+    public void appendConversation(String userMessage, String assistantMessage) {
+        var history = this.conversationHistory == null ? "[]" : this.conversationHistory;
+        try {
+            var arr = new com.fasterxml.jackson.databind.ObjectMapper().readTree(history);
+            if (!arr.isArray()) { arr = new com.fasterxml.jackson.databind.node.ArrayNode(null); }
+            var entry = new com.fasterxml.jackson.databind.ObjectMapper().createObjectNode();
+            entry.put("role", "user");
+            entry.put("content", userMessage);
+            ((com.fasterxml.jackson.databind.node.ArrayNode) arr).add(entry);
+            var response = new com.fasterxml.jackson.databind.ObjectMapper().createObjectNode();
+            response.put("role", "assistant");
+            response.put("content", assistantMessage);
+            ((com.fasterxml.jackson.databind.node.ArrayNode) arr).add(response);
+            this.conversationHistory = new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(arr);
+        } catch (Exception ignored) {
+            this.conversationHistory = history;
+        }
+    }
+
+    public String getConversationHistory() {
+        return conversationHistory;
+    }
+
+    public int getRegeneratedCount() {
+        return regeneratedCount;
     }
 
     public UUID getId() {

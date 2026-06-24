@@ -66,7 +66,8 @@ public class ResumeRewriteService {
         var analysis = analysisRepository.findById(analysisId)
                 .orElseThrow(() -> new IllegalArgumentException("Analysis not found: " + analysisId));
         var originalText = chooseOriginalText(analysis, request);
-        var generated = generateRewrite(analysis, originalText);
+        var customPrompt = chooseCustomPrompt(request);
+        var generated = generateRewrite(analysis, originalText, customPrompt);
         var draft = new RewriteDraft(
                 analysis,
                 request == null ? null : request.sectionId(),
@@ -106,6 +107,22 @@ public class ResumeRewriteService {
         var draft = rewriteDraftRepository.findById(rewriteId)
                 .orElseThrow(() -> new IllegalArgumentException("Rewrite draft not found: " + rewriteId));
         draft.updateRewrittenText(request.rewrittenText().trim());
+        return RewriteDraftResponse.from(rewriteDraftRepository.save(draft));
+    }
+
+    @Transactional
+    public RewriteDraftResponse regenerate(UUID rewriteId, RegenerateRewriteRequest request) {
+        var draft = rewriteDraftRepository.findById(rewriteId)
+                .orElseThrow(() -> new IllegalArgumentException("Rewrite draft not found: " + rewriteId));
+        var analysis = draft.getAnalysis();
+        var originalText = draft.getOriginalText();
+        var userMessage = request.userMessage();
+        if (userMessage == null || userMessage.isBlank()) {
+            userMessage = "请重新改写，提供更优版本。";
+        }
+        var generated = generateRewriteWithContext(analysis, originalText, draft, userMessage);
+        draft.regenerate(generated.rewrittenText(), generated.rationale(), verificationJson(generated, originalText));
+        draft.appendConversation(userMessage, generated.rationale());
         return RewriteDraftResponse.from(rewriteDraftRepository.save(draft));
     }
 
@@ -164,17 +181,21 @@ public class ResumeRewriteService {
         );
     }
 
-    private RewriteGeneration generateRewrite(Analysis analysis, String originalText) {
+    private RewriteGeneration generateRewrite(Analysis analysis, String originalText, String customPrompt) {
         try {
+            var systemBase = """
+                    你是一名中文简历改写智能体。
+                    你可以调用工具检索 RAG 建议并计算关键词匹配分。
+                    只允许改写用户提供的简历文本。
+                    必须保留所有事实，不得编造雇主、指标、日期、职责或技术栈。
+                    输出要简洁、专业，并围绕目标岗位优化表达。
+                    """;
+            var systemFinal = (customPrompt == null || customPrompt.isBlank())
+                    ? systemBase
+                    : systemBase + "\n用户额外要求：\n" + customPrompt;
             return chatClientBuilder.build()
                     .prompt()
-                    .system("""
-                            你是一名中文简历改写智能体。
-                            你可以调用工具检索 RAG 建议并计算关键词匹配分。
-                            只允许改写用户提供的简历文本。
-                            必须保留所有事实，不得编造雇主、指标、日期、职责或技术栈。
-                            输出要简洁、专业，并围绕目标岗位优化表达。
-                            """)
+                    .system(systemFinal)
                     .user("""
                             原始简历文本：
                             %s
@@ -252,6 +273,74 @@ public class ResumeRewriteService {
             return "";
         }
         return rawText;
+    }
+
+    private String chooseCustomPrompt(CreateRewriteRequest request) {
+        if (request == null) {
+            return null;
+        }
+        var prompt = request.customPrompt();
+        return (prompt == null || prompt.isBlank()) ? null : prompt.strip();
+    }
+
+    private RewriteGeneration generateRewriteWithContext(Analysis analysis, String originalText, RewriteDraft draft, String userMessage) {
+        try {
+            var historyContext = new StringBuilder();
+            var historyJson = draft.getConversationHistory();
+            if (historyJson != null && !"[]".equals(historyJson)) {
+                historyContext.append("\n此前对话历史：\n");
+                try {
+                    var arr = objectMapper.readTree(historyJson);
+                    for (var i = 0; i < arr.size(); i++) {
+                        var entry = arr.get(i);
+                        var role = entry.get("role").asText();
+                        var content = entry.get("content").asText();
+                        historyContext.append("[").append(role).append("] ").append(content).append("\n");
+                    }
+                } catch (Exception ignored) {}
+            }
+            return chatClientBuilder.build()
+                    .prompt()
+                    .system("""
+                            你是一名中文简历改写智能体。
+                            你必须严格基于原始简历文本进行改写，不得编造事实。
+                            用户在上次改写结果基础上提出了新的修改要求，请根据用户反馈重新改写。
+                            如果用户对特定段落有明确要求，优先处理用户反馈。
+                            """)
+                    .user("""
+                            原始简历文本：
+                            %s
+
+                            上一轮改写结果：
+                            %s
+
+                            目标岗位 JD：
+                            %s
+
+                            用户新要求：
+                            %s
+                            %s
+
+                            请根据用户新要求重新改写。
+                            请返回 JSON 对象，字段包括：
+                            - rewrittenText：改写后的中文简历文本。
+                            - rationale：中文改写理由，并说明如何回应用户的新要求。
+                            - verificationJson：字符串形式的 JSON，必须使用中文字段和值，包含：
+                              结论、是否发现新增事实、需要人工复核、依据摘要、复核建议。
+                            """.formatted(
+                            limit(originalText),
+                            limit(draft.getRewrittenText()),
+                            limit(analysis.getJob().getDescription()),
+                            userMessage,
+                            historyContext.toString()
+                    ))
+                    .tools(tools)
+                    .call()
+                    .entity(RewriteGeneration.class);
+        } catch (Exception exception) {
+            log.warn("LLM regenerate failed; keeping previous draft: {}", exception.getMessage());
+            return new RewriteGeneration(draft.getRewrittenText(), draft.getRationale(), draft.getVerificationJson());
+        }
     }
 
     private String limit(String text) {
