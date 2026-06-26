@@ -133,7 +133,7 @@ export function CandidateDiffPreview({
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            {!candidate && !isEditing ? (
+            {!candidate && !isEditing && onSave ? (
               <>
                 <Button onClick={() => setIsEditing(true)} tone="default" type="button">
                   手动编辑
@@ -209,10 +209,10 @@ export function CandidateDiffPreview({
                   取消
                 </Button>
                 <Button
-                  disabled={Boolean(isApplying) || !onSave || !editText.trim()}
-                  onClick={() => void onSave?.(editText)}
-                  tone="success"
-                  type="button"
+                    disabled={Boolean(isApplying) || !onSave || !editText.trim()}
+                    onClick={async () => { await onSave?.(editText); setIsEditing(false); }}
+                    tone="success"
+                    type="button"
                 >
                   保存修改
                 </Button>
